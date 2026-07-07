@@ -352,6 +352,13 @@ export function useUserData() {
     });
   };
 
+  /** Email/password sign-in (admin accounts). Returns an error message or null. */
+  const signInWithPassword = async (email: string, password: string): Promise<string | null> => {
+    if (!connected) return 'Supabase is not configured.';
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return error ? error.message : null;
+  };
+
   const signOut = async () => {
     if (connected) await supabase.auth.signOut();
     setSession(null);
@@ -365,7 +372,8 @@ export function useUserData() {
     isLoading: content.isLoading || progress.isLoading || profile.isLoading,
     // identity
     user: profile.data ?? GUEST,
-    isAdmin: (profile.data ?? GUEST).role === 'admin',
+    // Demo mode is admin (offline preview); connected mode requires a real admin profile.
+    isAdmin: connected ? profile.data?.role === 'admin' : true,
     // content
     paths: data?.paths ?? [],
     nodes: data?.nodes ?? [],
@@ -388,6 +396,7 @@ export function useUserData() {
     completeTask,
     rateResource,
     signInWithDiscord,
+    signInWithPassword,
     signOut,
   };
 }

@@ -8,7 +8,7 @@
  */
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Download, ShieldCheck, Users } from 'lucide-react';
+import { AlertTriangle, Download, LogIn, ShieldCheck, Users } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 import { exportMembersCsv, useAdminData, type MemberRow } from '@/hooks/useAdminData';
 import { Button } from '@/components/ui/button';
@@ -74,6 +74,55 @@ function MemberDrilldown({ member, onClose }: { member: MemberRow | null; onClos
   );
 }
 
+function AdminLogin({ signIn }: { signIn: (email: string, password: string) => Promise<string | null> }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setError(await signIn(email, password));
+    setBusy(false);
+  };
+
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <form onSubmit={submit} className="w-full max-w-sm border border-outline-variant bg-surface/80 p-7">
+        <p className="micro-label text-primary-neon">{'// restricted'}</p>
+        <h1 className="mt-2 font-display text-2xl font-bold text-on-surface">Admin sign-in</h1>
+        <label className="mt-6 block">
+          <span className="micro-label text-outline">email</span>
+          <input
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="mt-1.5 w-full border border-outline-variant bg-surface-container-low px-3 py-2.5 font-code text-sm text-on-surface outline-none transition-colors focus:border-cyan"
+          />
+        </label>
+        <label className="mt-4 block">
+          <span className="micro-label text-outline">password</span>
+          <input
+            type="password"
+            required
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="mt-1.5 w-full border border-outline-variant bg-surface-container-low px-3 py-2.5 font-code text-sm text-on-surface outline-none transition-colors focus:border-cyan"
+          />
+        </label>
+        {error && <p className="mt-3 border-l-2 border-error pl-3 font-code text-[11px] text-error">{error}</p>}
+        <Button type="submit" disabled={busy} className="mt-6 w-full">
+          <LogIn /> {busy ? 'signing in…' : 'sign in'}
+        </Button>
+      </form>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const userData = useUserData();
   const router = useRouter();
@@ -82,12 +131,17 @@ export default function AdminPage() {
   const [view, setView] = useState<'members' | 'stuck' | 'analytics'>('members');
   const [selected, setSelected] = useState<MemberRow | null>(null);
 
-  const { paths, nodes, isAdmin, isLoading } = userData;
+  const { paths, nodes, isAdmin, isLoading, isAuthenticated, isSupabaseConnected } = userData;
 
   const members = useMemo(() => {
     const all = admin.data?.members ?? [];
     return cohort ? all.filter((m) => m.cohort === cohort) : all;
   }, [admin.data?.members, cohort]);
+
+  // Connected but signed out → email/password login (admin accounts).
+  if (isSupabaseConnected && !isAuthenticated) {
+    return <AdminLogin signIn={userData.signInWithPassword} />;
+  }
 
   if (!isLoading && !isAdmin) {
     router.replace('/roadmap');
