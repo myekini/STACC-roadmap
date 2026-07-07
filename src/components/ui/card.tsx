@@ -13,6 +13,16 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 );
 CardHeader.displayName = 'CardHeader';
 
+const CardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => <div ref={ref} className={cn('font-display text-base font-bold leading-none text-on-surface', className)} {...props} />,
+);
+CardTitle.displayName = 'CardTitle';
+
+const CardDescription = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => <div ref={ref} className={cn('text-sm text-on-surface-variant', className)} {...props} />,
+);
+CardDescription.displayName = 'CardDescription';
+
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />,
 );
@@ -23,4 +33,4 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 );
 CardFooter.displayName = 'CardFooter';
 
-export { Card, CardHeader, CardContent, CardFooter };
+export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter };

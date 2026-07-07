@@ -165,3 +165,24 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+
+/* shadcn block support: sidebar + chart vars in the Stacc palette (dark-only app) */
+@layer base {
+  :root {
+    --sidebar-background: 215 60% 10%;      /* --navy */
+    --sidebar-foreground: 200 8% 89%;       /* --fg */
+    --sidebar-primary: 189 100% 50%;        /* --cyan */
+    --sidebar-primary-foreground: 215 60% 10%;
+    --sidebar-accent: 213 56% 16%;          /* --navy-3 */
+    --sidebar-accent-foreground: 200 8% 89%;
+    --sidebar-border: 218 26% 22%;          /* outline-variant */
+    --sidebar-ring: 189 100% 50%;
+    --chart-1: #00d9ff;
+    --chart-2: #d9622e;
+    --chart-3: #10b981;
+    --chart-4: #f59e0b;
+    --chart-5: #8395ac;
+  }
+}
