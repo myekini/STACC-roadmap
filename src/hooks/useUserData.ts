@@ -1,425 +1,395 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client';
+
+/**
+ * All user + content state for the Roadmap Tracker.
+ * Two backends with identical semantics:
+ *  - Supabase mode (env present): content from DB, progress via security-definer
+ *    RPCs (start_node / complete_task / rate_resource). XP is server-owned.
+ *  - Demo mode (no env): content from src/config/roadmap.ts, progress in
+ *    localStorage, XP derived from completed nodes.
+ * Node status is always derived: locked | available | in_progress | complete.
+ */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/utils/supabase/client';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
+import { hasSupabaseEnv, supabase } from '@/utils/supabase/client';
+import {
+  NODES as LOCAL_NODES,
+  PATHS as LOCAL_PATHS,
+  PREREQUISITES as LOCAL_PREREQS,
+  RESOURCES as LOCAL_RESOURCES,
+  TASKS as LOCAL_TASKS,
+} from '@/config/roadmap';
+import type {
+  NodeRow,
+  NodeStatus,
+  PathRow,
+  ResourceRow,
+  TaskRow,
+} from '@/lib/database.types';
 
-// Define TS types
-export interface UserProfile {
-  id: string;
-  username: string;
-  avatar_url: string;
-  xp: number;
-  rank: string;
-}
-
-export interface Quest {
-  id: string;
-  title: string;
-  xp_reward: number;
-  completed: boolean;
-}
-
-export interface HeatmapDay {
-  date: string; // YYYY-MM-DD
-  count: number;
-}
-
-// Helper to check if Supabase is active
-const isSupabaseActive = () => {
-  return (
-    process.env.NEXT_PUBLIC_SUPABASE_URL !== undefined &&
-    process.env.NEXT_PUBLIC_SUPABASE_URL !== ''
-  );
+// ── Local persistence ───────────────────────────────────────
+const LS = {
+  activePath: 'stacc.v2.activePath',
+  completedTasks: 'stacc.v2.completedTasks', // string[]
+  completedNodes: 'stacc.v2.completedNodes', // Record<nodeId, isoDate>
+  startedNodes: 'stacc.v2.startedNodes', // string[]
+  ratings: 'stacc.v2.ratings', // Record<resourceId, rating>
+  profile: 'stacc.v2.profile', // { username }
 };
 
-// Default Mock Data for Local Storage Mode
-const DEFAULT_PROFILE: UserProfile = {
-  id: 'mock-user',
-  username: 'Scholar Guest',
-  avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBYkuijmrEa8PzAVOpaV11h4xCY2A_NFFrRuG3zCc4_awnN-3tKkhxxNv2J9XE0RfcrPDa79lXg-03bMcE55bMQEhhz3_KuQEcAoYUBLgmTxow16seXeq_oFPHAqFyIVDG03DQ4pYuzZCxgaQPVafKxNWoNemyZedMFcTbap3sFl-tdxSTmPF4T65z81XZyG2AW25BqYnRdISpu-vcrdA5riy3MCtFFWqzDKwuxqASqmf6EvwkgLmywNjIR22szzasMJ-vynmfgLctE',
-  xp: 2450,
-  rank: 'Gold',
-};
-
-const DEFAULT_QUESTS: Quest[] = [
-  { id: 'q1', title: 'Complete 1 node in your roadmap', xp_reward: 100, completed: false },
-  { id: 'q2', title: 'Take an AI Assistant Quiz', xp_reward: 50, completed: false },
-  { id: 'q3', title: 'Explore another learning path', xp_reward: 50, completed: false },
-];
-
-const DEFAULT_COMPLETED_NODES: Record<string, string[]> = {
-  'data-engineering': ['foundations'],
-  'data-analysis': ['foundations'],
-  'data-science': ['foundations'],
-  'ai-llm': ['foundations'],
-  'mlops': ['foundations'],
-};
-
-const DEFAULT_HEATMAP: Record<string, number> = {
-  // Populate some historical mock activity
-  '2026-06-25': 2,
-  '2026-06-26': 5,
-  '2026-06-27': 8,
-};
-
-// Simple LocalStorage Helpers
-const getLocalStorage = <T>(key: string, defaultValue: T): T => {
-  if (typeof window === 'undefined') return defaultValue;
-  const saved = localStorage.getItem(key);
-  return saved ? JSON.parse(saved) : defaultValue;
-};
-
-const setLocalStorage = <T>(key: string, value: T) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(key, JSON.stringify(value));
+function readLS<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
   }
+}
+
+function writeLS<T>(key: string, value: T) {
+  if (typeof window !== 'undefined') localStorage.setItem(key, JSON.stringify(value));
+}
+
+// Gamification is deliberately minimal: completion % and a day-streak.
+// XP/rank still accrue server-side (schema unchanged) but are not surfaced.
+
+export interface RoadmapContent {
+  paths: PathRow[];
+  nodes: NodeRow[];
+  resources: ResourceRow[];
+  tasks: TaskRow[];
+  prereqs: Record<string, string[]>; // nodeId -> prerequisite nodeIds
+}
+
+export interface ProgressState {
+  completedNodes: Record<string, string>; // nodeId -> completed_at
+  startedNodes: string[];
+  completedTasks: string[];
+  ratings: Record<string, number>; // resourceId -> my rating
+}
+
+const EMPTY_PROGRESS: ProgressState = {
+  completedNodes: {},
+  startedNodes: [],
+  completedTasks: [],
+  ratings: {},
 };
 
-// Calculate Rank based on XP
-const calculateRank = (xp: number): string => {
-  if (xp < 500) return 'Bronze';
-  if (xp < 1500) return 'Silver';
-  if (xp < 3000) return 'Gold';
-  if (xp < 6000) return 'Platinum';
-  return 'Diamond';
-};
+// Demo mode grants admin so the founder can preview the admin panel offline.
+const GUEST = { id: 'guest', username: 'Guest Dev', avatar_url: '', role: 'admin' as 'member' | 'admin' };
 
 export function useUserData() {
   const queryClient = useQueryClient();
-  const [supabaseSession, setSupabaseSession] = useState<any>(null);
-  const active = isSupabaseActive();
+  const [session, setSession] = useState<Session | null>(null);
+  const connected = hasSupabaseEnv;
+  const userId = session?.user?.id;
 
-  // Listen to Supabase Auth State
   useEffect(() => {
-    if (!active) return;
-    
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSupabaseSession(session);
+    if (!connected) return;
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(s);
+      queryClient.invalidateQueries();
     });
+    return () => sub.subscription.unsubscribe();
+  }, [connected, queryClient]);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSupabaseSession(session);
-      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-    });
-
-    return () => subscription.unsubscribe();
-  }, [active, queryClient]);
-
-  // 1. User Profile Query
-  const userProfile = useQuery<UserProfile>({
-    queryKey: ['userProfile', supabaseSession?.user?.id],
+  // ── Content (paths / nodes / resources / tasks / prereqs) ──
+  const content = useQuery<RoadmapContent>({
+    queryKey: ['content', connected, !!userId],
+    staleTime: 5 * 60 * 1000,
     queryFn: async () => {
-      if (active && supabaseSession?.user) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', supabaseSession.user.id)
-          .single();
+      if (!connected) {
+        return { paths: LOCAL_PATHS, nodes: LOCAL_NODES, resources: LOCAL_RESOURCES, tasks: LOCAL_TASKS, prereqs: LOCAL_PREREQS };
+      }
+      const [paths, nodes, prereqs] = await Promise.all([
+        supabase.from('paths').select('*').order('order'),
+        supabase.from('nodes').select('*').order('order'),
+        supabase.from('node_prerequisites').select('*'),
+      ]);
+      if (paths.error) throw paths.error;
+      if (nodes.error) throw nodes.error;
+      if (prereqs.error) throw prereqs.error;
 
-        if (error) {
-          // If profile doesn't exist, create one
-          if (error.code === 'PGRST116') {
-            const newProfile = {
-              id: supabaseSession.user.id,
-              username: supabaseSession.user.user_metadata.custom_claims?.global_name || supabaseSession.user.user_metadata.full_name || 'Scholar',
-              avatar_url: supabaseSession.user.user_metadata.avatar_url || '',
-              xp: 100,
-              rank: 'Bronze',
-            };
-            await supabase.from('profiles').insert(newProfile);
-            return newProfile;
-          }
-          throw error;
+      // Resources/tasks are auth-gated (spec §1.9); logged-out visitors get structure only.
+      let resources: ResourceRow[] = [];
+      let tasks: TaskRow[] = [];
+      if (userId) {
+        const [r, t] = await Promise.all([
+          supabase.from('resources').select('*'),
+          supabase.from('tasks').select('*').order('order'),
+        ]);
+        if (r.error) throw r.error;
+        if (t.error) throw t.error;
+        resources = r.data as ResourceRow[];
+        tasks = t.data as TaskRow[];
+      }
+
+      const prereqMap: Record<string, string[]> = {};
+      for (const edge of prereqs.data as { node_id: string; prerequisite_id: string }[]) {
+        (prereqMap[edge.node_id] ??= []).push(edge.prerequisite_id);
+      }
+      return { paths: paths.data as PathRow[], nodes: nodes.data as NodeRow[], resources, tasks, prereqs: prereqMap };
+    },
+  });
+
+  // ── Profile ─────────────────────────────────────────────
+  const profile = useQuery({
+    queryKey: ['profile', userId],
+    enabled: connected ? !!userId : true,
+    queryFn: async () => {
+      if (connected && userId) {
+        const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+        if (error) throw error;
+        return {
+          id: data.id as string,
+          username: data.username as string,
+          avatar_url: data.avatar_url as string,
+          role: (data.role ?? 'member') as 'member' | 'admin',
+        };
+      }
+      const local = readLS<{ username: string }>(LS.profile, { username: GUEST.username });
+      return { ...GUEST, username: local.username };
+    },
+  });
+
+  // ── Active path ─────────────────────────────────────────
+  const activePathQuery = useQuery<string | null>({
+    queryKey: ['activePath', userId],
+    queryFn: async () => {
+      if (connected && userId) {
+        const { data, error } = await supabase
+          .from('user_paths').select('path_id').eq('user_id', userId)
+          .order('selected_at', { ascending: false }).limit(1);
+        if (error) throw error;
+        return data.length ? (data[0].path_id as string) : null;
+      }
+      return readLS<string | null>(LS.activePath, null);
+    },
+  });
+
+  // ── Progress ────────────────────────────────────────────
+  const progress = useQuery<ProgressState>({
+    queryKey: ['progress', userId],
+    queryFn: async () => {
+      if (connected && userId) {
+        const [prog, comps, ratings] = await Promise.all([
+          supabase.from('user_progress').select('node_id,status,completed_at').eq('user_id', userId),
+          supabase.from('task_completions').select('task_id').eq('user_id', userId),
+          supabase.from('resource_ratings').select('resource_id,rating').eq('user_id', userId),
+        ]);
+        if (prog.error) throw prog.error;
+        if (comps.error) throw comps.error;
+        if (ratings.error) throw ratings.error;
+        const completedNodes: Record<string, string> = {};
+        const startedNodes: string[] = [];
+        for (const row of prog.data) {
+          if (row.status === 'complete') completedNodes[row.node_id] = row.completed_at ?? '';
+          else startedNodes.push(row.node_id);
         }
-        return data;
-      } else {
-        // Local Storage fallback
-        return getLocalStorage<UserProfile>('stacc_profile', DEFAULT_PROFILE);
+        return {
+          completedNodes,
+          startedNodes,
+          completedTasks: comps.data.map((c) => c.task_id as string),
+          ratings: Object.fromEntries(ratings.data.map((r) => [r.resource_id, r.rating])),
+        };
       }
+      if (!connected) {
+        return {
+          completedNodes: readLS(LS.completedNodes, EMPTY_PROGRESS.completedNodes),
+          startedNodes: readLS(LS.startedNodes, EMPTY_PROGRESS.startedNodes),
+          completedTasks: readLS(LS.completedTasks, EMPTY_PROGRESS.completedTasks),
+          ratings: readLS(LS.ratings, EMPTY_PROGRESS.ratings),
+        };
+      }
+      return EMPTY_PROGRESS; // connected but logged out
     },
   });
 
-  // 2. Active Path Query
-  const activePath = useQuery<string | null>({
-    queryKey: ['activePath', supabaseSession?.user?.id],
-    queryFn: async () => {
-      if (active && supabaseSession?.user) {
-        const { data, error } = await supabase
-          .from('user_paths')
-          .select('path_id')
-          .eq('user_id', supabaseSession.user.id)
-          .order('selected_at', { ascending: false })
-          .limit(1);
+  const data = content.data;
+  const prog = progress.data ?? EMPTY_PROGRESS;
 
-        if (error) throw error;
-        return data.length > 0 ? data[0].path_id : 'data-engineering';
-      } else {
-        return getLocalStorage<string | null>('stacc_active_path', 'data-engineering');
-      }
+  // ── Derived: node status (locked/available/in_progress/complete) ──
+  const nodesByPath = useMemo(() => {
+    const map: Record<string, NodeRow[]> = {};
+    for (const node of data?.nodes ?? []) (map[node.path_id] ??= []).push(node);
+    return map;
+  }, [data?.nodes]);
+
+  const pathFullyComplete = useCallback(
+    (pathId: string) => (nodesByPath[pathId] ?? []).every((n) => prog.completedNodes[n.id]),
+    [nodesByPath, prog.completedNodes],
+  );
+
+  const pathUnlocked = useCallback(
+    (pathId: string) => {
+      const path = data?.paths.find((p) => p.id === pathId);
+      return (path?.requires_paths ?? []).every(pathFullyComplete);
     },
-  });
+    [data?.paths, pathFullyComplete],
+  );
 
-  // 3. Completed Nodes Query
-  const completedNodes = useQuery<string[]>({
-    queryKey: ['completedNodes', supabaseSession?.user?.id, activePath.data],
-    queryFn: async () => {
-      const currentPathId = activePath.data || 'data-engineering';
-      if (active && supabaseSession?.user) {
-        const { data, error } = await supabase
-          .from('completed_nodes')
-          .select('node_id')
-          .eq('user_id', supabaseSession.user.id)
-          .eq('path_id', currentPathId);
-
-        if (error) throw error;
-        return data.map((d: any) => d.node_id);
-      } else {
-        const localCompleted = getLocalStorage<Record<string, string[]>>('stacc_completed_nodes', DEFAULT_COMPLETED_NODES);
-        return localCompleted[currentPathId] || [];
-      }
+  const nodeStatus = useCallback(
+    (nodeId: string): NodeStatus => {
+      if (prog.completedNodes[nodeId]) return 'complete';
+      const node = data?.nodes.find((n) => n.id === nodeId);
+      if (node && !pathUnlocked(node.path_id)) return 'locked';
+      const unmet = (data?.prereqs[nodeId] ?? []).some((p) => !prog.completedNodes[p]);
+      if (unmet) return 'locked';
+      return prog.startedNodes.includes(nodeId) ? 'in_progress' : 'available';
     },
-    enabled: !!activePath.data || !active,
-  });
+    [data?.nodes, data?.prereqs, pathUnlocked, prog.completedNodes, prog.startedNodes],
+  );
 
-  // 4. Quests Query
-  const quests = useQuery<Quest[]>({
-    queryKey: ['quests', supabaseSession?.user?.id],
-    queryFn: async () => {
-      if (active && supabaseSession?.user) {
-        const { data, error } = await supabase
-          .from('user_quests')
-          .select('*')
-          .eq('user_id', supabaseSession.user.id)
-          .order('created_at', { ascending: true });
+  // Activity by date: modules completed per day (drives heatmap + streak).
+  const activity = useMemo(() => {
+    const byDay: Record<string, number> = {};
+    for (const when of Object.values(prog.completedNodes)) {
+      if (!when) continue;
+      const day = when.slice(0, 10);
+      byDay[day] = (byDay[day] ?? 0) + 1;
+    }
+    return byDay;
+  }, [prog.completedNodes]);
 
-        if (error) throw error;
-        
-        // If no quests are loaded, insert default ones
-        if (data.length === 0) {
-          const insertedQuests = DEFAULT_QUESTS.map(q => ({
-            user_id: supabaseSession.user.id,
-            quest_title: q.title,
-            xp_reward: q.xp_reward,
-            completed: q.completed,
-          }));
-          const { data: freshData } = await supabase.from('user_quests').insert(insertedQuests).select();
-          return (freshData || []).map((fd: any) => ({
-            id: fd.id,
-            title: fd.quest_title,
-            xp_reward: fd.xp_reward,
-            completed: fd.completed
-          }));
-        }
-        
-        return data.map((d: any) => ({
-          id: d.id,
-          title: d.quest_title,
-          xp_reward: d.xp_reward,
-          completed: d.completed
-        }));
-      } else {
-        return getLocalStorage<Quest[]>('stacc_quests', DEFAULT_QUESTS);
-      }
-    },
-  });
+  // Current streak: consecutive active days ending today or yesterday.
+  const streak = useMemo(() => {
+    let days = 0;
+    const cursor = new Date();
+    if (!activity[cursor.toISOString().slice(0, 10)]) cursor.setDate(cursor.getDate() - 1);
+    while (activity[cursor.toISOString().slice(0, 10)]) {
+      days += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return days;
+  }, [activity]);
 
-  // 5. Heatmap Query
-  const heatmapData = useQuery<Record<string, number>>({
-    queryKey: ['heatmapData', supabaseSession?.user?.id],
-    queryFn: async () => {
-      if (active && supabaseSession?.user) {
-        // Query database stats or aggregated node completions
-        const { data, error } = await supabase
-          .from('completed_nodes')
-          .select('completed_at')
-          .eq('user_id', supabaseSession.user.id);
+  // ── Mutations ───────────────────────────────────────────
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['progress'] });
+    queryClient.invalidateQueries({ queryKey: ['profile'] });
+  };
 
-        if (error) throw error;
-
-        const counts: Record<string, number> = {};
-        data.forEach((item: any) => {
-          const dateStr = new Date(item.completed_at).toISOString().split('T')[0];
-          counts[dateStr] = (counts[dateStr] || 0) + 2; // Arbitrary 2 points per completed node
-        });
-        return counts;
-      } else {
-        return getLocalStorage<Record<string, number>>('stacc_heatmap', DEFAULT_HEATMAP);
-      }
-    },
-  });
-
-  // MUTATIONS
-
-  // A. Select Path Mutation
-  const selectPathMutation = useMutation({
+  const selectPath = useMutation({
     mutationFn: async (pathId: string) => {
-      if (active && supabaseSession?.user) {
-        const { error } = await supabase.from('user_paths').insert({
-          user_id: supabaseSession.user.id,
-          path_id: pathId,
-        });
+      if (connected && userId) {
+        const { error } = await supabase.from('user_paths').upsert({ user_id: userId, path_id: pathId, selected_at: new Date().toISOString() });
         if (error) throw error;
       } else {
-        setLocalStorage('stacc_active_path', pathId);
+        writeLS(LS.activePath, pathId);
       }
       return pathId;
     },
-    onSuccess: (pathId) => {
-      queryClient.setQueryData(['activePath', supabaseSession?.user?.id], pathId);
-      queryClient.invalidateQueries({ queryKey: ['completedNodes'] });
-    },
-  });
+    onSuccess: (pathId) => queryClient.setQueryData(['activePath', userId], pathId),
+  }).mutateAsync;
 
-  // B. Complete Node Mutation
-  const completeNodeMutation = useMutation({
-    mutationFn: async ({ nodeId, xpReward }: { nodeId: string; xpReward: number }) => {
-      const currentPathId = activePath.data || 'data-engineering';
-      
-      // Update local storage or DB
-      if (active && supabaseSession?.user) {
-        // Insert into completed_nodes
-        const { error: nodeError } = await supabase.from('completed_nodes').insert({
-          user_id: supabaseSession.user.id,
-          path_id: currentPathId,
-          node_id: nodeId,
-        });
-        if (nodeError) throw nodeError;
-
-        // Update profile XP
-        const currentXp = userProfile.data?.xp || 0;
-        const newXp = currentXp + xpReward;
-        const newRank = calculateRank(newXp);
-        
-        await supabase
-          .from('profiles')
-          .update({ xp: newXp, rank: newRank })
-          .eq('id', supabaseSession.user.id);
+  const startNode = useMutation({
+    mutationFn: async (node: NodeRow) => {
+      if (nodeStatus(node.id) !== 'available') return;
+      if (connected && userId) {
+        const { error } = await supabase.rpc('start_node', { p_node_slug: node.slug });
+        if (error) throw error;
       } else {
-        // Local completed nodes
-        const localCompleted = getLocalStorage<Record<string, string[]>>('stacc_completed_nodes', DEFAULT_COMPLETED_NODES);
-        const pathNodes = localCompleted[currentPathId] || [];
-        if (!pathNodes.includes(nodeId)) {
-          localCompleted[currentPathId] = [...pathNodes, nodeId];
-          setLocalStorage('stacc_completed_nodes', localCompleted);
-        }
-
-        // Local profile XP
-        const profile = userProfile.data || DEFAULT_PROFILE;
-        const newXp = profile.xp + xpReward;
-        const updatedProfile = {
-          ...profile,
-          xp: newXp,
-          rank: calculateRank(newXp),
-        };
-        setLocalStorage('stacc_profile', updatedProfile);
-
-        // Local heatmap
-        const localHeatmap = getLocalStorage<Record<string, number>>('stacc_heatmap', DEFAULT_HEATMAP);
-        const todayStr = new Date().toISOString().split('T')[0];
-        localHeatmap[todayStr] = (localHeatmap[todayStr] || 0) + 3; // add activity points
-        setLocalStorage('stacc_heatmap', localHeatmap);
+        const started = readLS(LS.startedNodes, EMPTY_PROGRESS.startedNodes);
+        if (!started.includes(node.id)) writeLS(LS.startedNodes, [...started, node.id]);
       }
-      return { nodeId, xpReward };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['completedNodes'] });
-      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-      queryClient.invalidateQueries({ queryKey: ['heatmapData'] });
-    },
-  });
+    onSuccess: invalidate,
+  }).mutateAsync;
 
-  // C. Toggle Quest Mutation
-  const toggleQuestMutation = useMutation({
-    mutationFn: async ({ questId, completed }: { questId: string; completed: boolean }) => {
-      const targetQuest = quests.data?.find(q => q.id === questId);
-      if (!targetQuest) return;
-
-      const xpChange = completed ? targetQuest.xp_reward : -targetQuest.xp_reward;
-
-      if (active && supabaseSession?.user) {
-        // Update quest
-        await supabase
-          .from('user_quests')
-          .update({ completed })
-          .eq('id', questId);
-
-        // Update profile XP
-        const currentXp = userProfile.data?.xp || 0;
-        const newXp = Math.max(0, currentXp + xpChange);
-        const newRank = calculateRank(newXp);
-
-        await supabase
-          .from('profiles')
-          .update({ xp: newXp, rank: newRank })
-          .eq('id', supabaseSession.user.id);
-      } else {
-        // Local quests
-        const localQuests = quests.data || DEFAULT_QUESTS;
-        const updatedQuests = localQuests.map(q => q.id === questId ? { ...q, completed } : q);
-        setLocalStorage('stacc_quests', updatedQuests);
-
-        // Local profile
-        const profile = userProfile.data || DEFAULT_PROFILE;
-        const newXp = Math.max(0, profile.xp + xpChange);
-        const updatedProfile = {
-          ...profile,
-          xp: newXp,
-          rank: calculateRank(newXp),
-        };
-        setLocalStorage('stacc_profile', updatedProfile);
-
-        // Local heatmap
-        if (completed) {
-          const localHeatmap = getLocalStorage<Record<string, number>>('stacc_heatmap', DEFAULT_HEATMAP);
-          const todayStr = new Date().toISOString().split('T')[0];
-          localHeatmap[todayStr] = (localHeatmap[todayStr] || 0) + 1;
-          setLocalStorage('stacc_heatmap', localHeatmap);
+  /** Completes a task; returns 'complete' when it was the node's last task. */
+  const completeTask = useMutation({
+    mutationFn: async (task: TaskRow): Promise<'in_progress' | 'complete'> => {
+      if (connected && userId) {
+        const { data: status, error } = await supabase.rpc('complete_task', { p_task: task.id });
+        if (error) throw error;
+        return status as 'in_progress' | 'complete';
+      }
+      const completedTasks = readLS(LS.completedTasks, EMPTY_PROGRESS.completedTasks);
+      if (!completedTasks.includes(task.id)) writeLS(LS.completedTasks, [...completedTasks, task.id]);
+      const updated = readLS(LS.completedTasks, EMPTY_PROGRESS.completedTasks);
+      const siblings = (data?.tasks ?? []).filter((t) => t.node_id === task.node_id);
+      const allDone = siblings.every((t) => updated.includes(t.id));
+      if (allDone) {
+        const completedNodes = readLS(LS.completedNodes, EMPTY_PROGRESS.completedNodes);
+        if (!completedNodes[task.node_id]) {
+          completedNodes[task.node_id] = new Date().toISOString();
+          writeLS(LS.completedNodes, completedNodes);
         }
+        return 'complete';
+      }
+      const started = readLS(LS.startedNodes, EMPTY_PROGRESS.startedNodes);
+      if (!started.includes(task.node_id)) writeLS(LS.startedNodes, [...started, task.node_id]);
+      return 'in_progress';
+    },
+    onSuccess: invalidate,
+  }).mutateAsync;
+
+  const rateResource = useMutation({
+    mutationFn: async ({ resourceId, rating }: { resourceId: string; rating: number }) => {
+      if (connected && userId) {
+        const { error } = await supabase.rpc('rate_resource', { p_resource: resourceId, p_rating: rating });
+        if (error) throw error;
+      } else {
+        const ratings = readLS(LS.ratings, EMPTY_PROGRESS.ratings);
+        writeLS(LS.ratings, { ...ratings, [resourceId]: rating });
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['quests'] });
-      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-      queryClient.invalidateQueries({ queryKey: ['heatmapData'] });
+      invalidate();
+      queryClient.invalidateQueries({ queryKey: ['content'] });
     },
-  });
+  }).mutateAsync;
 
-  // D. Auth Actions
+  // ── Auth ────────────────────────────────────────────────
   const signInWithDiscord = async () => {
-    if (!active) {
-      alert('Supabase is not configured yet. Sign-in is simulated in Local Storage mode!');
-      return;
-    }
-    const { error } = await supabase.auth.signInWithOAuth({
+    if (!connected) return;
+    await supabase.auth.signInWithOAuth({
       provider: 'discord',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
-    if (error) console.error('Error signing in:', error.message);
   };
 
   const signOut = async () => {
-    if (active) {
-      await supabase.auth.signOut();
-    }
-    setSupabaseSession(null);
-    queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+    if (connected) await supabase.auth.signOut();
+    setSession(null);
+    queryClient.invalidateQueries();
   };
 
   return {
-    isSupabaseConnected: active,
-    isAuthenticated: !!supabaseSession,
-    user: userProfile.data || DEFAULT_PROFILE,
-    isLoading: userProfile.isLoading || activePath.isLoading || completedNodes.isLoading || quests.isLoading,
-    activePath: activePath.data || 'data-engineering',
-    completedNodes: completedNodes.data || [],
-    quests: quests.data || [],
-    heatmapData: heatmapData.data || {},
-    selectPath: selectPathMutation.mutate,
-    completeNode: completeNodeMutation.mutateAsync,
-    toggleQuest: toggleQuestMutation.mutate,
+    // mode
+    isSupabaseConnected: connected,
+    isAuthenticated: connected ? !!session : true,
+    isLoading: content.isLoading || progress.isLoading || profile.isLoading,
+    // identity
+    user: profile.data ?? GUEST,
+    isAdmin: (profile.data ?? GUEST).role === 'admin',
+    // content
+    paths: data?.paths ?? [],
+    nodes: data?.nodes ?? [],
+    nodesByPath,
+    resources: data?.resources ?? [],
+    tasks: data?.tasks ?? [],
+    prereqs: data?.prereqs ?? {},
+    // progress
+    progress: prog,
+    activity,
+    streak,
+    nodeStatus,
+    pathUnlocked,
+    pathFullyComplete,
+    activePath: activePathQuery.data ?? null,
+    hasSelectedPath: Boolean(activePathQuery.data),
+    // actions
+    selectPath,
+    startNode,
+    completeTask,
+    rateResource,
     signInWithDiscord,
     signOut,
   };
 }
+
+export type UserData = ReturnType<typeof useUserData>;

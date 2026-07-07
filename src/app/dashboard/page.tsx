@@ -1,193 +1,169 @@
 'use client';
 
-import { useUserData } from '@/hooks/useUserData';
-import { PATHS } from '@/config/roadmapData';
-import ProgressChart from '@/components/ProgressChart';
-import ActivityHeatmap from '@/components/ActivityHeatmap';
-import QuestList from '@/components/QuestList';
+import { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { motion, useReducedMotion } from 'framer-motion';
+import { ArrowRight, Brain, CircleCheck, Flame, Hourglass, Trophy } from 'lucide-react';
+import { useUserData } from '@/hooks/useUserData';
+import ActivityHeatmap from '@/components/progress/ActivityHeatmap';
+import { Button } from '@/components/ui/button';
+import { AppIcon } from '@/components/ui/app-icon';
+import { cn } from '@/lib/utils';
 
 export default function DashboardPage() {
-  const { user, activePath, completedNodes } = useUserData();
-  
-  const pathInfo = PATHS[activePath] || PATHS['data-engineering'];
-  const totalNodes = pathInfo.nodes.length;
-  const completedCount = pathInfo.nodes.filter(n => completedNodes.includes(n.id)).length;
-  const progressPercent = totalNodes > 0 ? Math.round((completedCount / totalNodes) * 100) : 0;
+  const data = useUserData();
+  const router = useRouter();
+  const reduceMotion = useReducedMotion();
+  const { paths, nodes, nodesByPath, progress, activity, streak, activePath, hasSelectedPath, isLoading } = data;
 
-  // Gamified achievements list
-  const achievements = [
-    {
-      id: 'a1',
-      title: 'SQL Starter',
-      description: 'Completed the Foundations node in any learning path.',
-      icon: 'database',
-      unlocked: completedNodes.includes('foundations'),
-      color: 'text-secondary bg-secondary/10 dark:text-secondary-fixed-dim dark:bg-secondary/20',
-    },
-    {
-      id: 'a2',
-      title: 'Pipeline Architect',
-      description: 'Completed the ETL Concepts node in Data Engineering.',
-      icon: 'transform',
-      unlocked: completedNodes.includes('etl'),
-      color: 'text-primary bg-primary/10 dark:text-primary-fixed dark:bg-primary/20',
-    },
-    {
-      id: 'a3',
-      title: 'Quiz Whiz',
-      description: 'Answered an AI Assistant quiz correctly.',
-      icon: 'quiz',
-      unlocked: user.xp > DEFAULT_XP(), // Assume unlocked if they gained bonus XP
-      color: 'text-tertiary bg-tertiary/10 dark:text-tertiary-fixed-dim dark:bg-tertiary/20',
-    },
-    {
-      id: 'a4',
-      title: 'Path Finder',
-      description: 'Explored multiple learning trajectories.',
-      icon: 'explore',
-      unlocked: true, // Guest gets this by default
-      color: 'text-surface-tint bg-surface-tint/10 dark:text-primary-fixed-dim dark:bg-surface-tint/20',
-    },
+  useEffect(() => {
+    if (!isLoading && !hasSelectedPath) router.replace('/paths');
+  }, [hasSelectedPath, isLoading, router]);
+
+  if (!hasSelectedPath) return null;
+
+  const completedCount = Object.keys(progress.completedNodes).length;
+  const overallPct = nodes.length ? Math.round((completedCount / nodes.length) * 100) : 0;
+  const hoursInvested = nodes.filter((n) => progress.completedNodes[n.id]).reduce((sum, n) => sum + n.est_hours, 0);
+  const skillsPracticed = nodes.filter((n) => progress.completedNodes[n.id]).reduce((sum, n) => sum + n.skills.length, 0);
+
+  // Next move on the active path (foundations first)
+  const railNodes = [...(nodesByPath['foundations'] ?? []), ...(activePath && activePath !== 'foundations' ? nodesByPath[activePath] ?? [] : [])];
+  const currentNode = railNodes.find((n) => ['available', 'in_progress'].includes(data.nodeStatus(n.id)));
+  const activePathInfo = paths.find((p) => p.id === activePath);
+
+  const foundationsDone =
+    (nodesByPath['foundations'] ?? []).length > 0 && (nodesByPath['foundations'] ?? []).every((n) => progress.completedNodes[n.id]);
+  const anyPathComplete = paths.some(
+    (p) => p.id !== 'foundations' && (nodesByPath[p.id] ?? []).length > 0 && (nodesByPath[p.id] ?? []).every((n) => progress.completedNodes[n.id]),
+  );
+
+  const milestones = [
+    { id: 'first-module', title: 'First module', description: 'Complete your first module.', icon: 'check_circle', unlocked: completedCount >= 1 },
+    { id: 'foundations', title: 'Foundations complete', description: 'Finish the whole Foundations block.', icon: 'terminal', unlocked: foundationsDone },
+    { id: 'week-streak', title: '7-day streak', description: 'Learn something seven days in a row.', icon: 'calendar_today', unlocked: streak >= 7 },
+    { id: 'path-complete', title: 'Path complete', description: 'Finish a full specialization path.', icon: 'emoji_events', unlocked: anyPathComplete },
+  ];
+  const unlockedCount = milestones.filter((m) => m.unlocked).length;
+
+  const metrics = [
+    { label: 'modules complete', value: `${completedCount}/${nodes.length}`, icon: CircleCheck, tone: 'text-secondary border-secondary/40 bg-secondary/10' },
+    { label: 'current streak', value: `${streak}d`, icon: Flame, tone: 'text-tertiary border-tertiary/40 bg-tertiary/10' },
+    { label: 'hours invested', value: `${hoursInvested}h`, icon: Hourglass, tone: 'text-on-surface-variant border-outline-variant bg-surface-container-low' },
+    { label: 'skills practiced', value: String(skillsPracticed), icon: Brain, tone: 'text-cyan border-cyan/40 bg-cyan/10' },
   ];
 
-  function DEFAULT_XP() {
-    return 2450; // default guest XP
-  }
-
-  const unlockedCount = achievements.filter(a => a.unlocked).length;
-
   return (
-    <div className="space-y-lg py-8">
-      {/* Welcome Header Banner */}
-      <div className="bg-surface-container border border-outline-variant rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm dark:bg-inverse-surface/10 dark:border-outline/25">
+    <div className="space-y-6 py-8 md:py-12">
+      <motion.div
+        initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex flex-col justify-between gap-5 md:flex-row md:items-end"
+      >
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-on-surface dark:text-on-surface">
-            Welcome back, {user.username}!
-          </h1>
-          <p className="font-body-md text-sm text-on-surface-variant dark:text-outline-variant mt-1">
-            You are making exceptional progress. Your current focus is <strong className="text-primary dark:text-primary-fixed">{pathInfo.title}</strong>.
-          </p>
+          <p className="micro-label text-primary-neon">{'// learning progress'}</p>
+          <h1 className="mt-2 font-display text-3xl font-bold tracking-[-0.03em] text-on-surface sm:text-4xl">Your progress, clearly.</h1>
+          <p className="mt-2 text-sm leading-6 text-on-surface-variant">What you have finished, how consistent you are, and what comes next.</p>
         </div>
-        <Link href="/roadmap">
-          <button className="bg-primary text-on-primary font-label-md text-sm py-2.5 px-5 rounded-xl hover:bg-primary/95 hover:shadow-md transition-all flex items-center gap-1.5 dark:bg-primary-container dark:text-on-primary-container dark:hover:bg-primary-container/80">
-            Resume Learning
-            <span className="material-symbols-outlined text-[18px]">play_arrow</span>
-          </button>
-        </Link>
-      </div>
+        <Button asChild>
+          <Link href="/roadmap">{currentNode ? `Continue ${currentNode.name}` : 'Review roadmap'}<ArrowRight /></Link>
+        </Button>
+      </motion.div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-md">
-        {/* Metric 1: XP */}
-        <div className="bg-surface border border-outline-variant rounded-xl p-4 flex items-center gap-4 dark:bg-inverse-surface/5 dark:border-outline/20">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center dark:bg-primary/20 dark:text-primary-fixed">
-            <span className="material-symbols-outlined icon-fill">stars</span>
-          </div>
+      {/* Overview strip */}
+      <section className="overflow-hidden border border-outline-variant bg-surface">
+        <div className="flex flex-col justify-between gap-5 border-b border-outline-variant p-5 sm:flex-row sm:items-center sm:p-6">
           <div>
-            <p className="text-[10px] text-outline uppercase font-code">Total XP</p>
-            <h3 className="font-display text-lg sm:text-xl font-bold text-on-surface dark:text-on-surface">
-              {user.xp.toLocaleString()}
-            </h3>
+            <p className="micro-label text-outline">active path</p>
+            <h2 className="mt-1 font-display text-xl font-bold text-on-surface">{activePathInfo?.title ?? 'Foundations'}</h2>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="micro-label text-outline">overall completion</p>
+              <span className="mt-1 inline-block h-1.5 w-36 bg-surface-container-high">
+                <span className="block h-full bg-cyan transition-all duration-700" style={{ width: `${overallPct}%` }} />
+              </span>
+            </div>
+            <span className="border-l border-outline-variant pl-4 font-display text-2xl font-bold text-cyan">{overallPct}%</span>
           </div>
         </div>
+        <div className="grid grid-cols-2 divide-x divide-y divide-outline-variant lg:grid-cols-4 lg:divide-y-0">
+          {metrics.map((metric) => (
+            <div key={metric.label} className="flex items-center gap-3 p-4 sm:p-5">
+              <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center border', metric.tone)}>
+                <metric.icon className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="micro-label text-outline">{metric.label}</p>
+                <p className="mt-1 font-display text-xl font-bold text-on-surface">{metric.value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
-        {/* Metric 2: Rank */}
-        <div className="bg-surface border border-outline-variant rounded-xl p-4 flex items-center gap-4 dark:bg-inverse-surface/5 dark:border-outline/20">
-          <div className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center dark:bg-secondary/20 dark:text-secondary-fixed-dim">
-            <span className="material-symbols-outlined icon-fill">workspace_premium</span>
-          </div>
-          <div>
-            <p className="text-[10px] text-outline uppercase font-code">Current Rank</p>
-            <h3 className="font-display text-lg sm:text-xl font-bold text-on-surface dark:text-on-surface">
-              {user.rank}
-            </h3>
-          </div>
+      {/* Grid */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ActivityHeatmap activity={activity} />
         </div>
 
-        {/* Metric 3: Path Progress */}
-        <div className="bg-surface border border-outline-variant rounded-xl p-4 flex items-center gap-4 dark:bg-inverse-surface/5 dark:border-outline/20">
-          <div className="w-10 h-10 rounded-lg bg-tertiary-fixed text-tertiary flex items-center justify-center dark:bg-tertiary/20 dark:text-tertiary-fixed-dim">
-            <span className="material-symbols-outlined icon-fill">insights</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] text-outline uppercase font-code">Path Progress</p>
-            <h3 className="font-display text-lg sm:text-xl font-bold text-on-surface dark:text-on-surface truncate">
-              {progressPercent}%
-            </h3>
-          </div>
-        </div>
-
-        {/* Metric 4: Achievements */}
-        <div className="bg-surface border border-outline-variant rounded-xl p-4 flex items-center gap-4 dark:bg-inverse-surface/5 dark:border-outline/20">
-          <div className="w-10 h-10 rounded-lg bg-surface-tint/10 text-surface-tint flex items-center justify-center dark:bg-surface-tint/20 dark:text-primary-fixed-dim">
-            <span className="material-symbols-outlined icon-fill">military_tech</span>
-          </div>
-          <div>
-            <p className="text-[10px] text-outline uppercase font-code">Achievements</p>
-            <h3 className="font-display text-lg sm:text-xl font-bold text-on-surface dark:text-on-surface">
-              {unlockedCount} / {achievements.length}
-            </h3>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg">
-        {/* Left Column (Span 2) */}
-        <div className="lg:col-span-2 space-y-lg">
-          {/* Weekly Performance Chart */}
-          <ProgressChart />
-
-          {/* Study Consistency Heatmap */}
-          <ActivityHeatmap />
-        </div>
-
-        {/* Right Column (Span 1) */}
-        <div className="space-y-lg">
-          {/* Daily Quests */}
-          <QuestList />
-
-          {/* Recent Achievements */}
-          <div className="bg-surface border border-outline-variant rounded-xl p-5 shadow-sm dark:bg-inverse-surface/10 dark:border-outline/25">
-            <h3 className="font-headline-md text-base font-bold text-on-surface dark:text-on-surface flex items-center gap-2 mb-4">
-              <span className="material-symbols-outlined text-tertiary dark:text-tertiary-fixed-dim">emoji_events</span>
-              Badges Earned
-            </h3>
-
-            <div className="space-y-4">
-              {achievements.map((ach) => (
-                <div 
-                  key={ach.id} 
-                  className={`flex items-start gap-3 p-3 border rounded-xl transition-all ${
-                    ach.unlocked 
-                      ? 'bg-surface border-outline-variant dark:bg-inverse-surface/5 dark:border-outline/20' 
-                      : 'bg-surface-container-low border-outline-variant/40 opacity-50 dark:bg-inverse-surface/10 dark:border-outline/10'
-                  }`}
-                >
-                  {/* Badge Icon */}
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                    ach.unlocked ? ach.color : 'bg-outline-variant/20 text-outline dark:bg-outline/20'
-                  }`}>
-                    <span className="material-symbols-outlined text-[20px] icon-fill">
-                      {ach.unlocked ? ach.icon : 'lock'}
-                    </span>
+        <div className="space-y-6">
+          {/* Next move */}
+          <div className="border border-cyan/30 bg-gradient-to-br from-cyan/[0.07] to-transparent p-5">
+            <p className="micro-label text-cyan">{'// next move'}</p>
+            {currentNode ? (
+              <>
+                <div className="mt-3 flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-cyan/40 bg-cyan/10 text-cyan">
+                    <AppIcon name={currentNode.icon} className="h-5 w-5" />
                   </div>
-
-                  {/* Details */}
-                  <div className="flex-1 min-w-0">
-                    <h4 className={`font-label-md text-xs sm:text-sm font-semibold ${
-                      ach.unlocked ? 'text-on-surface dark:text-on-surface' : 'text-on-surface-variant dark:text-outline-variant'
-                    }`}>
-                      {ach.title}
-                    </h4>
-                    <p className="font-body-sm text-[11px] text-on-surface-variant dark:text-outline-variant mt-0.5 leading-relaxed">
-                      {ach.description}
-                    </p>
+                  <div>
+                    <h3 className="font-display text-base font-semibold text-on-surface">{currentNode.name}</h3>
+                    <p className="mt-0.5 font-code text-[10px] lowercase text-on-surface-variant">{`// ${currentNode.subtitle}`}</p>
                   </div>
                 </div>
-              ))}
+                <p className="mt-3 line-clamp-2 text-xs leading-5 text-on-surface-variant">{currentNode.description}</p>
+                <p className="mt-3 flex items-center gap-1 font-code text-[10px] text-on-surface-variant">
+                  <Hourglass className="h-3 w-3" />{currentNode.est_hours}h estimated
+                </p>
+                <Button asChild size="sm" className="mt-4 w-full"><Link href="/roadmap">Open module<ArrowRight /></Link></Button>
+              </>
+            ) : (
+              <p className="mt-3 text-sm leading-6 text-on-surface-variant">Everything on your current rail is complete. Switch paths on the roadmap to keep going.</p>
+            )}
+          </div>
+
+          {/* Milestones */}
+          <div className="border border-outline-variant bg-surface p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="flex items-center gap-2 font-display text-base font-bold text-on-surface">
+                <Trophy className="h-5 w-5 text-tertiary" />
+                Milestones
+              </h3>
+              <span className="font-code text-[10px] font-semibold text-on-surface-variant">{unlockedCount}/{milestones.length}</span>
             </div>
+            <ul className="space-y-2">
+              {milestones.map((m) => (
+                <li
+                  key={m.id}
+                  className={cn(
+                    'flex items-center gap-3 border p-3',
+                    m.unlocked ? 'border-tertiary/30 bg-tertiary/5' : 'border-outline-variant/60 bg-surface-container-low/50 opacity-55',
+                  )}
+                >
+                  <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center border', m.unlocked ? 'border-tertiary/40 bg-tertiary/10 text-tertiary' : 'border-outline-variant text-outline')}>
+                    <AppIcon name={m.icon} className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-on-surface">{m.title}</p>
+                    <p className="mt-0.5 truncate font-code text-[10px] lowercase text-on-surface-variant">{`// ${m.description.toLowerCase()}`}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>

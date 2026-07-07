@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stacc — Roadmap Tracker
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/Next.js-14-111827?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-Strict-1d4ed8?logo=typescript)
+![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth-3ecf8e?logo=supabase)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-0f766e?logo=tailwindcss)
 
-First, run the development server:
+The Roadmap Tracker for [Stacc](https://www.getstacc.org), a data-career community — *"Not learning. Just shipping."*
+A visual skill tree that answers the three questions that stop most learners: **What do I learn next? Am I on track? What does ready look like?**
+
+- 38 modules across Foundations + 5 specialization paths (DE, DA, DS, AI Engineering, MLOps)
+- Curated free resources with community ratings, real tasks, and checkpoint quizzes per module
+- Prerequisite gating — modules unlock in order; AI Engineering and MLOps unlock after DE + DS
+- Progress tracking with streaks, a consistency heatmap, and milestones
+- Admin panel: cohort progress, stuck-member alerts, CSV exports, module analytics
+
+## Product surfaces
+
+| Route | Access | Purpose |
+| --- | --- | --- |
+| `/` | public | Landing with the live roadmap rail |
+| `/tree` | public | Server-rendered full skill tree (SEO) |
+| `/paths` | member | Path selection |
+| `/roadmap` | member | The skill tree + module workspace |
+| `/dashboard` | member | Progress, streak, heatmap, milestones |
+| `/admin` | admin | Cohort health, stuck alerts, exports |
+
+## Stack
+
+Next.js 14 (App Router) · React 18 · TypeScript strict · Tailwind 3 · Radix · Framer Motion · Zustand · TanStack Query · Supabase (Postgres + Discord OAuth).
+
+## Quick start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Without env vars the app runs in **localStorage demo mode** — full product, progress saved on-device.
+For the real backend, copy `.env.example` to `.env.local` and follow [`supabase/README.md`](supabase/README.md)
+(migration, seed, Discord OAuth — ~10 minutes).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Dev server |
+| `npm run check` | Lint + typecheck + production build (run before shipping) |
+| `npm run start` | Serve the production build |
 
-## Learn More
+## Repo map
 
-To learn more about Next.js, take a look at the following resources:
+- `src/config/roadmap.ts` — the content engine (mirrors `supabase/seed.sql`)
+- `src/hooks/useUserData.ts` — all user state; Supabase RPCs or localStorage with identical semantics
+- `supabase/` — schema migration, seed, setup guide; XP-safe RPCs + RLS
+- `docs/EXECUTION_PLAN.md` — phased build log
+- `03_products.md` — full product spec
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Vercel → `app.getstacc.org`. Set the two `NEXT_PUBLIC_SUPABASE_*` env vars in the Vercel project,
+then add the production URL to Supabase Auth's redirect list. The marketing site lives in the
+separate `myekini/STACC` repo.

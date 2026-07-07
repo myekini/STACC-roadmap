@@ -1,9 +1,10 @@
 'use client';
 
-import { useUserData } from '@/hooks/useUserData';
+import { CalendarDays } from 'lucide-react';
 
-export default function ActivityHeatmap() {
-  const { heatmapData } = useUserData();
+/** activity: map of YYYY-MM-DD -> modules completed that day */
+export default function ActivityHeatmap({ activity }: { activity: Record<string, number> }) {
+  const heatmapData = activity;
 
   // Generate the last 365 days (53 weeks)
   const getGridData = () => {
@@ -47,9 +48,9 @@ export default function ActivityHeatmap() {
   // Color mapping based on activity count
   const getCellColor = (count: number) => {
     if (count === 0) return 'bg-surface-container-high dark:bg-inverse-surface/30';
-    if (count <= 2) return 'bg-secondary/20 dark:bg-secondary-fixed-dim/20 text-secondary';
-    if (count <= 4) return 'bg-secondary/40 dark:bg-secondary-fixed-dim/40';
-    if (count <= 7) return 'bg-secondary/70 dark:bg-secondary-fixed-dim/70';
+    if (count === 1) return 'bg-secondary/20 dark:bg-secondary-fixed-dim/20 text-secondary';
+    if (count === 2) return 'bg-secondary/40 dark:bg-secondary-fixed-dim/40';
+    if (count === 3) return 'bg-secondary/70 dark:bg-secondary-fixed-dim/70';
     return 'bg-secondary dark:bg-secondary-fixed-dim'; // Max intensity
   };
 
@@ -85,7 +86,7 @@ export default function ActivityHeatmap() {
     <div className="bg-surface border border-outline-variant rounded-xl p-5 shadow-sm dark:bg-inverse-surface/10 dark:border-outline/25">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-headline-md text-base font-bold text-on-surface dark:text-on-surface flex items-center gap-2">
-          <span className="material-symbols-outlined text-secondary dark:text-secondary-fixed-dim">calendar_today</span>
+          <CalendarDays className="h-5 w-5 text-secondary" />
           Study Consistency
         </h3>
         <span className="text-xs text-on-surface-variant dark:text-outline-variant font-medium">
@@ -125,7 +126,7 @@ export default function ActivityHeatmap() {
                   {week.map((day) => (
                     <div
                       key={day.date}
-                      className={`w-[8px] h-[8px] sm:w-[9px] sm:h-[9px] rounded-[1.5px] transition-all duration-200 cursor-pointer ${getCellColor(
+                      className={`w-[8px] h-[8px] sm:w-[9px] sm:h-[9px] rounded-none transition-all duration-200 cursor-pointer ${getCellColor(
                         day.count
                       )}`}
                       title={`${day.count} activity points on ${new Date(day.date).toLocaleDateString()}`}
@@ -141,11 +142,11 @@ export default function ActivityHeatmap() {
       {/* Legend */}
       <div className="flex justify-end items-center gap-1.5 mt-3 text-[10px] text-on-surface-variant dark:text-outline-variant font-code select-none">
         <span>Less</span>
-        <div className="w-2.5 h-2.5 rounded-[1.5px] bg-surface-container-high dark:bg-inverse-surface/30"></div>
-        <div className="w-2.5 h-2.5 rounded-[1.5px] bg-secondary/20 dark:bg-secondary-fixed-dim/20"></div>
-        <div className="w-2.5 h-2.5 rounded-[1.5px] bg-secondary/40 dark:bg-secondary-fixed-dim/40"></div>
-        <div className="w-2.5 h-2.5 rounded-[1.5px] bg-secondary/70 dark:bg-secondary-fixed-dim/70"></div>
-        <div className="w-2.5 h-2.5 rounded-[1.5px] bg-secondary dark:bg-secondary-fixed-dim"></div>
+        <div className="w-2.5 h-2.5 rounded-none bg-surface-container-high dark:bg-inverse-surface/30"></div>
+        <div className="w-2.5 h-2.5 rounded-none bg-secondary/20 dark:bg-secondary-fixed-dim/20"></div>
+        <div className="w-2.5 h-2.5 rounded-none bg-secondary/40 dark:bg-secondary-fixed-dim/40"></div>
+        <div className="w-2.5 h-2.5 rounded-none bg-secondary/70 dark:bg-secondary-fixed-dim/70"></div>
+        <div className="w-2.5 h-2.5 rounded-none bg-secondary dark:bg-secondary-fixed-dim"></div>
         <span>More</span>
       </div>
     </div>

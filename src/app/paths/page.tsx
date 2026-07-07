@@ -1,126 +1,147 @@
 'use client';
 
-import { useUserData } from '@/hooks/useUserData';
 import { useRouter } from 'next/navigation';
-import { PATHS } from '@/config/roadmapData';
+import { motion, useReducedMotion } from 'framer-motion';
+import { ArrowRight, CheckCircle2, Compass, Hourglass, Lock } from 'lucide-react';
+import { useUserData } from '@/hooks/useUserData';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { AppIcon } from '@/components/ui/app-icon';
+import { cn } from '@/lib/utils';
+
+const PATH_META: Record<string, { outcome: string; level: string; project: string; accent: string }> = {
+  da: { outcome: 'Turn messy data into decisions', level: 'Beginner friendly', project: 'Business insights dashboard', accent: 'border-cyan/40 bg-cyan/10 text-cyan' },
+  de: { outcome: 'Build reliable data systems', level: 'Intermediate', project: 'Production data pipeline', accent: 'border-secondary/40 bg-secondary/10 text-secondary' },
+  ds: { outcome: 'Model, test, and explain predictions', level: 'Intermediate', project: 'Predictive research project', accent: 'border-tertiary/40 bg-tertiary/10 text-tertiary' },
+  'ai-engineering': { outcome: 'Build useful AI products', level: 'Advanced track', project: 'RAG-powered assistant', accent: 'border-primary/40 bg-primary/10 text-primary-neon' },
+  mlops: { outcome: 'Ship and monitor ML systems', level: 'Advanced track', project: 'Automated ML platform', accent: 'border-outline-variant bg-surface-container-high text-on-surface-variant' },
+};
 
 export default function PathSelectionPage() {
-  const { selectPath, activePath } = useUserData();
+  const data = useUserData();
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
+  const { paths, nodesByPath, progress, activePath, hasSelectedPath } = data;
+  const specializations = paths.filter((p) => p.id !== 'foundations');
 
-  const handlePathSelect = (pathId: string) => {
-    selectPath(pathId);
+  const handlePathSelect = async (pathId: string) => {
+    await data.selectPath(pathId);
     router.push('/roadmap');
   };
 
-  // Helper to get color classes based on path ID
-  const getPathCardStyles = (pathId: string, isActive: boolean) => {
-    if (isActive) {
-      return 'bg-surface-container-low border-2 border-primary shadow-[0_0_20px_rgba(0,74,198,0.15)] dark:bg-primary/10 dark:border-primary-fixed';
-    }
-    return 'bg-surface border border-outline-variant hover:border-outline hover:shadow-sm dark:bg-inverse-surface/10 dark:border-outline/30 dark:hover:border-outline-variant';
-  };
-
-  const getPathIconStyles = (pathId: string) => {
-    switch (pathId) {
-      case 'data-analysis':
-        return 'bg-primary-container text-primary dark:bg-primary/20 dark:text-primary-fixed';
-      case 'data-engineering':
-        return 'bg-secondary-container text-secondary dark:bg-secondary/20 dark:text-secondary-fixed-dim';
-      case 'data-science':
-        return 'bg-tertiary-fixed text-tertiary dark:bg-tertiary/20 dark:text-tertiary-fixed-dim';
-      case 'ai-llm':
-        return 'bg-primary-fixed text-surface-tint dark:bg-surface-tint/20 dark:text-primary-fixed-dim';
-      default:
-        return 'bg-surface-container text-on-surface-variant dark:bg-inverse-surface/30 dark:text-outline-variant';
-    }
-  };
-
   return (
-    <div className="py-xl">
-      {/* Title Section */}
-      <div className="mb-12">
-        <h2 className="font-display text-display text-on-surface mb-sm dark:text-on-surface">
-          Select Your Path
-        </h2>
-        <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl dark:text-outline-variant">
-          Choose your trajectory in the data ecosystem. Your learning roadmap will be dynamically tailored to your selected discipline.
+    <div className="py-8 md:py-12">
+      <header className="mx-auto mb-10 max-w-3xl text-center">
+        <span className="micro-label text-cyan">{'// choose your direction'}</span>
+        <h1 className="mt-3 font-display text-3xl font-bold tracking-[-0.03em] text-on-surface sm:text-5xl">
+          What do you want to become good at?
+        </h1>
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-on-surface-variant">
+          Choose by the work you want to do. Every path starts from the same Foundations block, and you can switch
+          later without losing progress.
         </p>
-      </div>
+      </header>
 
-      {/* Path Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
-        {Object.values(PATHS).map((path) => {
-          const isActive = activePath === path.id;
-          const isAnalysis = path.id === 'data-analysis';
+      {!hasSelectedPath && (
+        <section className="mb-8 grid gap-5 border border-cyan/20 bg-cyan/[0.04] p-5 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-6">
+          <div className="flex h-12 w-12 items-center justify-center bg-primary text-white"><Compass className="h-5 w-5" /></div>
+          <div>
+            <p className="font-display text-base font-semibold text-on-surface">Not sure where to begin?</p>
+            <p className="mt-1 text-sm text-on-surface-variant">Data Analysis is the friendliest on-ramp and produces portfolio work fastest.</p>
+          </div>
+          <Button variant="outline" onClick={() => handlePathSelect('da')}>Start with analysis</Button>
+        </section>
+      )}
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        {specializations.map((path, index) => {
+          const isActive = hasSelectedPath && activePath === path.id;
+          const meta = PATH_META[path.id] ?? PATH_META.da;
+          const pathNodes = nodesByPath[path.id] ?? [];
+          const done = pathNodes.filter((n) => progress.completedNodes[n.id]).length;
+          const estHours = pathNodes.reduce((sum, n) => sum + n.est_hours, 0);
+          const locked = !data.pathUnlocked(path.id);
+          const gateTitles = path.requires_paths
+            .map((id) => paths.find((p) => p.id === id)?.title)
+            .filter(Boolean)
+            .join(' + ');
 
           return (
-            <div
+            <motion.article
               key={path.id}
-              className={`rounded-xl p-lg flex flex-col relative group transition-all hover:-translate-y-1 ${getPathCardStyles(
-                path.id,
-                isActive
-              )}`}
+              initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: reduceMotion ? 0 : Math.min(0.2, index * 0.05) }}
+              className={cn(
+                'group relative flex h-full flex-col border bg-surface p-5 transition-all sm:p-6',
+                isActive ? 'border-primary ring-1 ring-primary/15' : 'border-outline-variant',
+                locked ? 'opacity-80' : 'hover:-translate-y-0.5 hover:border-cyan/35 hover:shadow-[0_16px_50px_rgba(0,0,0,0.35)]',
+              )}
             >
-              {/* Highlight badge for Data Analysis (Prerequisite) */}
-              {isAnalysis && (
-                <div className="absolute -top-3 right-lg bg-primary text-on-primary font-label-md text-xs px-2.5 py-1 rounded-full flex items-center shadow-sm dark:bg-primary-container dark:text-on-primary-container">
-                  <span className="material-symbols-outlined text-[14px] mr-1">key</span>{' '}
-                  Prerequisite
+              {isActive && (
+                <Badge variant="success" className="absolute -top-2.5 right-5 gap-1 shadow-sm">
+                  <CheckCircle2 className="h-3 w-3" /> current path
+                </Badge>
+              )}
+              {locked && (
+                <span className="absolute -top-2.5 right-5 inline-flex items-center gap-1 border border-outline-variant bg-navy px-2 py-0.5 font-code text-[10px] font-semibold uppercase tracking-[0.12em] text-outline">
+                  <Lock className="h-3 w-3" /> unlocks after {gateTitles}
+                </span>
+              )}
+
+              <div className="flex items-start gap-4">
+                <div className={cn('flex h-12 w-12 shrink-0 items-center justify-center border', meta.accent)}>
+                  <AppIcon name={path.icon} className="h-6 w-6" />
+                </div>
+                <div>
+                  <h2 className="font-display text-xl font-bold text-on-surface">{path.title}</h2>
+                  <p className="mt-1 font-code text-[11px] lowercase text-cyan">{`// ${meta.outcome.toLowerCase()}`}</p>
+                </div>
+              </div>
+
+              <p className="mt-5 flex-grow text-sm leading-6 text-on-surface-variant">{path.description}</p>
+
+              <dl className="mt-5 grid grid-cols-3 gap-3 border-y border-outline-variant py-4 text-xs">
+                <div>
+                  <dt className="micro-label text-outline">est time</dt>
+                  <dd className="mt-1 flex items-center gap-1 font-code font-semibold text-on-surface"><Hourglass className="h-3 w-3 text-outline" />{estHours}h</dd>
+                </div>
+                <div>
+                  <dt className="micro-label text-outline">level</dt>
+                  <dd className="mt-1 font-semibold text-on-surface">{meta.level}</dd>
+                </div>
+                <div>
+                  <dt className="micro-label text-outline">modules</dt>
+                  <dd className="mt-1 font-code font-semibold text-on-surface">
+                    {done > 0 ? `${done}/${pathNodes.length}` : pathNodes.length}
+                  </dd>
+                </div>
+              </dl>
+
+              {done > 0 && (
+                <div className="mt-4 h-1 w-full bg-surface-container-high">
+                  <div className="h-full bg-cyan transition-all duration-500" style={{ width: `${pathNodes.length ? (done / pathNodes.length) * 100 : 0}%` }} />
                 </div>
               )}
 
-              {/* Path Icon */}
-              <div
-                className={`w-12 h-12 rounded-lg flex items-center justify-center mb-md ${getPathIconStyles(
-                  path.id
-                )}`}
-              >
-                <span className="material-symbols-outlined text-[28px]">
-                  {path.icon}
-                </span>
+              <div className="mt-4 border border-outline-variant/60 bg-surface-container-low p-3">
+                <p className="micro-label text-outline">portfolio outcome</p>
+                <p className="mt-1 text-sm font-medium text-on-surface">{meta.project}</p>
               </div>
 
-              {/* Title & Description */}
-              <h3 className="font-headline-md text-headline-md text-on-surface mb-sm dark:text-on-surface">
-                {path.title}
-              </h3>
-              <p className="font-body-sm text-body-sm text-on-surface-variant mb-md flex-grow dark:text-outline-variant">
-                {path.description}
-              </p>
-
-              {/* Skills/Tags */}
-              <div className="flex flex-wrap gap-xs mb-lg">
-                {path.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className={`font-code text-code bg-surface-dim text-on-surface rounded-md px-sm py-xs border ${
-                      isActive ? 'border-outline-variant' : 'border-transparent'
-                    } dark:bg-inverse-surface/40 dark:text-outline-variant dark:border-outline/20`}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              {/* Action Button */}
-              <button
+              <Button
                 onClick={() => handlePathSelect(path.id)}
-                className={`w-full font-label-md text-label-md py-2 px-4 rounded-lg transition-all flex justify-center items-center gap-1 group-hover:shadow-md ${
-                  isActive
-                    ? 'bg-primary text-on-primary hover:bg-primary/90 dark:bg-primary-container dark:text-on-primary-container dark:hover:bg-primary-container/80'
-                    : 'bg-transparent border border-outline-variant text-on-surface hover:border-primary hover:text-primary dark:border-outline/40 dark:text-on-surface dark:hover:border-primary-fixed dark:hover:text-primary-fixed'
-                }`}
+                variant={isActive ? 'default' : 'outline'}
+                className="mt-5 w-full"
               >
-                {isActive ? 'Current Path' : 'Select Path'}
-                <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-0.5">
-                  arrow_forward
-                </span>
-              </button>
-            </div>
+                {isActive ? 'Open roadmap' : locked ? 'Preview path' : 'Choose this path'}
+                <ArrowRight className="transition-transform group-hover:translate-x-0.5" />
+              </Button>
+            </motion.article>
           );
         })}
       </div>
+
     </div>
   );
 }
