@@ -3,8 +3,9 @@
 The Roadmap Tracker product for Stacc, a data-career community ("Not learning. Just shipping."). AI-integrated visual skill tree with curated resources, tasks, XP, and progress tracking. This is the **app** repo — the marketing site lives in the separate `myekini/STACC` repo (getstacc.org).
 
 - **Product spec:** `03_products.md` (Part 1 = this product; Part 2 "The Ladder" is future, do not build).
-- **Execution plan:** `docs/EXECUTION_PLAN.md` — phased build with owners; keep it updated as phases ship.
 - **Team agents:** `.claude/agents/` — design-engineer, data-platform, ai-engineer, qa specialists.
+- All five build phases (design DNA → data platform → member experience → admin → launch) shipped 2026-07-07; history in git log.
+- **Founder decisions in force:** no AI features in the product (removed, don't reintroduce unasked); gamification stays minimal — completion %, streak, heatmap, plain milestones; XP/rank exist in the DB schema but are never surfaced in UI.
 
 ## Stack & commands
 

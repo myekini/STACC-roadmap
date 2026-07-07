@@ -35,13 +35,15 @@ export default function TopBar() {
         )}
 
         {/* User Profile Avatar */}
-        <div className="hidden sm:block h-8 w-8 rounded-none bg-surface-container-high border border-outline-variant overflow-hidden shrink-0 dark:border-outline/50">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={user.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80'}
-            alt={user.username}
-            className="w-full h-full object-cover"
-          />
+        <div className="hidden sm:flex h-8 w-8 rounded-none bg-surface-container-high border border-outline-variant overflow-hidden shrink-0 items-center justify-center">
+          {user.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.avatar_url} alt={user.username} className="w-full h-full object-cover" />
+          ) : (
+            <span className="font-code text-[10px] font-bold uppercase text-on-surface-variant">
+              {user.username.slice(0, 2)}
+            </span>
+          )}
         </div>
       </div>
     </header>
