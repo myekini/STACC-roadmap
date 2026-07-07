@@ -11,8 +11,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { isLoading } = useUserData();
   const isRoadmap = pathname === '/roadmap';
 
-  // Landing and the public SEO tree render without the app shell
-  if (pathname === '/' || pathname === '/tree') {
+  // Landing, the public SEO tree, and admin (its own dedicated shell) render without the member app shell
+  if (pathname === '/' || pathname === '/tree' || pathname === '/admin') {
     return <>{children}</>;
   }
 
