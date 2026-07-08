@@ -28,7 +28,13 @@ export default function OgImage() {
       >
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{ width: 44, height: 44, background: '#d9622e', display: 'flex' }} />
+            <div style={{ width: 44, height: 44, background: '#0A1628', borderRadius: 8, display: 'flex' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5, margin: 'auto', width: 28 }}>
+                <div style={{ display: 'flex', width: 20, height: 5, background: '#FFFFFF', borderRadius: 1 }} />
+                <div style={{ display: 'flex', width: 28, height: 5, background: '#FF6B35', borderRadius: 1 }} />
+                <div style={{ display: 'flex', width: 20, height: 5, background: '#FFFFFF', borderRadius: 1 }} />
+              </div>
+            </div>
             <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: 6 }}>STACC</div>
             <div style={{ fontSize: 20, color: '#8395ac', marginLeft: 8 }}>{'// roadmap'}</div>
           </div>

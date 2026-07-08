@@ -3,8 +3,9 @@
 import { useUserData } from '@/hooks/useUserData';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowRight, Route } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { StaccMark } from '@/components/brand/StaccMark';
 
 export default function TopBar() {
   const { user, hasSelectedPath } = useUserData();
@@ -20,7 +21,7 @@ export default function TopBar() {
     <header className="bg-surface-bright/90 backdrop-blur-xl border-b border-outline-variant fixed top-0 right-0 left-0 md:left-64 z-30 flex items-center justify-between px-4 md:px-6 h-16 dark:bg-background/90 dark:border-outline/30">
       <div className="flex min-w-0 items-center gap-3">
         <Link href="/roadmap" className="md:hidden flex items-center gap-2 font-code text-base font-bold uppercase tracking-[0.14em] text-on-surface">
-          <Route className="h-5 w-5 text-primary" />
+          <StaccMark className="h-6 w-6" />
           <span>Stacc</span>
         </Link>
         <div className="hidden md:block min-w-0">

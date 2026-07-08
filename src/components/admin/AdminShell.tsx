@@ -8,6 +8,7 @@
  */
 import Link from 'next/link';
 import { AlertTriangle, LayoutGrid, LogOut, Route, ShieldCheck, Users } from 'lucide-react';
+import { StaccMark } from '@/components/brand/StaccMark';
 import {
   Sidebar,
   SidebarContent,
@@ -51,7 +52,7 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
       <Sidebar collapsible="offcanvas" className="border-r border-outline-variant">
         <SidebarHeader className="h-14 justify-center border-b border-outline-variant px-4">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-primary text-white"><Route className="h-3.5 w-3.5" /></span>
+            <StaccMark className="h-7 w-7 shrink-0" />
             <span className="font-code text-sm font-bold uppercase tracking-[0.14em] text-on-surface">Stacc</span>
             <span className="font-code text-[10px] uppercase tracking-[0.1em] text-outline">/ admin</span>
           </div>

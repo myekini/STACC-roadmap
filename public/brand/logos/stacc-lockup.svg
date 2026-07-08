@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 140" fill="none">
+  <g transform="translate(80,0)">
+    <rect x="0" y="0" width="48" height="12" rx="4" fill="#0A1628"></rect>
+    <rect x="0" y="22" width="80" height="12" rx="4" fill="#FF6B35"></rect>
+    <rect x="0" y="44" width="48" height="12" rx="4" fill="#0A1628"></rect>
+  </g>
+  <text x="120" y="118" text-anchor="middle" font-family="Inter, -apple-system, sans-serif" font-weight="700" font-size="36" letter-spacing="1.8" fill="#0A1628">STACC</text>
+</svg>

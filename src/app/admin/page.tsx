@@ -16,6 +16,7 @@ import { MembersTable } from '@/components/admin/MembersTable';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { StatusMarker } from '@/components/roadmap/bits';
+import { StaccMark } from '@/components/brand/StaccMark';
 import { cn } from '@/lib/utils';
 
 function AdminLogin({ signIn }: { signIn: (email: string, password: string) => Promise<string | null> }) {
@@ -34,7 +35,8 @@ function AdminLogin({ signIn }: { signIn: (email: string, password: string) => P
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <form onSubmit={submit} className="w-full max-w-sm border border-outline-variant bg-surface/80 p-7">
-        <p className="micro-label text-primary-neon">{'// restricted'}</p>
+        <StaccMark className="h-9 w-9" />
+        <p className="micro-label mt-4 text-primary-neon">{'// restricted'}</p>
         <h1 className="mt-2 font-display text-2xl font-bold text-on-surface">Admin sign-in</h1>
         <label className="mt-6 block">
           <span className="micro-label text-outline">email</span>

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useUserData } from '@/hooks/useUserData';
 import { ChartNoAxesCombined, Compass, LogOut, Route, ShieldCheck } from 'lucide-react';
+import { StaccMark } from '@/components/brand/StaccMark';
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -27,9 +28,7 @@ export default function Sidebar() {
     <aside className="fixed left-0 top-0 z-40 hidden h-full w-64 flex-col border-r border-cyan/15 bg-navy py-6 text-on-surface md:flex">
       <div className="px-lg mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-none bg-primary text-white shadow-sm">
-            <Route className="h-5 w-5" />
-          </div>
+          <StaccMark className="h-10 w-10 shrink-0" />
           <div>
             <h2 className="font-code text-[19px] font-bold uppercase tracking-[0.14em] text-on-surface">Stacc</h2>
             <p className="font-code text-[11px] text-on-surface-variant mt-0.5 lowercase">

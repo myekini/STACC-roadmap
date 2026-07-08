@@ -4,10 +4,11 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, LogIn, Route } from 'lucide-react';
+import { ArrowRight, LogIn } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 import HeroRail from '@/components/landing/HeroRail';
 import { Button } from '@/components/ui/button';
+import { StaccMark } from '@/components/brand/StaccMark';
 
 export default function LandingPage() {
   const { isAuthenticated, signInWithDiscord, isSupabaseConnected, hasSelectedPath } = useUserData();
@@ -39,9 +40,7 @@ export default function LandingPage() {
           transition={{ duration: 0.5 }}
         >
           <div className="mb-10 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-none bg-primary text-white shadow-sm">
-              <Route className="h-5 w-5" />
-            </div>
+            <StaccMark className="h-10 w-10" />
             <span className="font-code text-xl font-bold uppercase tracking-[0.14em]">Stacc</span>
           </div>
 

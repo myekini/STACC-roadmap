@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, Lock, Route } from 'lucide-react';
+import { ArrowRight, Lock } from 'lucide-react';
 import { NODES, PATHS } from '@/config/roadmap';
 import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
+import { StaccMark } from '@/components/brand/StaccMark';
 
 /**
  * Public, server-rendered skill tree (spec §1.9): structure only — module
@@ -27,7 +28,7 @@ export default function PublicTreePage() {
       <div className="relative mx-auto max-w-4xl px-5 py-14 sm:px-8">
         <header className="mb-12">
           <Link href="/" className="mb-10 inline-flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center bg-primary text-white"><Route className="h-4.5 w-4.5" /></span>
+            <StaccMark className="h-9 w-9" />
             <span className="font-code text-lg font-bold uppercase tracking-[0.14em] text-on-surface">Stacc</span>
           </Link>
           <p className="micro-label text-cyan">{'// the full skill tree · public'}</p>
