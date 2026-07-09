@@ -100,6 +100,24 @@ export interface TaskCompletionRow {
   user_id: string;
   task_id: string;
   completed_at: string;
+  evidence_url: string | null;
+}
+
+/** Shape returned by the get_public_profile RPC (migration 0002) */
+export interface PublicProfilePayload {
+  profile: { username: string; avatar_url: string; joined_at: string };
+  shipped: {
+    slug: string;
+    name: string;
+    subtitle: string;
+    icon: string;
+    path_id: string;
+    path_title: string;
+    est_hours: number;
+    completed_at: string | null;
+    evidence: { description: string; url: string }[];
+  }[];
+  activity: Record<string, number>;
 }
 
 export interface ResourceRatingRow {
@@ -126,7 +144,8 @@ export interface Database {
     };
     Functions: {
       start_node: { Args: { p_node_slug: string }; Returns: undefined };
-      complete_task: { Args: { p_task: string }; Returns: StoredNodeStatus };
+      complete_task: { Args: { p_task: string; p_evidence?: string | null }; Returns: StoredNodeStatus };
+      get_public_profile: { Args: { p_handle: string }; Returns: PublicProfilePayload | null };
       rate_resource: { Args: { p_resource: string; p_rating: number }; Returns: undefined };
       node_is_unlocked: { Args: { p_user: string; p_node: string }; Returns: boolean };
       is_admin: { Args: Record<string, never>; Returns: boolean };

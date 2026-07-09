@@ -36,6 +36,7 @@ const LS = {
   startedNodes: 'stacc.v2.startedNodes', // string[]
   ratings: 'stacc.v2.ratings', // Record<resourceId, rating>
   profile: 'stacc.v2.profile', // { username }
+  evidence: 'stacc.v2.evidence', // Record<taskId, url>
 };
 
 function readLS<T>(key: string, fallback: T): T {
@@ -68,6 +69,7 @@ export interface ProgressState {
   startedNodes: string[];
   completedTasks: string[];
   ratings: Record<string, number>; // resourceId -> my rating
+  evidence: Record<string, string>; // taskId -> shipped evidence url
 }
 
 const EMPTY_PROGRESS: ProgressState = {
@@ -75,6 +77,7 @@ const EMPTY_PROGRESS: ProgressState = {
   startedNodes: [],
   completedTasks: [],
   ratings: {},
+  evidence: {},
 };
 
 // Demo mode grants admin so the founder can preview the admin panel offline.
@@ -177,7 +180,7 @@ export function useUserData() {
       if (connected && userId) {
         const [prog, comps, ratings] = await Promise.all([
           supabase.from('user_progress').select('node_id,status,completed_at').eq('user_id', userId),
-          supabase.from('task_completions').select('task_id').eq('user_id', userId),
+          supabase.from('task_completions').select('task_id,evidence_url').eq('user_id', userId),
           supabase.from('resource_ratings').select('resource_id,rating').eq('user_id', userId),
         ]);
         if (prog.error) throw prog.error;
@@ -194,6 +197,9 @@ export function useUserData() {
           startedNodes,
           completedTasks: comps.data.map((c) => c.task_id as string),
           ratings: Object.fromEntries(ratings.data.map((r) => [r.resource_id, r.rating])),
+          evidence: Object.fromEntries(
+            comps.data.filter((c) => c.evidence_url).map((c) => [c.task_id, c.evidence_url as string]),
+          ),
         };
       }
       if (!connected) {
@@ -202,6 +208,7 @@ export function useUserData() {
           startedNodes: readLS(LS.startedNodes, EMPTY_PROGRESS.startedNodes),
           completedTasks: readLS(LS.completedTasks, EMPTY_PROGRESS.completedTasks),
           ratings: readLS(LS.ratings, EMPTY_PROGRESS.ratings),
+          evidence: readLS(LS.evidence, EMPTY_PROGRESS.evidence),
         };
       }
       return EMPTY_PROGRESS; // connected but logged out
@@ -299,13 +306,22 @@ export function useUserData() {
     onSuccess: invalidate,
   }).mutateAsync;
 
-  /** Completes a task; returns 'complete' when it was the node's last task. */
+  /**
+   * Completes a task; returns 'complete' when it was the node's last task.
+   * Build tasks must ship evidence: a public URL (repo / live app / writeup).
+   */
   const completeTask = useMutation({
-    mutationFn: async (task: TaskRow): Promise<'in_progress' | 'complete'> => {
+    mutationFn: async ({ task, evidenceUrl }: { task: TaskRow; evidenceUrl?: string }): Promise<'in_progress' | 'complete'> => {
+      if (task.type === 'build' && !/^https?:\/\//i.test(evidenceUrl ?? '')) {
+        throw new Error('Build tasks require an evidence URL (https://…)');
+      }
       if (connected && userId) {
-        const { data: status, error } = await supabase.rpc('complete_task', { p_task: task.id });
+        const { data: status, error } = await supabase.rpc('complete_task', { p_task: task.id, p_evidence: evidenceUrl ?? null });
         if (error) throw error;
         return status as 'in_progress' | 'complete';
+      }
+      if (evidenceUrl) {
+        writeLS(LS.evidence, { ...readLS(LS.evidence, EMPTY_PROGRESS.evidence), [task.id]: evidenceUrl });
       }
       const completedTasks = readLS(LS.completedTasks, EMPTY_PROGRESS.completedTasks);
       if (!completedTasks.includes(task.id)) writeLS(LS.completedTasks, [...completedTasks, task.id]);

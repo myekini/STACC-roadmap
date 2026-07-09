@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowUpRight, Check, CircleHelp, Hourglass, LogIn, Play } from 'lucide-react';
+import { ArrowUpRight, Check, CircleHelp, Hourglass, LogIn, Play, Rocket } from 'lucide-react';
 import type { QuizPayload, TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
 import { useUiStore } from '@/store/useUiStore';
@@ -72,22 +72,66 @@ function QuizBlock({ quiz, onPass, disabled }: { quiz: QuizPayload; onPass: () =
   );
 }
 
-function TaskRowItem({ task, data, canWork, onComplete }: { task: TaskRow; data: UserData; canWork: boolean; onComplete: (task: TaskRow) => void }) {
+/** Build tasks ship evidence: a public URL that becomes part of the member's portfolio. */
+function ShipForm({ onShip, disabled }: { onShip: (url: string) => Promise<void>; disabled: boolean }) {
+  const [url, setUrl] = useState('');
+  const [busy, setBusy] = useState(false);
+  const valid = /^https?:\/\/\S+\.\S+/i.test(url.trim());
+
+  return (
+    <div className="mt-1 border border-primary/25 bg-primary/[0.04] p-3">
+      <p className="flex items-center gap-2 font-code text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-neon">
+        <Rocket className="h-3.5 w-3.5" /> ship it
+      </p>
+      <p className="mt-1 text-[11px] leading-5 text-on-surface-variant">
+        Paste a public link to what you built — GitHub repo, live app, or writeup. It goes on your public profile.
+      </p>
+      <div className="mt-2 flex gap-2">
+        <input
+          type="url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          disabled={disabled || busy}
+          placeholder="https://github.com/you/project"
+          className="h-9 min-w-0 flex-1 border border-outline-variant bg-surface px-2.5 font-code text-[11px] text-on-surface placeholder:text-outline focus:border-cyan/50 focus:outline-none"
+        />
+        <Button
+          size="sm"
+          disabled={disabled || busy || !valid}
+          onClick={async () => {
+            setBusy(true);
+            try {
+              await onShip(url.trim());
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {busy ? 'shipping…' : 'ship ▸'}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function TaskRowItem({ task, data, canWork, onComplete }: { task: TaskRow; data: UserData; canWork: boolean; onComplete: (task: TaskRow, evidenceUrl?: string) => Promise<void> }) {
   const done = data.progress.completedTasks.includes(task.id);
   const [quizOpen, setQuizOpen] = useState(false);
   const isQuiz = task.type === 'quiz' && task.quiz;
+  const isBuild = task.type === 'build';
+  const evidence = data.progress.evidence[task.id];
 
   return (
     <li className={cn('border border-outline-variant/70 bg-surface/60 transition-colors', done && 'border-secondary/30')}>
       <div className="flex items-center gap-3 p-3">
         <button
           type="button"
-          disabled={done || !canWork || Boolean(isQuiz)}
-          onClick={() => (isQuiz ? undefined : onComplete(task))}
+          disabled={done || !canWork || Boolean(isQuiz) || isBuild}
+          onClick={() => (isQuiz || isBuild ? undefined : onComplete(task))}
           aria-label={done ? 'Task complete' : `Mark "${task.description}" complete`}
           className={cn(
             'flex h-6 w-6 shrink-0 items-center justify-center border transition-colors',
-            done ? 'border-secondary bg-secondary text-on-secondary' : canWork && !isQuiz ? 'border-outline hover:border-cyan hover:bg-cyan/10' : 'border-outline-variant',
+            done ? 'border-secondary bg-secondary text-on-secondary' : canWork && !isQuiz && !isBuild ? 'border-outline hover:border-cyan hover:bg-cyan/10' : 'border-outline-variant',
           )}
         >
           {done && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
@@ -105,6 +149,25 @@ function TaskRowItem({ task, data, canWork, onComplete }: { task: TaskRow; data:
       {isQuiz && quizOpen && !done && task.quiz && (
         <div className="px-3 pb-3">
           <QuizBlock quiz={task.quiz} disabled={!canWork} onPass={() => onComplete(task)} />
+        </div>
+      )}
+      {isBuild && !done && canWork && (
+        <div className="px-3 pb-3">
+          <ShipForm disabled={!canWork} onShip={(url) => onComplete(task, url)} />
+        </div>
+      )}
+      {isBuild && done && evidence && (
+        <div className="px-3 pb-3">
+          <a
+            href={evidence}
+            target="_blank"
+            rel="noreferrer"
+            className="group inline-flex max-w-full items-center gap-1.5 border border-secondary/30 bg-secondary/[0.06] px-2 py-1 font-code text-[10px] text-secondary"
+          >
+            <Rocket className="h-3 w-3 shrink-0" />
+            <span className="truncate">{evidence.replace(/^https?:\/\//i, '')}</span>
+            <ArrowUpRight className="h-3 w-3 shrink-0 opacity-60 group-hover:opacity-100" />
+          </a>
         </div>
       )}
     </li>
@@ -127,9 +190,9 @@ export default function NodeSheet({ data }: { data: UserData }) {
 
   useEffect(() => setJustCompleted(false), [activeNodeId]);
 
-  const handleComplete = async (task: TaskRow) => {
+  const handleComplete = async (task: TaskRow, evidenceUrl?: string) => {
     if (node && status === 'available') await data.startNode(node);
-    const result = await data.completeTask(task);
+    const result = await data.completeTask({ task, evidenceUrl });
     if (result === 'complete') {
       setJustCompleted(true);
       if (!reduceMotion) {

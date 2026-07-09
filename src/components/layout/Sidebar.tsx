@@ -4,18 +4,20 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useUserData } from '@/hooks/useUserData';
-import { ChartNoAxesCombined, Compass, LogOut, Route, ShieldCheck } from 'lucide-react';
+import { ChartNoAxesCombined, Compass, LogOut, Route, ShieldCheck, UserRound } from 'lucide-react';
 import { StaccMark } from '@/components/brand/StaccMark';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut, hasSelectedPath, isAdmin } = useUserData();
+  const { signOut, hasSelectedPath, isAdmin, user } = useUserData();
 
   const navItems = [
     { name: 'Roadmap', href: '/roadmap', icon: Route },
     { name: 'Progress', href: '/dashboard', icon: ChartNoAxesCombined },
     { name: 'Explore paths', href: '/paths', icon: Compass },
+    // The public portfolio: shipped modules + evidence links, shareable with anyone.
+    { name: 'Public profile', href: `/u/${encodeURIComponent(user.username)}`, icon: UserRound },
     ...(isAdmin ? [{ name: 'Admin', href: '/admin', icon: ShieldCheck }] : []),
   ];
 
