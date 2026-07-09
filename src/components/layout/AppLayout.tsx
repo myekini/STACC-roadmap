@@ -5,10 +5,13 @@ import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import BottomBar from './BottomBar';
 import { useUserData } from '@/hooks/useUserData';
+import { useUiStore } from '@/store/useUiStore';
+import { cn } from '@/lib/utils';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isLoading } = useUserData();
+  const { sidebarCollapsed } = useUiStore();
   const isRoadmap = pathname === '/roadmap';
 
   // Landing, the public SEO tree, public portfolios, and admin (its own dedicated shell) render without the member app shell
@@ -29,8 +32,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background text-on-background font-body-md flex flex-col md:flex-row overflow-x-hidden">
       <Sidebar />
 
-      {/* Main Container */}
-      <div className="flex-1 flex flex-col md:pl-64 min-h-screen">
+      {/* Main Container — left offset mirrors Sidebar's width (src/lib/layout.ts) */}
+      <div
+        className={cn(
+          'flex-1 flex flex-col min-h-screen transition-[padding-left] duration-200',
+          sidebarCollapsed ? 'md:pl-[76px]' : 'md:pl-64',
+        )}
+      >
         <TopBar />
 
         <main className={`flex-1 pt-16 pb-24 md:pb-lg w-full transition-all ${

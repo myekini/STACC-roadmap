@@ -6,10 +6,13 @@ import { usePathname } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StaccMark } from '@/components/brand/StaccMark';
+import { useUiStore } from '@/store/useUiStore';
+import { cn } from '@/lib/utils';
 
 export default function TopBar() {
   const { user, hasSelectedPath } = useUserData();
   const pathname = usePathname();
+  const { sidebarCollapsed } = useUiStore();
 
   const pageTitle = pathname === '/dashboard'
     ? 'Progress'
@@ -18,16 +21,19 @@ export default function TopBar() {
       : 'Explore paths';
 
   return (
-    <header className="bg-surface-bright/90 backdrop-blur-xl border-b border-outline-variant fixed top-0 right-0 left-0 md:left-64 z-30 flex items-center justify-between px-4 md:px-6 h-16 dark:bg-background/90 dark:border-outline/30">
+    <header
+      className={cn(
+        'fixed top-0 right-0 left-0 z-30 flex h-16 items-center justify-between border-b border-cyan/15 bg-navy/90 px-4 backdrop-blur-xl transition-[left] duration-200 md:px-6',
+        sidebarCollapsed ? 'md:left-[76px]' : 'md:left-64',
+      )}
+    >
       <div className="flex min-w-0 items-center gap-3">
-        <Link href="/roadmap" className="md:hidden flex items-center gap-2 font-code text-base font-bold uppercase tracking-[0.14em] text-on-surface">
+        {/* On desktop the Sidebar owns branding; only the mobile bar (no sidebar) shows the logo. */}
+        <Link href="/roadmap" className="flex items-center gap-2 font-code text-base font-bold uppercase tracking-[0.14em] text-on-surface md:hidden">
           <StaccMark className="h-6 w-6" />
           <span>Stacc</span>
         </Link>
-        <div className="hidden md:block min-w-0">
-          <p className="micro-label text-outline">Workspace</p>
-          <p className="truncate font-headline-md text-base font-semibold text-on-surface">{pageTitle}</p>
-        </div>
+        <p className="hidden truncate font-headline-md text-base font-semibold text-on-surface md:block">{pageTitle}</p>
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">

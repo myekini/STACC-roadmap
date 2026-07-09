@@ -14,7 +14,7 @@ export default function BottomBar() {
   ];
 
   return (
-    <nav className="bg-surface-container-lowest/95 backdrop-blur-xl border-t border-outline-variant shadow-lg fixed bottom-0 left-0 w-full z-40 flex justify-around items-center h-16 pb-safe md:hidden dark:bg-background/95 dark:border-outline/30">
+    <nav className="bg-navy/95 backdrop-blur-xl border-t border-cyan/15 shadow-lg fixed bottom-0 left-0 w-full z-40 flex justify-around items-center h-16 pb-safe md:hidden">
       {items.map((item) => {
         const isActive = pathname === item.href;
         const Icon = item.icon;
@@ -24,8 +24,8 @@ export default function BottomBar() {
             href={item.href}
             className={`min-h-12 min-w-[88px] flex flex-col items-center justify-center px-4 py-1 rounded-xl transition-all ${
               isActive
-                ? 'bg-primary-container text-on-primary-container scale-95 font-bold dark:bg-primary/20 dark:text-primary-fixed'
-                : 'text-on-surface-variant hover:bg-surface-container dark:text-outline-variant'
+                ? 'bg-cyan/[0.1] text-cyan scale-95 font-bold'
+                : 'text-on-surface-variant hover:bg-surface-container-low'
             }`}
           >
             <Icon className="h-5 w-5" aria-hidden="true" />

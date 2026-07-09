@@ -33,11 +33,15 @@ import { StatusMarker } from './bits';
 import { cn } from '@/lib/utils';
 
 // Token hexes for SVG edge strokes (Tailwind config values; SVG can't use classes).
+// "todo" edges use `outline` (lighter than outlineVariant) at partial alpha —
+// full outlineVariant reads as near-invisible hairlines against the navy canvas.
 const C = {
   cyan: '#00d9ff',
   cyanDim: 'rgba(0, 217, 255, 0.55)',
   outlineVariant: '#2a3547',
   outline: '#526174',
+  edgeTodo: 'rgba(131, 149, 172, 0.4)',
+  edgeTodoLocked: 'rgba(82, 97, 116, 0.35)',
 };
 
 // ── Layout constants (canvas units) ─────────────────────────
@@ -77,7 +81,7 @@ function ModuleNode({ data }: NodeProps<Node<ModuleData>>) {
         className={cn(
           'group relative block w-full overflow-hidden border bg-surface/90 p-4 text-left transition-all',
           locked
-            ? 'border-outline-variant/60 opacity-55'
+            ? 'border-outline-variant opacity-70'
             : 'border-outline-variant hover:-translate-y-0.5 hover:border-cyan/40 hover:shadow-[0_14px_40px_rgba(0,0,0,0.4)]',
           status === 'complete' && 'border-secondary/35',
           isCurrent && 'node-active border-cyan/60 shadow-[0_0_40px_rgba(0,217,255,0.07)]',
@@ -149,7 +153,7 @@ function FoundationNode({ data }: NodeProps<Node<FoundationData>>) {
         className={cn(
           'flex w-full items-center gap-3 border bg-surface/90 p-3 text-left transition-all',
           locked
-            ? 'border-outline-variant/60 opacity-55'
+            ? 'border-outline-variant opacity-70'
             : 'border-outline-variant hover:-translate-y-0.5 hover:border-cyan/40',
           status === 'complete' && 'border-secondary/35',
           isCurrent && 'node-active border-cyan/60',
@@ -180,7 +184,7 @@ function ChipNode({ data }: NodeProps<Node<ChipData>>) {
         status === 'complete'
           ? 'border-secondary/30 text-on-surface-variant'
           : status === 'locked'
-            ? 'border-outline-variant/50 text-outline opacity-60'
+            ? 'border-outline-variant/70 text-outline opacity-75'
             : 'border-outline-variant text-on-surface-variant',
       )}
     >
@@ -226,16 +230,15 @@ const nodeTypes = {
 };
 
 // ── Edge styling ─────────────────────────────────────────────
-const edgeDone = { stroke: C.cyan, strokeWidth: 1.5, filter: 'drop-shadow(0 0 3px rgba(0,217,255,0.5))' };
-const edgeTodo = { stroke: C.outlineVariant, strokeWidth: 1.5, strokeDasharray: '4 4' };
-const edgeNext = { stroke: C.cyanDim, strokeWidth: 1.5, strokeDasharray: '4 4' };
+const edgeDone = { stroke: C.cyan, strokeWidth: 2, filter: 'drop-shadow(0 0 3px rgba(0,217,255,0.5))' };
+const edgeTodo = { stroke: C.edgeTodo, strokeWidth: 1.75, strokeDasharray: '4 4' };
+const edgeNext = { stroke: C.cyanDim, strokeWidth: 1.75, strokeDasharray: '4 4' };
 
 function chipEdgeStyle(status: NodeStatus) {
   return {
-    stroke: status === 'complete' ? C.cyanDim : status === 'locked' ? C.outlineVariant : C.outline,
-    strokeWidth: 1.2,
+    stroke: status === 'complete' ? C.cyanDim : status === 'locked' ? C.edgeTodoLocked : C.edgeTodo,
+    strokeWidth: 1.3,
     strokeDasharray: '2 5',
-    opacity: status === 'locked' ? 0.6 : 1,
   };
 }
 
@@ -275,7 +278,9 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
   const path = data.paths.find((p) => p.id === pathId);
   const statusOf = (n: NodeRow) => data.nodeStatus(n.id);
   const current = [...foundations, ...pathNodes].find((n) => ['available', 'in_progress'].includes(statusOf(n)));
-  const currentId = current?.id ?? null;
+  // Nodes the initial fitView should frame: current + its immediate neighbors,
+  // so the opening view is zoomed in enough to actually read (not the whole tree).
+  let focusIds: string[] = [];
   const taskCount = (nodeId: string) => {
     const tasks = data.tasks.filter((t) => t.node_id === nodeId);
     return { total: tasks.length, done: tasks.filter((t) => data.progress.completedTasks.includes(t.id)).length };
@@ -294,6 +299,9 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
       data: { node: n, status: statusOf(n), isCurrent: current?.id === n.id },
       draggable: false,
     });
+    if (current?.id === n.id) {
+      focusIds = [n.id, foundations[i - 1]?.id, foundations[i + 1]?.id].filter((x): x is string => Boolean(x));
+    }
   });
 
   const foundRows = Math.ceil(foundations.length / 2);
@@ -313,7 +321,10 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
     });
   }
 
-  if (pathNodes.length === 0 || !path) return { nodes, edges, currentId };
+  if (pathNodes.length === 0 || !path) {
+    if (focusIds.length === 0) focusIds = foundations.slice(-2).map((n) => n.id);
+    return { nodes, edges, focusIds };
+  }
 
   // Section 01 — the specialization trunk.
   const trunkLabelY = junctionY + 70;
@@ -331,6 +342,9 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
       data: { node: n, status, done, total, isCurrent: current?.id === n.id, index: i + 1 },
       draggable: false,
     });
+    if (current?.id === n.id) {
+      focusIds = ['junction', n.id, pathNodes[i - 1]?.id, pathNodes[i + 1]?.id].filter((x): x is string => Boolean(x));
+    }
 
     // Skill chips fan out on alternating sides (Whimsical-style curved satellites).
     const side: 'l' | 'r' = i % 2 === 0 ? 'r' : 'l';
@@ -388,23 +402,27 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
     }
   }
 
-  return { nodes, edges, currentId };
+  if (focusIds.length === 0) focusIds = [...foundations, ...pathNodes].slice(-2).map((n) => n.id);
+  return { nodes, edges, focusIds };
 }
 
 // ── Canvas ───────────────────────────────────────────────────
 function Canvas({ data, pathId }: { data: UserData; pathId: string }) {
   const reduceMotion = useReducedMotion() ?? false;
-  const { nodes, edges, currentId } = useMemo(() => buildGraph(data, pathId, reduceMotion), [data, pathId, reduceMotion]);
+  const { nodes, edges, focusIds } = useMemo(() => buildGraph(data, pathId, reduceMotion), [data, pathId, reduceMotion]);
 
   return (
-    <div className="relative h-[72vh] min-h-[540px] w-full border border-outline-variant bg-surface/60">
+    <div className="relative h-[72vh] min-h-[540px] w-full border border-outline-variant bg-surface/70">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         fitView
-        // Open framed on where the user actually is; the ⛶ button fits the whole tree.
-        fitViewOptions={currentId ? { nodes: [{ id: currentId }], maxZoom: 0.8, padding: 2.2 } : { padding: 0.1, maxZoom: 0.9 }}
+        // Open framed on where the user actually is (current node + neighbors), zoomed
+        // in enough to read — not the whole tree. The ⛶ button fits everything.
+        fitViewOptions={
+          focusIds.length ? { nodes: focusIds.map((id) => ({ id })), padding: 0.45, maxZoom: 0.85 } : { padding: 0.15, maxZoom: 0.9 }
+        }
         minZoom={0.2}
         maxZoom={1.5}
         nodesDraggable={false}
@@ -415,10 +433,10 @@ function Canvas({ data, pathId }: { data: UserData; pathId: string }) {
         proOptions={{ hideAttribution: true }}
         className="!bg-transparent"
       >
-        <Background variant={BackgroundVariant.Lines} gap={48} lineWidth={1} color="rgba(0, 217, 255, 0.045)" />
+        <Background variant={BackgroundVariant.Lines} gap={48} lineWidth={1} color="rgba(0, 217, 255, 0.07)" />
         <CanvasControls />
         <Panel position="top-left" className="!m-3">
-          <p className="border border-outline-variant bg-surface/95 px-2 py-1 font-code text-[9px] uppercase tracking-[0.14em] text-outline backdrop-blur">
+          <p className="border border-outline-variant bg-surface/95 px-2 py-1 font-code text-[9px] uppercase tracking-[0.14em] text-on-surface-variant backdrop-blur">
             drag to pan · scroll to zoom
           </p>
         </Panel>
