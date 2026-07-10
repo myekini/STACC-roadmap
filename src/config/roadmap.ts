@@ -1,6 +1,13 @@
 // Stacc Roadmap content — mirrors supabase/seed.sql exactly.
 // In Supabase mode content comes from the database; in localStorage demo mode it
 // comes from here. Node ids equal slugs locally so progress keys stay stable.
+//
+// Editorial rules (keep the tree readable, not just complete):
+//  - Exactly 3 skills per node — more than that fans too many chips off one
+//    module on the canvas and the tree reads as noise instead of a map.
+//  - Exactly 2 curated resources per node — one primary course/video, one
+//    reference doc to come back to. Every URL below is a stable, well-known
+//    official domain (project docs, a maintained course, or a canonical repo).
 import type {
   NodeRow,
   PathRow,
@@ -60,7 +67,7 @@ const PATH_DEFS: PathDef[] = [
         slug: 'found-python', name: 'Python Basics', subtitle: 'Variables to pandas',
         description: 'Write scripts that load, clean, and reshape data. The working language of every path that follows.',
         icon: 'code', estHours: 12, xp: 100,
-        skills: ['Python syntax', 'Data types', 'Functions', 'Pandas intro'], prereqs: [],
+        skills: ['Python syntax', 'Functions', 'Pandas intro'], prereqs: [],
         resources: [
           ['Python for Everybody', 'course', 'freeCodeCamp', 'https://www.freecodecamp.org/learn/python-for-everybody/'],
           ['Pandas Getting Started Guide', 'documentation', 'pandas.pydata.org', 'https://pandas.pydata.org/docs/getting_started/index.html'],
@@ -75,7 +82,7 @@ const PATH_DEFS: PathDef[] = [
         slug: 'found-sql', name: 'SQL Basics', subtitle: 'Query like you mean it',
         description: 'SELECT, JOIN, GROUP BY, and window-function fundamentals against a real database.',
         icon: 'database', estHours: 10, xp: 100,
-        skills: ['SELECT', 'Joins', 'Aggregation', 'Window functions'], prereqs: [],
+        skills: ['SELECT & joins', 'Aggregation', 'Window functions'], prereqs: [],
         resources: [
           ['Kaggle: Intro to SQL', 'course', 'Kaggle', 'https://www.kaggle.com/learn/intro-to-sql'],
           ['SQLBolt Interactive Lessons', 'article', 'SQLBolt', 'https://sqlbolt.com/'],
@@ -90,7 +97,7 @@ const PATH_DEFS: PathDef[] = [
         slug: 'found-git', name: 'Git & GitHub', subtitle: 'Version everything',
         description: 'Branch, commit, merge, and collaborate through pull requests without fear.',
         icon: 'account_tree', estHours: 6, xp: 75,
-        skills: ['Commits', 'Branching', 'Pull requests', 'Merge conflicts'], prereqs: [],
+        skills: ['Commits & branching', 'Pull requests', 'Merge conflicts'], prereqs: [],
         resources: [
           ['Pro Git Book (ch. 1–3)', 'documentation', 'git-scm.com', 'https://git-scm.com/book/en/v2'],
           ['GitHub Skills', 'course', 'GitHub', 'https://skills.github.com/'],
@@ -105,7 +112,7 @@ const PATH_DEFS: PathDef[] = [
         slug: 'found-cli', name: 'Command Line', subtitle: 'Live in the terminal',
         description: 'Navigate, inspect, and automate with the shell — the environment every data tool assumes.',
         icon: 'terminal', estHours: 5, xp: 75,
-        skills: ['Navigation', 'Pipes', 'Permissions', 'Shell scripts'], prereqs: [],
+        skills: ['Navigation & pipes', 'Permissions', 'Shell scripts'], prereqs: [],
         resources: [
           ['The Missing Semester: Shell', 'video', 'MIT', 'https://missing.csail.mit.edu/2020/course-shell/'],
           ['Linux Command Line Basics', 'article', 'Ubuntu', 'https://ubuntu.com/tutorials/command-line-for-beginners'],
@@ -120,7 +127,7 @@ const PATH_DEFS: PathDef[] = [
         slug: 'found-stats', name: 'Statistics Basics', subtitle: 'Think in distributions',
         description: 'Descriptive stats, distributions, sampling, and the difference between correlation and causation.',
         icon: 'insights', estHours: 10, xp: 100,
-        skills: ['Distributions', 'Sampling', 'Hypothesis testing', 'Correlation vs causation'], prereqs: ['found-python'],
+        skills: ['Distributions & sampling', 'Hypothesis testing', 'Correlation vs causation'], prereqs: ['found-python'],
         resources: [
           ['Seeing Theory (Visual Probability)', 'article', 'Brown University', 'https://seeing-theory.brown.edu/'],
           ['Khan Academy: Statistics', 'course', 'Khan Academy', 'https://www.khanacademy.org/math/statistics-probability'],
@@ -161,7 +168,10 @@ const PATH_DEFS: PathDef[] = [
         description: 'Design batch pipelines: ingestion patterns, idempotency, and data quality checks.',
         icon: 'transform', estHours: 10, xp: 150,
         skills: ['Batch vs streaming', 'Idempotency', 'Data quality'], prereqs: FOUNDATION_SLUGS,
-        resources: [['Data Engineering Zoomcamp', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/data-engineering-zoomcamp']],
+        resources: [
+          ['Data Engineering Zoomcamp', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/data-engineering-zoomcamp'],
+          ['The Data Engineering Cookbook', 'documentation', 'Andreas Kretz (GitHub)', 'https://github.com/andkret/Cookbook'],
+        ],
         tasks: [
           ['Study the ingestion + ETL weeks of the DE Zoomcamp', 'watch'],
           ['Build: a pipeline that ingests a public API into a database daily', 'build'],
@@ -173,7 +183,10 @@ const PATH_DEFS: PathDef[] = [
         description: 'Star schemas, slowly changing dimensions, and the tradeoffs of normalization.',
         icon: 'schema', estHours: 12, xp: 150,
         skills: ['Star schema', 'SCDs', 'Normalization tradeoffs'], prereqs: ['de-etl'],
-        resources: [['Kimball Dimensional Modeling Resources', 'documentation', 'Kimball Group', 'https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/']],
+        resources: [
+          ['Kimball Dimensional Modeling Resources', 'documentation', 'Kimball Group', 'https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/'],
+          ['dbt: How We Structure Our dbt Projects', 'documentation', 'dbt Labs', 'https://docs.getdbt.com/best-practices/how-we-structure/1-guide-overview'],
+        ],
         tasks: [
           ["Read Kimball's dimensional modeling essentials", 'read'],
           ['Build: design a star schema for an e-commerce domain', 'build'],
@@ -184,7 +197,7 @@ const PATH_DEFS: PathDef[] = [
         slug: 'de-dbt', name: 'dbt', subtitle: 'Data build tool',
         description: 'Transformations as code: models, tests, docs, and environments with dbt.',
         icon: 'code_blocks', estHours: 12, xp: 200,
-        skills: ['Models', 'Tests', 'Jinja', 'Environments'], prereqs: ['de-modeling'],
+        skills: ['Models & tests', 'Jinja macros', 'Environments'], prereqs: ['de-modeling'],
         resources: [
           ['dbt Fundamentals Course', 'course', 'dbt Labs', 'https://courses.getdbt.com/courses/fundamentals'],
           ['Official dbt Docs', 'documentation', 'getdbt.com', 'https://docs.getdbt.com/'],
@@ -199,8 +212,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'de-orchestration', name: 'Workflow Orchestration', subtitle: 'Airflow / Prefect',
         description: 'Schedule, retry, and monitor DAGs of work that run production pipelines.',
         icon: 'published_with_changes', estHours: 12, xp: 200,
-        skills: ['DAGs', 'Scheduling', 'Retries', 'Backfills'], prereqs: ['de-dbt'],
-        resources: [['Astronomer Airflow Academy', 'course', 'Astronomer', 'https://academy.astronomer.io/']],
+        skills: ['DAGs & scheduling', 'Retries', 'Backfills'], prereqs: ['de-dbt'],
+        resources: [
+          ['Astronomer Airflow Academy', 'course', 'Astronomer', 'https://academy.astronomer.io/'],
+          ['Airflow Documentation: Core Concepts', 'documentation', 'Apache Airflow', 'https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/overview.html'],
+        ],
         tasks: [
           ['Work through Airflow fundamentals', 'watch'],
           ['Build: schedule your ETL pipeline as a DAG with retries and alerts', 'build'],
@@ -211,8 +227,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'de-cloud', name: 'Cloud Platforms', subtitle: 'AWS / GCP',
         description: 'Object storage, warehouses, IAM, and the managed services data teams actually use.',
         icon: 'deployed_code', estHours: 14, xp: 200,
-        skills: ['S3/GCS', 'BigQuery/Redshift', 'IAM', 'Cost basics'], prereqs: ['de-orchestration'],
-        resources: [['AWS Skill Builder: Data Analytics', 'course', 'AWS', 'https://skillbuilder.aws/']],
+        skills: ['Object storage', 'Cloud warehouses', 'IAM & cost basics'], prereqs: ['de-orchestration'],
+        resources: [
+          ['AWS Skill Builder: Data Analytics', 'course', 'AWS', 'https://skillbuilder.aws/'],
+          ['Google Cloud Architecture Center', 'documentation', 'Google Cloud', 'https://cloud.google.com/architecture'],
+        ],
         tasks: [
           ['Study object storage, warehouse, and IAM basics on one cloud', 'watch'],
           ['Build: deploy your pipeline to run on cloud infrastructure', 'build'],
@@ -223,8 +242,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'de-spark', name: 'Spark — Advanced', subtitle: 'Distributed compute',
         description: 'Partitioning, shuffles, and writing PySpark that scales past a single machine.',
         icon: 'memory', estHours: 16, xp: 250,
-        skills: ['PySpark', 'Partitioning', 'Shuffles', 'Tuning'], prereqs: ['de-cloud'],
-        resources: [['Spark SQL Programming Guide', 'documentation', 'Apache Spark', 'https://spark.apache.org/docs/latest/sql-programming-guide.html']],
+        skills: ['PySpark', 'Partitioning & shuffles', 'Performance tuning'], prereqs: ['de-cloud'],
+        resources: [
+          ['Spark SQL Programming Guide', 'documentation', 'Apache Spark', 'https://spark.apache.org/docs/latest/sql-programming-guide.html'],
+          ['Spark Tuning Guide', 'documentation', 'Apache Spark', 'https://spark.apache.org/docs/latest/tuning.html'],
+        ],
         tasks: [
           ['Study the Spark SQL programming guide', 'read'],
           ['Build: process a dataset too large for pandas with PySpark', 'build'],
@@ -236,7 +258,10 @@ const PATH_DEFS: PathDef[] = [
         description: 'Topics, consumer groups, and exactly-once thinking for event-driven pipelines.',
         icon: 'electric_bolt', estHours: 16, xp: 250,
         skills: ['Topics', 'Consumer groups', 'Delivery semantics'], prereqs: ['de-spark'],
-        resources: [['Kafka 101', 'course', 'Confluent', 'https://developer.confluent.io/courses/apache-kafka/events/']],
+        resources: [
+          ['Kafka 101', 'course', 'Confluent', 'https://developer.confluent.io/courses/apache-kafka/events/'],
+          ['Apache Kafka Documentation', 'documentation', 'Apache Kafka', 'https://kafka.apache.org/documentation/'],
+        ],
         tasks: [
           ['Complete Kafka 101', 'watch'],
           ['Build: a producer/consumer pair processing events in real time', 'build'],
@@ -247,8 +272,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'de-vectordb', name: 'Vector DBs & LLM Infra', subtitle: 'Data for AI systems',
         description: 'Embeddings, vector stores, and the infrastructure that feeds LLM applications.',
         icon: 'biotech', estHours: 12, xp: 250,
-        skills: ['Embeddings', 'Vector search', 'Chunking', 'Indexing'], prereqs: ['de-streaming'],
-        resources: [['Vector Databases Explained', 'article', 'Pinecone Learn', 'https://www.pinecone.io/learn/vector-database/']],
+        skills: ['Embeddings', 'Vector search', 'Chunking & indexing'], prereqs: ['de-streaming'],
+        resources: [
+          ['Vector Databases Explained', 'article', 'Pinecone Learn', 'https://www.pinecone.io/learn/vector-database/'],
+          ['Faiss Wiki', 'documentation', 'Meta AI Research', 'https://github.com/facebookresearch/faiss/wiki'],
+        ],
         tasks: [
           ['Read the vector database fundamentals guide', 'read'],
           ['Build: embed a document set and serve similarity search', 'build'],
@@ -269,8 +297,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'da-eda', name: 'Exploratory Data Analysis', subtitle: 'Interrogate the data',
         description: 'Profile datasets, find outliers and patterns, and form hypotheses worth testing.',
         icon: 'find_in_page', estHours: 10, xp: 150,
-        skills: ['Profiling', 'Outliers', 'Univariate/bivariate analysis'], prereqs: FOUNDATION_SLUGS,
-        resources: [['Kaggle: Data Cleaning', 'course', 'Kaggle', 'https://www.kaggle.com/learn/data-cleaning']],
+        skills: ['Profiling', 'Outlier detection', 'Univariate/bivariate analysis'], prereqs: FOUNDATION_SLUGS,
+        resources: [
+          ['Kaggle: Data Cleaning', 'course', 'Kaggle', 'https://www.kaggle.com/learn/data-cleaning'],
+          ['ydata-profiling Documentation', 'documentation', 'ydata-profiling', 'https://docs.profiling.ydata.ai/'],
+        ],
         tasks: [
           ['Complete the data cleaning course', 'watch'],
           ['Build: a full EDA notebook on a dataset you have never seen', 'build'],
@@ -281,8 +312,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'da-visualization', name: 'Data Visualization', subtitle: 'Matplotlib, Seaborn',
         description: 'Choose the right chart, encode honestly, and build plots people actually read.',
         icon: 'bar_chart', estHours: 10, xp: 150,
-        skills: ['Chart choice', 'Matplotlib', 'Seaborn', 'Perception'], prereqs: ['da-eda'],
-        resources: [['Storytelling with Data (blog)', 'article', 'SWD', 'https://www.storytellingwithdata.com/']],
+        skills: ['Chart selection', 'Matplotlib & Seaborn', 'Perception principles'], prereqs: ['da-eda'],
+        resources: [
+          ['Storytelling with Data (blog)', 'article', 'SWD', 'https://www.storytellingwithdata.com/'],
+          ['Matplotlib Tutorials', 'documentation', 'Matplotlib', 'https://matplotlib.org/stable/tutorials/index.html'],
+        ],
         tasks: [
           ['Study chart-choice and perception principles', 'read'],
           ['Build: remake three bad charts into honest, readable ones', 'build'],
@@ -293,8 +327,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'da-dashboards', name: 'Dashboard Design', subtitle: 'Interfaces for decisions',
         description: 'Layout, hierarchy, and interactivity for dashboards that answer questions at a glance.',
         icon: 'dashboard', estHours: 10, xp: 150,
-        skills: ['Layout', 'KPI design', 'Filters', 'Performance'], prereqs: ['da-visualization'],
-        resources: [['Metabase: Dashboard Best Practices', 'article', 'Metabase Learn', 'https://www.metabase.com/learn/dashboards']],
+        skills: ['Layout & hierarchy', 'KPI design', 'Filters & interactivity'], prereqs: ['da-visualization'],
+        resources: [
+          ['Metabase: Dashboard Best Practices', 'article', 'Metabase Learn', 'https://www.metabase.com/learn/dashboards'],
+          ['Looker Studio Help Center', 'documentation', 'Google', 'https://support.google.com/looker-studio/'],
+        ],
         tasks: [
           ['Read dashboard design best practices', 'read'],
           ['Build: a KPI dashboard answering three stakeholder questions', 'build'],
@@ -305,8 +342,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'da-storytelling', name: 'Data Storytelling', subtitle: 'Insight to action',
         description: 'Structure findings as narratives that move stakeholders to a decision.',
         icon: 'edit_note', estHours: 8, xp: 150,
-        skills: ['Narrative structure', 'Executive summaries', 'Presenting'], prereqs: ['da-dashboards'],
-        resources: [['SWD Podcast & Exercises', 'article', 'SWD', 'https://community.storytellingwithdata.com/exercises']],
+        skills: ['Narrative structure', 'Executive summaries', 'Presenting to stakeholders'], prereqs: ['da-dashboards'],
+        resources: [
+          ['SWD Podcast & Exercises', 'article', 'SWD', 'https://community.storytellingwithdata.com/exercises'],
+          ['Nightingale — The Journal of the Data Visualization Society', 'article', 'Data Visualization Society', 'https://nightingaledvs.com/'],
+        ],
         tasks: [
           ['Work through storytelling-with-data exercises', 'read'],
           ['Build: a 5-slide narrative from one of your analyses', 'build'],
@@ -317,8 +357,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'da-bi', name: 'BI Tools', subtitle: 'Looker, Power BI, Metabase',
         description: 'Model metrics once, serve them everywhere: semantic layers and governed self-serve BI.',
         icon: 'query_stats', estHours: 12, xp: 200,
-        skills: ['Semantic models', 'Power BI', 'Metabase', 'Governance'], prereqs: ['da-storytelling'],
-        resources: [['Microsoft Learn: Power BI', 'course', 'Microsoft', 'https://learn.microsoft.com/en-us/training/powerplatform/power-bi']],
+        skills: ['Semantic models', 'Power BI / Metabase', 'Governance'], prereqs: ['da-storytelling'],
+        resources: [
+          ['Microsoft Learn: Power BI', 'course', 'Microsoft', 'https://learn.microsoft.com/en-us/training/powerplatform/power-bi'],
+          ['Metabase Documentation', 'documentation', 'Metabase', 'https://www.metabase.com/docs/latest/'],
+        ],
         tasks: [
           ['Complete a Power BI (or Metabase) learning path', 'watch'],
           ['Build: publish a governed dashboard with a shared metric definition', 'build'],
@@ -330,7 +373,10 @@ const PATH_DEFS: PathDef[] = [
         description: 'Use LLMs to speed up cleaning, coding, and interpretation without losing rigor.',
         icon: 'auto_awesome', estHours: 8, xp: 200,
         skills: ['Prompting for analysis', 'Validation', 'Automation'], prereqs: ['da-bi'],
-        resources: [['Prompt Engineering Guide', 'documentation', 'promptingguide.ai', 'https://www.promptingguide.ai/']],
+        resources: [
+          ['Prompt Engineering Guide', 'documentation', 'promptingguide.ai', 'https://www.promptingguide.ai/'],
+          ['Anthropic Cookbook', 'documentation', 'Anthropic', 'https://github.com/anthropics/anthropic-cookbook'],
+        ],
         tasks: [
           ['Study prompting patterns for analysis work', 'read'],
           ['Build: run an analysis with an LLM assistant and validate every claim', 'build'],
@@ -351,7 +397,7 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ds-ml', name: 'ML Fundamentals', subtitle: 'Supervised learning core',
         description: 'Regression, classification, overfitting, and the bias-variance tradeoff in practice.',
         icon: 'model_training', estHours: 14, xp: 200,
-        skills: ['Regression', 'Classification', 'Bias-variance', 'scikit-learn'], prereqs: FOUNDATION_SLUGS,
+        skills: ['Regression & classification', 'Bias-variance tradeoff', 'scikit-learn'], prereqs: FOUNDATION_SLUGS,
         resources: [
           ['Kaggle: Intro to Machine Learning', 'course', 'Kaggle', 'https://www.kaggle.com/learn/intro-to-machine-learning'],
           ['scikit-learn User Guide', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/user_guide.html'],
@@ -366,8 +412,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ds-features', name: 'Feature Engineering', subtitle: 'Signal from raw data',
         description: 'Encodings, scaling, leakage traps, and features that actually move metrics.',
         icon: 'settings_input_component', estHours: 10, xp: 150,
-        skills: ['Encodings', 'Scaling', 'Leakage', 'Selection'], prereqs: ['ds-ml'],
-        resources: [['Kaggle: Feature Engineering', 'course', 'Kaggle', 'https://www.kaggle.com/learn/feature-engineering']],
+        skills: ['Encodings & scaling', 'Leakage traps', 'Feature selection'], prereqs: ['ds-ml'],
+        resources: [
+          ['Kaggle: Feature Engineering', 'course', 'Kaggle', 'https://www.kaggle.com/learn/feature-engineering'],
+          ['scikit-learn: Preprocessing & Feature Engineering', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/modules/preprocessing.html'],
+        ],
         tasks: [
           ['Complete the feature engineering course', 'watch'],
           ['Build: engineer features that measurably beat the raw baseline', 'build'],
@@ -378,8 +427,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ds-evaluation', name: 'Model Building & Evaluation', subtitle: 'Beyond accuracy',
         description: 'Cross-validation, metrics that match the business problem, and honest baselines.',
         icon: 'verified', estHours: 12, xp: 200,
-        skills: ['Cross-validation', 'Metrics', 'Baselines', 'Calibration'], prereqs: ['ds-features'],
-        resources: [['scikit-learn: Model Evaluation', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/modules/model_evaluation.html']],
+        skills: ['Cross-validation', 'Metrics & baselines', 'Calibration'], prereqs: ['ds-features'],
+        resources: [
+          ['scikit-learn: Model Evaluation', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/modules/model_evaluation.html'],
+          ['Google: Machine Learning Crash Course', 'course', 'Google', 'https://developers.google.com/machine-learning/crash-course'],
+        ],
         tasks: [
           ['Study evaluation metrics and cross-validation', 'read'],
           ['Build: an evaluation report with CV, baselines, and the right metric', 'build'],
@@ -390,8 +442,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ds-experiments', name: 'Experimentation & A/B Testing', subtitle: 'Causal by design',
         description: 'Design experiments, size samples, and read results without fooling yourself.',
         icon: 'biotech', estHours: 12, xp: 200,
-        skills: ['Experiment design', 'Power', 'Significance', 'Pitfalls'], prereqs: ['ds-evaluation'],
-        resources: [['Trustworthy Online Controlled Experiments (notes)', 'article', 'exp-platform.com', 'https://exp-platform.com/']],
+        skills: ['Experiment design', 'Power & significance', 'Common pitfalls'], prereqs: ['ds-evaluation'],
+        resources: [
+          ['Trustworthy Online Controlled Experiments (notes)', 'article', 'exp-platform.com', 'https://exp-platform.com/'],
+          ['How Not To Run An A/B Test', 'article', 'Evan Miller', 'https://www.evanmiller.org/how-not-to-run-an-ab-test.html'],
+        ],
         tasks: [
           ['Study experiment design and statistical power', 'read'],
           ['Build: design an A/B test plan with hypothesis, sample size, and decision rule', 'build'],
@@ -402,8 +457,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ds-deployment', name: 'Model Deployment', subtitle: 'Models as services',
         description: 'Package and serve models behind APIs with versioning and rollback.',
         icon: 'publish', estHours: 12, xp: 200,
-        skills: ['FastAPI', 'Serialization', 'Versioning', 'Rollback'], prereqs: ['ds-experiments'],
-        resources: [['FastAPI Docs', 'documentation', 'fastapi.tiangolo.com', 'https://fastapi.tiangolo.com/']],
+        skills: ['FastAPI serving', 'Serialization', 'Versioning & rollback'], prereqs: ['ds-experiments'],
+        resources: [
+          ['FastAPI Docs', 'documentation', 'fastapi.tiangolo.com', 'https://fastapi.tiangolo.com/'],
+          ['ONNX Runtime Documentation', 'documentation', 'ONNX', 'https://onnxruntime.ai/docs/'],
+        ],
         tasks: [
           ['Study FastAPI model-serving patterns', 'read'],
           ['Build: serve a trained model behind a versioned REST endpoint', 'build'],
@@ -414,8 +472,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ds-deeplearning', name: 'Deep Learning — Advanced', subtitle: 'Neural networks',
         description: 'Backprop intuition, CNNs/transformers, and training discipline with PyTorch.',
         icon: 'psychology', estHours: 18, xp: 250,
-        skills: ['PyTorch', 'CNNs', 'Transformers', 'Training loops'], prereqs: ['ds-deployment'],
-        resources: [['Practical Deep Learning for Coders', 'course', 'fast.ai', 'https://course.fast.ai/']],
+        skills: ['PyTorch', 'CNNs & Transformers', 'Training loops'], prereqs: ['ds-deployment'],
+        resources: [
+          ['Practical Deep Learning for Coders', 'course', 'fast.ai', 'https://course.fast.ai/'],
+          ['PyTorch Tutorials', 'documentation', 'PyTorch', 'https://pytorch.org/tutorials/'],
+        ],
         tasks: [
           ['Work through fast.ai practical deep learning', 'watch'],
           ['Build: fine-tune a pretrained network on your own image/text data', 'build'],
@@ -426,8 +487,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ds-llm', name: 'LLM Fine-tuning & RAG', subtitle: 'Adapt foundation models',
         description: 'Fine-tuning versus retrieval, dataset curation, and evaluating LLM output.',
         icon: 'smart_toy', estHours: 16, xp: 250,
-        skills: ['Fine-tuning', 'RAG', 'Dataset curation', 'Evals'], prereqs: ['ds-deeplearning'],
-        resources: [['Hugging Face NLP Course', 'course', 'Hugging Face', 'https://huggingface.co/learn/nlp-course']],
+        skills: ['Fine-tuning vs RAG', 'Dataset curation', 'Evals'], prereqs: ['ds-deeplearning'],
+        resources: [
+          ['Hugging Face NLP Course', 'course', 'Hugging Face', 'https://huggingface.co/learn/nlp-course'],
+          ['LlamaIndex Documentation', 'documentation', 'LlamaIndex', 'https://docs.llamaindex.ai/en/stable/'],
+        ],
         tasks: [
           ['Complete the Hugging Face NLP course core chapters', 'watch'],
           ['Build: compare a RAG baseline vs fine-tuning on one task, with evals', 'build'],
@@ -448,8 +512,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ai-llm-apis', name: 'LLM APIs & Orchestration', subtitle: 'OpenAI, Anthropic, Gemini',
         description: 'Structured outputs, tool use, streaming, and orchestrating multi-step LLM calls.',
         icon: 'smart_toy', estHours: 12, xp: 250,
-        skills: ['Tool use', 'Structured output', 'Streaming', 'Orchestration'], prereqs: [],
-        resources: [['Anthropic API Docs', 'documentation', 'Anthropic', 'https://docs.anthropic.com/']],
+        skills: ['Tool use', 'Structured outputs', 'Streaming responses'], prereqs: [],
+        resources: [
+          ['Anthropic API Docs', 'documentation', 'Anthropic', 'https://docs.anthropic.com/'],
+          ['OpenAI: Function Calling Guide', 'documentation', 'OpenAI', 'https://platform.openai.com/docs/guides/function-calling'],
+        ],
         tasks: [
           ['Study tool use, structured outputs, and streaming in the API docs', 'read'],
           ['Build: a CLI app using tool calls and streamed responses', 'build'],
@@ -460,8 +527,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ai-rag', name: 'RAG System Design', subtitle: 'Retrieval done right',
         description: 'Chunking, hybrid search, reranking, and grounding answers in your own data.',
         icon: 'find_in_page', estHours: 14, xp: 250,
-        skills: ['Chunking', 'Hybrid search', 'Reranking', 'Grounding'], prereqs: ['ai-llm-apis'],
-        resources: [['Retrieval-Augmented Generation Guide', 'article', 'Pinecone Learn', 'https://www.pinecone.io/learn/retrieval-augmented-generation/']],
+        skills: ['Chunking strategies', 'Hybrid search', 'Reranking'], prereqs: ['ai-llm-apis'],
+        resources: [
+          ['Retrieval-Augmented Generation Guide', 'article', 'Pinecone Learn', 'https://www.pinecone.io/learn/retrieval-augmented-generation/'],
+          ['LangChain: RAG Tutorial', 'documentation', 'LangChain', 'https://python.langchain.com/docs/tutorials/rag/'],
+        ],
         tasks: [
           ['Study chunking, hybrid retrieval, and reranking', 'read'],
           ['Build: a RAG system over your own documents with cited answers', 'build'],
@@ -472,8 +542,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ai-agents', name: 'AI Agents & Tool Use', subtitle: 'Systems that act',
         description: 'Agent loops, tool design, guardrails, and when not to build an agent.',
         icon: 'smart_toy', estHours: 14, xp: 250,
-        skills: ['Agent loops', 'Tool design', 'Guardrails', 'Memory'], prereqs: ['ai-rag'],
-        resources: [['Building Effective Agents', 'article', 'Anthropic', 'https://www.anthropic.com/research/building-effective-agents']],
+        skills: ['Agent loops', 'Tool design', 'Guardrails'], prereqs: ['ai-rag'],
+        resources: [
+          ['Building Effective Agents', 'article', 'Anthropic', 'https://www.anthropic.com/research/building-effective-agents'],
+          ['Anthropic Cookbook', 'documentation', 'Anthropic', 'https://github.com/anthropics/anthropic-cookbook'],
+        ],
         tasks: [
           ['Read Building Effective Agents', 'read'],
           ['Build: an agent with 2–3 tools, guardrails, and a stop condition', 'build'],
@@ -485,7 +558,10 @@ const PATH_DEFS: PathDef[] = [
         description: 'Vision, audio, and document understanding in production workflows.',
         icon: 'smart_display', estHours: 12, xp: 250,
         skills: ['Vision', 'Audio', 'Document AI'], prereqs: ['ai-agents'],
-        resources: [['Vision API Cookbooks', 'documentation', 'Anthropic', 'https://docs.anthropic.com/en/docs/build-with-claude/vision']],
+        resources: [
+          ['Vision API Cookbooks', 'documentation', 'Anthropic', 'https://docs.anthropic.com/en/docs/build-with-claude/vision'],
+          ['OpenAI Cookbook', 'documentation', 'OpenAI', 'https://github.com/openai/openai-cookbook'],
+        ],
         tasks: [
           ['Study vision/document understanding patterns', 'read'],
           ['Build: an app that extracts structured data from images or PDFs', 'build'],
@@ -496,8 +572,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ai-llmops', name: 'LLMOps & Evaluation', subtitle: 'Measure or guess',
         description: 'Eval suites, regression testing prompts, observability, and cost control.',
         icon: 'analytics', estHours: 12, xp: 250,
-        skills: ['Evals', 'Prompt regression', 'Tracing', 'Cost control'], prereqs: ['ai-multimodal'],
-        resources: [['Your Guide to LLM Evals', 'article', 'Eugene Yan', 'https://eugeneyan.com/writing/llm-evaluators/']],
+        skills: ['Eval suites', 'Prompt regression', 'Cost & observability'], prereqs: ['ai-multimodal'],
+        resources: [
+          ['Your Guide to LLM Evals', 'article', 'Eugene Yan', 'https://eugeneyan.com/writing/llm-evaluators/'],
+          ['OpenAI Evals', 'documentation', 'OpenAI', 'https://github.com/openai/evals'],
+        ],
         tasks: [
           ['Study LLM evaluation approaches', 'read'],
           ['Build: an eval suite that gates a prompt change in CI', 'build'],
@@ -508,8 +587,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ai-product', name: 'AI Product Design', subtitle: 'Architecture end-to-end',
         description: 'Design a full AI product: latency budgets, fallbacks, UX for uncertainty.',
         icon: 'explore', estHours: 14, xp: 300,
-        skills: ['Latency budgets', 'Fallbacks', 'UX for AI', 'Architecture'], prereqs: ['ai-llmops'],
-        resources: [['AI Engineering (book notes)', 'article', 'Chip Huyen', 'https://huyenchip.com/blog/']],
+        skills: ['Latency budgets', 'Fallback design', 'UX for uncertainty'], prereqs: ['ai-llmops'],
+        resources: [
+          ['AI Engineering (book notes)', 'article', 'Chip Huyen', 'https://huyenchip.com/blog/'],
+          ['Patterns for Building LLM-based Systems & Products', 'article', 'Eugene Yan', 'https://eugeneyan.com/writing/llm-patterns/'],
+        ],
         tasks: [
           ['Study AI product architecture patterns', 'read'],
           ['Build: design doc + prototype for an AI product with fallbacks and latency budget', 'build'],
@@ -530,8 +612,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ml-docker', name: 'Docker & Containerization', subtitle: 'Reproducible everything',
         description: 'Images, layers, and packaging ML workloads that run the same everywhere.',
         icon: 'deployed_code', estHours: 10, xp: 200,
-        skills: ['Dockerfiles', 'Layers', 'Compose', 'Registries'], prereqs: [],
-        resources: [['Docker Getting Started', 'documentation', 'Docker', 'https://docs.docker.com/get-started/']],
+        skills: ['Dockerfiles & layers', 'Compose', 'Registries'], prereqs: [],
+        resources: [
+          ['Docker Getting Started', 'documentation', 'Docker', 'https://docs.docker.com/get-started/'],
+          ['Docker Compose Documentation', 'documentation', 'Docker', 'https://docs.docker.com/compose/'],
+        ],
         tasks: [
           ['Work through Docker getting started', 'read'],
           ['Build: containerize a model service with a slim, reproducible image', 'build'],
@@ -542,8 +627,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ml-cicd', name: 'CI/CD for ML', subtitle: 'Automate the path to prod',
         description: 'Pipelines that test data, code, and models before anything ships.',
         icon: 'published_with_changes', estHours: 12, xp: 200,
-        skills: ['GitHub Actions', 'Model tests', 'Artifacts', 'Environments'], prereqs: ['ml-docker'],
-        resources: [['GitHub Actions Docs', 'documentation', 'GitHub', 'https://docs.github.com/en/actions']],
+        skills: ['GitHub Actions', 'Model & data tests', 'Artifacts'], prereqs: ['ml-docker'],
+        resources: [
+          ['GitHub Actions Docs', 'documentation', 'GitHub', 'https://docs.github.com/en/actions'],
+          ['Made With ML', 'course', 'Made With ML', 'https://madewithml.com/'],
+        ],
         tasks: [
           ['Study GitHub Actions pipelines', 'read'],
           ['Build: a CI pipeline that tests data, code, and model quality before deploy', 'build'],
@@ -554,8 +642,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ml-monitoring', name: 'Monitoring & Drift', subtitle: 'Know when models rot',
         description: 'Data drift, concept drift, and alerting on the metrics that predict failure.',
         icon: 'analytics', estHours: 12, xp: 250,
-        skills: ['Data drift', 'Concept drift', 'Alerting', 'Dashboards'], prereqs: ['ml-cicd'],
-        resources: [['Evidently AI: ML Monitoring Guides', 'article', 'Evidently', 'https://www.evidentlyai.com/ml-in-production/model-monitoring']],
+        skills: ['Data drift', 'Concept drift', 'Alerting'], prereqs: ['ml-cicd'],
+        resources: [
+          ['Evidently AI: ML Monitoring Guides', 'article', 'Evidently', 'https://www.evidentlyai.com/ml-in-production/model-monitoring'],
+          ['Evidently AI Documentation', 'documentation', 'Evidently', 'https://docs.evidentlyai.com/'],
+        ],
         tasks: [
           ['Study drift detection and ML monitoring', 'read'],
           ['Build: a monitoring dashboard that alerts on input drift', 'build'],
@@ -566,8 +657,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ml-production', name: 'Production ML Systems', subtitle: 'Serving at scale',
         description: 'Batch vs online serving, feature stores, and latency/throughput tradeoffs.',
         icon: 'memory', estHours: 14, xp: 250,
-        skills: ['Serving patterns', 'Feature stores', 'Scaling', 'Caching'], prereqs: ['ml-monitoring'],
-        resources: [['Designing Machine Learning Systems (notes)', 'article', 'Chip Huyen', 'https://huyenchip.com/machine-learning-systems-design/toc.html']],
+        skills: ['Serving patterns', 'Feature stores', 'Scaling & caching'], prereqs: ['ml-monitoring'],
+        resources: [
+          ['Designing Machine Learning Systems (notes)', 'article', 'Chip Huyen', 'https://huyenchip.com/machine-learning-systems-design/toc.html'],
+          ['Feast Documentation', 'documentation', 'Feast', 'https://docs.feast.dev/'],
+        ],
         tasks: [
           ['Study serving patterns and feature stores', 'read'],
           ['Build: an online + batch serving path for the same model', 'build'],
@@ -578,8 +672,11 @@ const PATH_DEFS: PathDef[] = [
         slug: 'ml-platform', name: 'ML Platform Design', subtitle: 'End-to-end ownership',
         description: 'Design the platform: from experiment tracking to deployment paths for a whole team.',
         icon: 'schema', estHours: 16, xp: 300,
-        skills: ['Experiment tracking', 'Registries', 'Platform architecture'], prereqs: ['ml-production'],
-        resources: [['MLOps Zoomcamp', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/mlops-zoomcamp']],
+        skills: ['Experiment tracking', 'Model registries', 'Platform architecture'], prereqs: ['ml-production'],
+        resources: [
+          ['MLOps Zoomcamp', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/mlops-zoomcamp'],
+          ['MLflow Documentation', 'documentation', 'MLflow', 'https://mlflow.org/docs/latest/index.html'],
+        ],
         tasks: [
           ['Work through the MLOps Zoomcamp capstone material', 'watch'],
           ['Build: an end-to-end platform design doc — tracking, registry, deploy paths', 'build'],
