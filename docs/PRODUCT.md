@@ -345,7 +345,8 @@ on both sides.
 
 ## 12. Known gaps (as of this doc)
 
-Ranked by how much they actually matter:
+Ranked by how much they actually matter — **see `docs/ISSUES.md` for the concrete fix for
+each one**; this list stays a one-line summary on purpose, don't let the two drift apart.
 
 1. **Migration `0002_evidence.sql` may not be applied to the production Supabase project yet.**
    Evidence shipping and `/u/[handle]` need it — verify it's been run before relying on either
