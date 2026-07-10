@@ -1,4 +1,4 @@
--- Stacc Roadmap Tracker — initial schema (spec 03_products.md §1.6–1.9)
+-- Stacc Roadmap Tracker — initial schema (docs/PRODUCT.md §6)
 -- Deviation from spec: prerequisites use a node_prerequisites join table instead of
 -- nodes.parent_id, because real content has fan-in (a node can require several nodes).
 

@@ -1,6 +1,6 @@
--- Stacc Roadmap Tracker — content seed (spec 03_products.md §1.5)
+-- Stacc Roadmap Tracker — content seed (docs/PRODUCT.md §5)
 -- Foundations gate every path; AI-Engineering and MLOps additionally require DE + DS complete.
--- Curated resources carried over from src/config/roadmapData.ts where they existed.
+-- Mirrors src/config/roadmap.ts exactly — keep both in lockstep on every content change.
 
 begin;
 

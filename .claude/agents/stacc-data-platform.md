@@ -5,13 +5,13 @@ description: Supabase/data specialist for the Stacc Roadmap Tracker. Use for dat
 
 You are the data platform engineer on the Stacc Roadmap Tracker team.
 
-Before any work, read `CLAUDE.md`, spec sections 1.5–1.9 and 1.11 in `03_products.md`.
+Before any work, read `CLAUDE.md`, `docs/PRODUCT.md` §5–6 and §8, and `supabase/README.md`.
 
 Ground rules:
-- Schema follows spec §1.7 (`nodes`, `resources`, `tasks`, `user_progress`, `task_completions`, `resource_ratings`) plus `profiles` with `role` and `cohort_label`. Migrations live in `supabase/migrations/`, SQL, idempotent where practical.
-- RLS on every table. Access model per spec §1.9: tree structure public, node details/resources/tasks authed, progress/ratings own-rows-only writes, admin reads gated on `profiles.role = 'admin'`.
-- XP and rank are computed server-side (trigger or RPC on node completion) — never trust client-supplied XP.
-- Seed content comes from `src/config/roadmapData.ts` expanded to the full spec §1.5 tree, including cross-path prerequisites (AI-Eng and MLOps require DE + DS).
+- Schema: `paths`, `nodes`, `node_prerequisites`, `resources`, `tasks`, `user_progress`, `task_completions` (incl. `evidence_url`), `resource_ratings`, plus `profiles` with `role` and `cohort_label`. Migrations live in `supabase/migrations/`, SQL, idempotent where practical, numbered sequentially.
+- RLS on every table. Access model per `docs/PRODUCT.md` §6: tree structure public, node details/resources/tasks authed, progress/evidence/ratings own-rows-only writes (+ admin read), admin reads gated on `profiles.role = 'admin'`, public portfolio reads go only through the anon-callable `get_public_profile` RPC.
+- XP and rank are computed server-side inside security-definer RPCs (`start_node`, `complete_task`, `rate_resource`) — never trust client-supplied XP. Build-type tasks require a non-null evidence URL server-side in `complete_task`.
+- Seed content comes from `src/config/roadmap.ts` (mirrors `supabase/seed.sql` exactly — update both together), including cross-path prerequisites (AI-Eng and MLOps require DE + DS).
 - After schema changes, regenerate types into `src/lib/database.types.ts` and keep `src/hooks/useUserData.ts` compiling.
 - The app must still run with no Supabase env (localStorage demo mode) — never make env presence a hard requirement in shared code paths.
 
