@@ -2,15 +2,19 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChartNoAxesCombined, Compass, Route } from 'lucide-react';
+import { ChartNoAxesCombined, Compass, Route, UserRound } from 'lucide-react';
+import { useUserData } from '@/hooks/useUserData';
 
 export default function BottomBar() {
   const pathname = usePathname();
+  const { user } = useUserData();
 
   const items = [
     { name: 'Roadmap', href: '/roadmap', icon: Route },
     { name: 'Progress', href: '/dashboard', icon: ChartNoAxesCombined },
     { name: 'Explore', href: '/paths', icon: Compass },
+    // Sidebar only renders md+, so this is the only mobile path to the public portfolio.
+    { name: 'Profile', href: `/u/${encodeURIComponent(user.username)}`, icon: UserRound },
   ];
 
   return (
