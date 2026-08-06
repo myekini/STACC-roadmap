@@ -14,4 +14,6 @@ if (!hasSupabaseEnv && typeof window !== 'undefined' && process.env.NODE_ENV !==
 // Untyped client on purpose: RPC arg/return shapes are asserted at the call
 // sites in useUserData, and the generated Database generic would require the
 // full supabase-js codegen format. Revisit when CLI typegen is wired up.
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: { flowType: 'pkce' },
+});

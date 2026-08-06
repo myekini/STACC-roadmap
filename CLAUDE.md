@@ -31,7 +31,8 @@ non-trivial change — this file only holds what a session needs on every turn.
 
 - `src/app/` — routes: `/` (landing), `/paths`, `/roadmap` (skill tree + node sheet),
   `/dashboard`, `/admin`, `/u/[handle]` (public portfolio), `/tree` (public SEO tree),
-  `/auth/callback` (Supabase Discord OAuth PKCE handler — route.ts, no page.tsx).
+  `/auth/callback` (Supabase Discord OAuth PKCE handler — client page.tsx; exchanges the
+  code client-side since the PKCE verifier lives in the browser client's localStorage).
 - `src/config/roadmap.ts` — static content, source of truth for demo mode; mirrors
   `supabase/seed.sql` exactly. Read the editorial rules at the top before adding content.
 - `src/components/roadmap/` (SkillTreeCanvas, SkillTree, NodeSheet), `layout/` (AppLayout,
