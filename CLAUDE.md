@@ -31,7 +31,7 @@ non-trivial change — this file only holds what a session needs on every turn.
 
 - `src/app/` — routes: `/` (landing), `/paths`, `/roadmap` (skill tree + node sheet),
   `/dashboard`, `/admin`, `/u/[handle]` (public portfolio), `/tree` (public SEO tree),
-  `/auth/callback`.
+  `/auth/callback` (Supabase Discord OAuth PKCE handler — route.ts, no page.tsx).
 - `src/config/roadmap.ts` — static content, source of truth for demo mode; mirrors
   `supabase/seed.sql` exactly. Read the editorial rules at the top before adding content.
 - `src/components/roadmap/` (SkillTreeCanvas, SkillTree, NodeSheet), `layout/` (AppLayout,
@@ -43,9 +43,13 @@ non-trivial change — this file only holds what a session needs on every turn.
 ## Design DNA (inherited from the landing page — match it)
 
 - Aesthetic: **Modern Technical Brutalism** — terminal/mono, `rounded-none`, uppercase mono
-  micro-labels, `// comment`-style captions, bento-box grids. Dark-only, no light/dark toggle.
-- Colors: deep navy surfaces; **orange** = primary action; **cyan** = signal/focus/progress
-  energy. Style via CSS-var design tokens in `globals.css`, never hardcoded hex in components.
+  micro-labels, `// comment`-style captions, bento-box grids.
+- Theme: **Dark by default**, with a brand-aligned light mode (`html.light` class). Toggle stored
+  in Zustand `useUiStore.theme` and applied via `ThemeSync` in `AppProviders`. Light mode uses
+  slate surfaces (`#F8FAFC`) and signal cyan (`#0284c7`) / orange (`#EA580C`).
+- Colors: deep navy surfaces (dark) / slate-white surfaces (light); **orange** = primary action;
+  **cyan** = signal/focus/progress energy. Style via CSS-var design tokens in `globals.css`,
+  never hardcoded hex in components.
 - Fonts: Geist Sans + Geist Mono, loaded locally from `src/app/fonts/` (never Google Fonts).
 - Motion: intentional, not decorative. Always pair custom motion with `prefers-reduced-motion`
   fallbacks.

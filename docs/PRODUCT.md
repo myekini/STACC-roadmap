@@ -101,7 +101,7 @@ Module Analytics: starts/completions/completion-rate per node
 
 | Feature | Status | Notes |
 |---|---|---|
-| Skill tree | ✅ Shipped | Pan/zoom canvas (React Flow) on desktop with a canvas/list toggle; vertical rail on mobile. Public, structure-only version at `/tree` for SEO. |
+| Skill tree | ✅ Shipped | Pan/zoom canvas (React Flow) on desktop with a canvas/list toggle — the list is a zigzag center-spine layout (landing-page visual language); vertical rail on mobile. Public, structure-only version at `/tree` for SEO. |
 | Path selection | ✅ Shipped | Foundations + Data Engineering, Data Analysis, Data Science, AI Engineering, MLOps. AI-Eng and MLOps unlock only after DE + DS are fully complete. |
 | Node detail | ✅ Shipped | Description, skills, curated resources (2 per node, community-rated), tasks, estimated hours. |
 | Progress tracking | ✅ Shipped | Per-node and per-path completion; derived status `locked \| available \| in_progress \| complete`. |
@@ -211,8 +211,17 @@ micro-labels, `// comment`-style captions.
 - **`/roadmap`** — command header (overall %, streak, canvas/list toggle) + the skill tree.
   Desktop default is a pan/zoom canvas (React Flow): Foundations converge on a junction gate,
   the active specialization runs down a central trunk, skills fan out on dotted curves.
+  The desktop list view is a zigzag spine (adapted from the landing-page roadmap preview):
+  a central spine with a glowing progress fill that ends at the last completed junction,
+  module cards alternating sides, and skill chips fanning out on curved dashed connectors
+  opposite each card. Connector geometry is row-local (fixed chip heights), so it holds for
+  any node count. Mobile keeps the single-column left rail.
   Clicking a node opens a slide-in sheet with description, skills, resources (rateable), and
   tasks — build tasks show a "ship it" URL form instead of a checkbox.
+  A floating **field notes** pill (bottom-right, desktop, `❯ stacc explain "<module>"`
+  terminal framing) shows the curriculum description of the hovered/keyboard-focused node —
+  content comes straight from the roadmap config; it is *not* an AI feature. It only renders
+  while the tree is in view and yields to the node sheet.
 - **Sidebar** — collapsible to a 76px icon rail (persisted), one continuous navy/cyan-border
   shell with the TopBar (no duplicate branding, no mismatched tokens).
 - **`/dashboard`** — completion %, streak, hours invested, skills practiced, activity heatmap,

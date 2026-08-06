@@ -12,6 +12,7 @@ import { hasSupabaseEnv, supabase } from '@/utils/supabase/client';
 import { useUserData } from '@/hooks/useUserData';
 import type { PublicProfilePayload } from '@/lib/database.types';
 import { AppIcon } from '@/components/ui/app-icon';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { StaccMark } from '@/components/brand/StaccMark';
 
@@ -107,14 +108,13 @@ export default function PublicProfile({ handle }: { handle: string }) {
             <header className="border border-outline-variant bg-surface/80 p-6 sm:p-8">
               <p className="micro-label text-cyan">{`// member profile · public${demo ? ' · demo mode' : ''}`}</p>
               <div className="mt-4 flex items-center gap-4">
-                {payload.profile.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={payload.profile.avatar_url} alt="" className="h-16 w-16 border border-outline-variant object-cover" />
-                ) : (
-                  <div className="flex h-16 w-16 items-center justify-center border border-cyan/30 bg-cyan/10 font-display text-2xl font-bold text-cyan">
+                {/* Avatar — shadcn primitive, rounded-none for brutalist aesthetic */}
+                <Avatar className="h-16 w-16 rounded-none border border-outline-variant">
+                  <AvatarImage src={payload.profile.avatar_url ?? undefined} alt={payload.profile.username} className="object-cover" />
+                  <AvatarFallback className="rounded-none border border-cyan/30 bg-cyan/10 font-display text-2xl font-bold text-cyan">
                     {payload.profile.username.slice(0, 1).toUpperCase()}
-                  </div>
-                )}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="min-w-0">
                   <h1 className="truncate font-display text-3xl font-bold tracking-[-0.02em] text-on-surface">
                     {payload.profile.username}

@@ -6,7 +6,7 @@
  * restyled to Stacc and wired to real roadmap data via useAdminData.
  */
 import { useMemo, useState } from 'react';
-import { Download, LogIn } from 'lucide-react';
+import { Download, LogIn, MessageSquare } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 import { exportMembersCsv, useAdminData, type MemberRow } from '@/hooks/useAdminData';
 import { AdminShell, type AdminSection } from '@/components/admin/AdminShell';
@@ -14,6 +14,7 @@ import { StatCards } from '@/components/admin/StatCards';
 import { ModuleChart } from '@/components/admin/ModuleChart';
 import { MembersTable } from '@/components/admin/MembersTable';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { StatusMarker } from '@/components/roadmap/bits';
 import { StaccMark } from '@/components/brand/StaccMark';
@@ -40,24 +41,24 @@ function AdminLogin({ signIn }: { signIn: (email: string, password: string) => P
         <h1 className="mt-2 font-display text-2xl font-bold text-on-surface">Admin sign-in</h1>
         <label className="mt-6 block">
           <span className="micro-label text-outline">email</span>
-          <input
+          <Input
             type="email"
             required
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1.5 w-full border border-outline-variant bg-surface-container-low px-3 py-2.5 font-code text-sm text-on-surface outline-none transition-colors focus:border-cyan"
+            className="mt-1.5 rounded-none border-outline-variant bg-surface-container-low font-code text-sm focus-visible:ring-0 focus-visible:border-cyan"
           />
         </label>
         <label className="mt-4 block">
           <span className="micro-label text-outline">password</span>
-          <input
+          <Input
             type="password"
             required
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1.5 w-full border border-outline-variant bg-surface-container-low px-3 py-2.5 font-code text-sm text-on-surface outline-none transition-colors focus:border-cyan"
+            className="mt-1.5 rounded-none border-outline-variant bg-surface-container-low font-code text-sm focus-visible:ring-0 focus-visible:border-cyan"
           />
         </label>
         {error && <p className="mt-3 border-l-2 border-error pl-3 font-code text-[11px] text-error">{error}</p>}
@@ -77,7 +78,19 @@ function MemberDrilldown({ member, onClose }: { member: MemberRow | null; onClos
       <SheetContent className="overflow-y-auto no-scrollbar">
         <div className="border-b border-outline-variant bg-navy/60 p-6 pb-5">
           <p className="micro-label text-cyan">{`// member · ${member.cohort ?? 'no cohort'}`}</p>
-          <SheetTitle className="mt-2 font-display text-2xl font-bold">{member.username}</SheetTitle>
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <SheetTitle className="font-display text-2xl font-bold">{member.username}</SheetTitle>
+            {member.discordId && (
+              <a
+                href={`https://discord.com/users/${member.discordId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 border border-cyan/40 bg-cyan/10 px-2.5 py-1 font-code text-[10px] font-bold uppercase text-cyan hover:bg-cyan/20"
+              >
+                <MessageSquare className="h-3 w-3" /> Nudge
+              </a>
+            )}
+          </div>
           <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 font-code text-[10px] lowercase text-on-surface-variant">
             <span>overall {member.overallPct}%</span>
             <span>last active {member.lastActiveAt ? new Date(member.lastActiveAt).toLocaleDateString('en', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase() : 'never'}</span>

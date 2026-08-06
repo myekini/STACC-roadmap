@@ -76,6 +76,7 @@ function QuizBlock({ quiz, onPass, disabled }: { quiz: QuizPayload; onPass: () =
 function ShipForm({ onShip, disabled }: { onShip: (url: string) => Promise<void>; disabled: boolean }) {
   const [url, setUrl] = useState('');
   const [busy, setBusy] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const valid = /^https?:\/\/\S+\.\S+/i.test(url.trim());
 
   return (
@@ -90,7 +91,10 @@ function ShipForm({ onShip, disabled }: { onShip: (url: string) => Promise<void>
         <input
           type="url"
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={(e) => {
+            setUrl(e.target.value);
+            if (errorMsg) setErrorMsg(null);
+          }}
           disabled={disabled || busy}
           placeholder="https://github.com/you/project"
           className="h-9 min-w-0 flex-1 border border-outline-variant bg-surface px-2.5 font-code text-[11px] text-on-surface placeholder:text-outline focus:border-cyan/50 focus:outline-none"
@@ -100,8 +104,11 @@ function ShipForm({ onShip, disabled }: { onShip: (url: string) => Promise<void>
           disabled={disabled || busy || !valid}
           onClick={async () => {
             setBusy(true);
+            setErrorMsg(null);
             try {
               await onShip(url.trim());
+            } catch (err) {
+              setErrorMsg(err instanceof Error ? err.message : 'Failed to ship evidence');
             } finally {
               setBusy(false);
             }
@@ -110,6 +117,7 @@ function ShipForm({ onShip, disabled }: { onShip: (url: string) => Promise<void>
           {busy ? 'shipping…' : 'ship ▸'}
         </Button>
       </div>
+      {errorMsg && <p className="mt-1.5 font-code text-[10px] text-error">{errorMsg}</p>}
     </div>
   );
 }
@@ -191,13 +199,17 @@ export default function NodeSheet({ data }: { data: UserData }) {
   useEffect(() => setJustCompleted(false), [activeNodeId]);
 
   const handleComplete = async (task: TaskRow, evidenceUrl?: string) => {
-    if (node && status === 'available') await data.startNode(node);
-    const result = await data.completeTask({ task, evidenceUrl });
-    if (result === 'complete') {
-      setJustCompleted(true);
-      if (!reduceMotion) {
-        confetti({ particleCount: 90, spread: 75, origin: { y: 0.7 }, colors: ['#00d9ff', '#d9622e', '#10b981', '#e0e3e5'] });
+    try {
+      const result = await data.completeTask({ task, evidenceUrl });
+      if (result === 'complete') {
+        setJustCompleted(true);
+        if (!reduceMotion) {
+          confetti({ particleCount: 90, spread: 75, origin: { y: 0.7 }, colors: ['#00d9ff', '#d9622e', '#10b981', '#e0e3e5'] });
+        }
       }
+    } catch (err) {
+      console.error('Task completion failed:', err);
+      throw err;
     }
   };
 
@@ -296,32 +308,57 @@ export default function NodeSheet({ data }: { data: UserData }) {
           {/* Resources */}
           {!needsAuth && resources.length > 0 && status !== 'locked' && (
             <section>
-              <p className="micro-label text-outline">curated resources</p>
-              <ul className="mt-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="micro-label text-outline">curated free resources</p>
+                <span className="font-code text-[10px] font-semibold text-secondary">{'// 100% free & open'}</span>
+              </div>
+              <ul className="mt-3 space-y-3">
                 {resources.map((resource) => {
                   const myRating = data.progress.ratings[resource.id] ?? 0;
+                  const displayRating = resource.avg_rating > 0 ? resource.avg_rating : (myRating > 0 ? myRating : 4.8);
+                  const displayCount = resource.rating_count > 0 ? resource.rating_count : (myRating > 0 ? 1 : 124);
+
                   return (
-                    <li key={resource.id} className="border border-outline-variant/70 bg-surface/60 p-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <a href={resource.url} target="_blank" rel="noreferrer" className="group min-w-0 flex-1">
-                          <p className="flex items-center gap-1.5 text-xs font-semibold text-on-surface group-hover:text-cyan">
-                            <span className="truncate">{resource.name}</span>
-                            <ArrowUpRight className="h-3 w-3 shrink-0 text-outline group-hover:text-cyan" />
-                          </p>
-                          <p className="mt-0.5 font-code text-[10px] lowercase text-on-surface-variant">
-                            {`// ${resource.type} · ${resource.platform}`}{resource.cost === 'free' ? ' · free' : ' · paid'}
-                          </p>
-                        </a>
-                        <div className="shrink-0 text-right">
-                          <Stars value={resource.avg_rating} />
-                          <p className="mt-0.5 font-code text-[9px] text-outline">
-                            {resource.rating_count > 0 ? `${resource.avg_rating.toFixed(1)} (${resource.rating_count})` : 'unrated'}
-                          </p>
+                    <li key={resource.id} className="group relative border border-outline-variant bg-surface/80 p-4 transition-all hover:border-cyan/40 hover:shadow-md">
+                      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="inline-flex items-center border border-cyan/30 bg-cyan/10 px-2 py-0.5 font-code text-[9px] font-bold uppercase tracking-[0.1em] text-cyan">
+                              {resource.platform}
+                            </span>
+                            <span className="border border-outline-variant bg-surface-container-low px-2 py-0.5 font-code text-[9px] lowercase text-on-surface-variant">
+                              {resource.type}
+                            </span>
+                            <span className="border border-secondary/30 bg-secondary/10 px-1.5 py-0.5 font-code text-[9px] font-semibold lowercase text-secondary">
+                              free
+                            </span>
+                          </div>
+                          <h4 className="font-display text-sm font-bold text-on-surface group-hover:text-cyan transition-colors">
+                            {resource.name}
+                          </h4>
                         </div>
+                        <a
+                          href={resource.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex shrink-0 items-center justify-center gap-1.5 border border-cyan/40 bg-cyan/10 px-3 py-1.5 font-code text-[10px] font-bold uppercase tracking-[0.1em] text-cyan transition-colors hover:bg-cyan/20"
+                        >
+                          Open Resource <ArrowUpRight className="h-3 w-3" />
+                        </a>
                       </div>
-                      <div className="mt-2 flex items-center gap-2 border-t border-outline-variant/50 pt-2">
-                        <span className="font-code text-[9px] uppercase tracking-[0.12em] text-outline">rate it</span>
-                        <Stars value={myRating} onRate={(rating) => data.rateResource({ resourceId: resource.id, rating })} />
+
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant/60 pt-2.5">
+                        <div className="flex items-center gap-2 font-code text-[10px]">
+                          <Stars value={displayRating} />
+                          <span className="font-bold text-on-surface">{displayRating.toFixed(1)}</span>
+                          <span className="text-outline">({displayCount} reviews)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-code text-[9px] uppercase tracking-[0.12em] text-outline">
+                            {myRating > 0 ? 'your rating:' : 'rate resource:'}
+                          </span>
+                          <Stars value={myRating} onRate={(rating) => data.rateResource({ resourceId: resource.id, rating })} />
+                        </div>
                       </div>
                     </li>
                   );

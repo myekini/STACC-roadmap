@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Flame, List, Lock, Route, Waypoints } from 'lucide-react';
@@ -8,8 +9,10 @@ import { useUiStore, type TreeView } from '@/store/useUiStore';
 import SkillTree from '@/components/roadmap/SkillTree';
 import SkillTreeCanvas from '@/components/roadmap/SkillTreeCanvas';
 import NodeSheet from '@/components/roadmap/NodeSheet';
+import FieldNotes from '@/components/roadmap/FieldNotes';
 import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
 const TREE_VIEWS: { id: TreeView; label: string; icon: typeof List }[] = [
@@ -20,6 +23,7 @@ const TREE_VIEWS: { id: TreeView; label: string; icon: typeof List }[] = [
 export default function RoadmapPage() {
   const data = useUserData();
   const reduceMotion = useReducedMotion();
+  const treeRef = useRef<HTMLDivElement | null>(null);
   const { treeView, setTreeView } = useUiStore();
   const { paths, nodes, nodesByPath, progress, activePath, hasSelectedPath, isLoading } = data;
 
@@ -67,9 +71,11 @@ export default function RoadmapPage() {
             <div>
               <p className="micro-label text-outline">overall</p>
               <div className="mt-1 flex items-center gap-2">
-                <span className="inline-block h-1.5 w-28 bg-surface-container-high">
-                  <span className="block h-full bg-cyan transition-all duration-700" style={{ width: `${overallPct}%` }} />
-                </span>
+                {/* Progress primitive — rounded-none + cyan fill */}
+                <Progress
+                  value={overallPct}
+                  className="h-1.5 w-28 rounded-none bg-surface-container-high [&>div]:rounded-none [&>div]:bg-cyan"
+                />
                 <span className="font-code text-sm font-bold text-cyan">{overallPct}%</span>
               </div>
             </div>
@@ -134,7 +140,7 @@ export default function RoadmapPage() {
       </motion.header>
 
       {/* Tree */}
-      <div className="relative mt-8">
+      <div ref={treeRef} className="relative mt-8">
         <div aria-hidden className="pointer-events-none absolute inset-0 blueprint-grid opacity-50" />
         <div className="relative">
           {isLoading ? (
@@ -150,7 +156,7 @@ export default function RoadmapPage() {
                   <SkillTree data={data} pathId={pathId} />
                 </div>
                 <div className="hidden md:block">
-                  {treeView === 'canvas' ? <SkillTreeCanvas data={data} pathId={pathId} /> : <SkillTree data={data} pathId={pathId} />}
+                  {treeView === 'canvas' ? <SkillTreeCanvas data={data} pathId={pathId} /> : <SkillTree data={data} pathId={pathId} variant="spine" />}
                 </div>
               </>
             )
@@ -158,6 +164,7 @@ export default function RoadmapPage() {
         </div>
       </div>
 
+      <FieldNotes data={data} watchRef={treeRef} />
       <NodeSheet data={data} />
     </div>
   );

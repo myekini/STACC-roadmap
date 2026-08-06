@@ -40,11 +40,42 @@
   color-scheme: dark;
 }
 
+html.light {
+  --navy: #f8fafc;
+  --navy-2: #f1f5f9;
+  --navy-3: #e2e8f0;
+  --surface: #ffffff;
+  --surface-alt: #f8fafc;
+  --surface-high: #f1f5f9;
+  --surface-card: #ffffff;
+
+  --orange: #ea580c;
+  --orange-2: #f97316;
+  --orange-neon: #ea580c;
+  --orange-glow: rgba(234, 88, 12, 0.12);
+  --cyan: #0284c7;
+  --cyan-dim: rgba(2, 132, 199, 0.7);
+  --cyan-border: rgba(2, 132, 199, 0.25);
+  --cyan-bg: rgba(2, 132, 199, 0.08);
+
+  --fg: #0f172a;
+  --fg-muted: #475569;
+  --fg-dim: rgba(15, 23, 42, 0.4);
+
+  --border: rgba(2, 132, 199, 0.3);
+  --border-subtle: rgba(15, 23, 42, 0.12);
+
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  color-scheme: light;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* ── Terminal micro-label: uppercase mono chip, pair with `// caption` copy ── */

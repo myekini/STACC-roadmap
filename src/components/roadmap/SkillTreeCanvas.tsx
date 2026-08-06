@@ -32,18 +32,6 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { StatusMarker } from './bits';
 import { cn } from '@/lib/utils';
 
-// Token hexes for SVG edge strokes (Tailwind config values; SVG can't use classes).
-// "todo" edges use `outline` (lighter than outlineVariant) at partial alpha —
-// full outlineVariant reads as near-invisible hairlines against the navy canvas.
-const C = {
-  cyan: '#00d9ff',
-  cyanDim: 'rgba(0, 217, 255, 0.55)',
-  outlineVariant: '#2a3547',
-  outline: '#526174',
-  edgeTodo: 'rgba(131, 149, 172, 0.4)',
-  edgeTodoLocked: 'rgba(82, 97, 116, 0.35)',
-};
-
 // ── Layout constants (canvas units) ─────────────────────────
 const MODULE_W = 300;
 const FOUND_W = 220;
@@ -68,7 +56,7 @@ type JunctionData = { open: boolean };
 const ghostHandle = 'pointer-events-none !h-1.5 !w-1.5 !min-h-0 !min-w-0 !border-0 !bg-transparent';
 
 function ModuleNode({ data }: NodeProps<Node<ModuleData>>) {
-  const { setActiveNodeId } = useUiStore();
+  const { setActiveNodeId, setFocusedNodeId } = useUiStore();
   const { node, status, done, total, isCurrent, index } = data;
   const locked = status === 'locked';
 
@@ -78,6 +66,8 @@ function ModuleNode({ data }: NodeProps<Node<ModuleData>>) {
       <button
         type="button"
         onClick={() => setActiveNodeId(node.id)}
+        onMouseEnter={() => setFocusedNodeId(node.id)}
+        onFocus={() => setFocusedNodeId(node.id)}
         className={cn(
           'group relative block w-full overflow-hidden border bg-surface/90 p-4 text-left transition-all',
           locked
@@ -141,7 +131,7 @@ function ModuleNode({ data }: NodeProps<Node<ModuleData>>) {
 }
 
 function FoundationNode({ data }: NodeProps<Node<FoundationData>>) {
-  const { setActiveNodeId } = useUiStore();
+  const { setActiveNodeId, setFocusedNodeId } = useUiStore();
   const { node, status, isCurrent } = data;
   const locked = status === 'locked';
 
@@ -150,6 +140,8 @@ function FoundationNode({ data }: NodeProps<Node<FoundationData>>) {
       <button
         type="button"
         onClick={() => setActiveNodeId(node.id)}
+        onMouseEnter={() => setFocusedNodeId(node.id)}
+        onFocus={() => setFocusedNodeId(node.id)}
         className={cn(
           'flex w-full items-center gap-3 border bg-surface/90 p-3 text-left transition-all',
           locked
@@ -229,16 +221,16 @@ const nodeTypes = {
   junction: JunctionNode,
 };
 
-// ── Edge styling ─────────────────────────────────────────────
-const edgeDone = { stroke: C.cyan, strokeWidth: 2, filter: 'drop-shadow(0 0 3px rgba(0,217,255,0.5))' };
-const edgeTodo = { stroke: C.edgeTodo, strokeWidth: 1.75, strokeDasharray: '4 4' };
-const edgeNext = { stroke: C.cyanDim, strokeWidth: 1.75, strokeDasharray: '4 4' };
+// Token strokes for SVG edges (uses CSS variables for light/dark mode compatibility)
+const edgeDone = { stroke: 'var(--cyan)', strokeWidth: 2.2, filter: 'drop-shadow(0 0 4px var(--cyan-border))' };
+const edgeTodo = { stroke: 'var(--border-subtle)', strokeWidth: 1.5, strokeDasharray: '4 4' };
+const edgeNext = { stroke: 'var(--cyan-dim)', strokeWidth: 2, strokeDasharray: '4 4' };
 
 function chipEdgeStyle(status: NodeStatus) {
   return {
-    stroke: status === 'complete' ? C.cyanDim : status === 'locked' ? C.edgeTodoLocked : C.edgeTodo,
-    strokeWidth: 1.3,
-    strokeDasharray: '2 5',
+    stroke: status === 'complete' ? 'var(--cyan-dim)' : status === 'locked' ? 'var(--border-subtle)' : 'var(--border)',
+    strokeWidth: 1.4,
+    strokeDasharray: '3 3',
   };
 }
 
@@ -313,6 +305,7 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
     const complete = statusOf(n) === 'complete';
     edges.push({
       id: `e-${n.id}-junction`,
+      type: 'smoothstep',
       source: n.id,
       sourceHandle: 'out',
       target: 'junction',
@@ -346,7 +339,7 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
       focusIds = ['junction', n.id, pathNodes[i - 1]?.id, pathNodes[i + 1]?.id].filter((x): x is string => Boolean(x));
     }
 
-    // Skill chips fan out on alternating sides (Whimsical-style curved satellites).
+    // Skill chips fan out on alternating sides
     const side: 'l' | 'r' = i % 2 === 0 ? 'r' : 'l';
     const chipX = side === 'r' ? MODULE_W / 2 + 70 : -MODULE_W / 2 - 70 - CHIP_W;
     n.skills.forEach((skill, si) => {
@@ -361,6 +354,7 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
       });
       edges.push({
         id: `e-${chipId}`,
+        type: 'smoothstep',
         source: n.id,
         sourceHandle: side === 'r' ? 'skills-r' : 'skills-l',
         target: chipId,
@@ -375,6 +369,7 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
   const firstStatus = statusOf(first);
   edges.push({
     id: 'e-junction-first',
+    type: 'smoothstep',
     source: 'junction',
     sourceHandle: 'out',
     target: first.id,
@@ -392,6 +387,7 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
       const isNext = current?.id === n.id && data.nodeStatus(prereq) === 'complete';
       edges.push({
         id: `e-${prereq}-${n.id}`,
+        type: 'smoothstep',
         source: prereq,
         sourceHandle: 'out',
         target: n.id,

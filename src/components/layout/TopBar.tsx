@@ -3,22 +3,26 @@
 import { useUserData } from '@/hooks/useUserData';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { StaccMark } from '@/components/brand/StaccMark';
 import { useUiStore } from '@/store/useUiStore';
 import { cn } from '@/lib/utils';
 
+const PAGE_TITLES: Record<string, string> = {
+  '/dashboard': 'Progress',
+  '/roadmap': 'Roadmap',
+  '/paths': 'Explore paths',
+  '/admin': 'Admin',
+};
+
 export default function TopBar() {
   const { user, hasSelectedPath } = useUserData();
   const pathname = usePathname();
-  const { sidebarCollapsed } = useUiStore();
+  const { sidebarCollapsed, theme, toggleTheme } = useUiStore();
 
-  const pageTitle = pathname === '/dashboard'
-    ? 'Progress'
-    : pathname === '/roadmap'
-      ? 'Roadmap'
-      : 'Explore paths';
+  const pageTitle = PAGE_TITLES[pathname] ?? 'Stacc';
 
   return (
     <header
@@ -28,30 +32,44 @@ export default function TopBar() {
       )}
     >
       <div className="flex min-w-0 items-center gap-3">
-        {/* On desktop the Sidebar owns branding; only the mobile bar (no sidebar) shows the logo. */}
-        <Link href="/roadmap" className="flex items-center gap-2 font-code text-base font-bold uppercase tracking-[0.14em] text-on-surface md:hidden">
+        {/* On desktop the Sidebar owns branding; only the mobile bar shows the logo */}
+        <Link
+          href="/roadmap"
+          className="flex items-center gap-2 font-code text-base font-bold uppercase tracking-[0.14em] text-on-surface md:hidden"
+        >
           <StaccMark className="h-6 w-6" />
           <span>Stacc</span>
         </Link>
-        <p className="hidden truncate font-headline-md text-base font-semibold text-on-surface md:block">{pageTitle}</p>
+        <p className="hidden truncate font-headline-md text-base font-semibold text-on-surface md:block">
+          {pageTitle}
+        </p>
       </div>
 
-      <div className="flex items-center gap-1 sm:gap-2">
+      <div className="flex items-center gap-2">
         {hasSelectedPath && pathname !== '/roadmap' && (
-          <Button asChild size="sm" className="hidden sm:inline-flex"><Link href="/roadmap">Continue learning<ArrowRight /></Link></Button>
+          <Button asChild size="sm" className="hidden sm:inline-flex">
+            <Link href="/roadmap">Continue learning<ArrowRight /></Link>
+          </Button>
         )}
 
-        {/* User Profile Avatar */}
-        <div className="hidden sm:flex h-8 w-8 rounded-none bg-surface-container-high border border-outline-variant overflow-hidden shrink-0 items-center justify-center">
-          {user.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={user.avatar_url} alt={user.username} className="w-full h-full object-cover" />
-          ) : (
-            <span className="font-code text-[10px] font-bold uppercase text-on-surface-variant">
-              {user.username.slice(0, 2)}
-            </span>
-          )}
-        </div>
+        {/* Theme toggle button */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleTheme}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          className="h-8 w-8 rounded-none border-outline-variant bg-surface text-on-surface-variant hover:text-cyan"
+        >
+          {theme === 'dark' ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-cyan" />}
+        </Button>
+
+        {/* User avatar — Avatar primitive, rounded-none preserves brutalist aesthetic */}
+        <Avatar className="hidden sm:flex h-8 w-8 rounded-none border border-outline-variant">
+          <AvatarImage src={user.avatar_url ?? undefined} alt={user.username} className="object-cover" />
+          <AvatarFallback className="rounded-none bg-surface-container-high font-code text-[10px] font-bold uppercase text-on-surface-variant">
+            {user.username.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
       </div>
     </header>
   );

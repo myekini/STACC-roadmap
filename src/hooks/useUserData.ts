@@ -225,29 +225,43 @@ export function useUserData() {
     return map;
   }, [data?.nodes]);
 
+  const nodesById = useMemo(() => {
+    const map = new Map<string, NodeRow>();
+    for (const node of data?.nodes ?? []) map.set(node.id, node);
+    return map;
+  }, [data?.nodes]);
+
+  const pathsById = useMemo(() => {
+    const map = new Map<string, PathRow>();
+    for (const p of data?.paths ?? []) map.set(p.id, p);
+    return map;
+  }, [data?.paths]);
+
+  const startedNodesSet = useMemo(() => new Set(prog.startedNodes), [prog.startedNodes]);
+
   const pathFullyComplete = useCallback(
-    (pathId: string) => (nodesByPath[pathId] ?? []).every((n) => prog.completedNodes[n.id]),
+    (pathId: string) => (nodesByPath[pathId] ?? []).every((n) => Boolean(prog.completedNodes[n.id])),
     [nodesByPath, prog.completedNodes],
   );
 
   const pathUnlocked = useCallback(
     (pathId: string) => {
-      const path = data?.paths.find((p) => p.id === pathId);
+      const path = pathsById.get(pathId);
       return (path?.requires_paths ?? []).every(pathFullyComplete);
     },
-    [data?.paths, pathFullyComplete],
+    [pathsById, pathFullyComplete],
   );
 
   const nodeStatus = useCallback(
     (nodeId: string): NodeStatus => {
       if (prog.completedNodes[nodeId]) return 'complete';
-      const node = data?.nodes.find((n) => n.id === nodeId);
+      const node = nodesById.get(nodeId);
       if (node && !pathUnlocked(node.path_id)) return 'locked';
-      const unmet = (data?.prereqs[nodeId] ?? []).some((p) => !prog.completedNodes[p]);
-      if (unmet) return 'locked';
-      return prog.startedNodes.includes(nodeId) ? 'in_progress' : 'available';
+      const prereqList = data?.prereqs[nodeId];
+      if (prereqList && prereqList.some((p) => !prog.completedNodes[p])) return 'locked';
+      return startedNodesSet.has(nodeId) ? 'in_progress' : 'available';
     },
-    [data?.nodes, data?.prereqs, pathUnlocked, prog.completedNodes, prog.startedNodes],
+    [data?.prereqs, nodesById, pathUnlocked, prog.completedNodes, startedNodesSet],
   );
 
   // Activity by date: modules completed per day (drives heatmap + streak).
@@ -359,6 +373,28 @@ export function useUserData() {
     },
   }).mutateAsync;
 
+  const renameUsername = useMutation({
+    mutationFn: async (newUsername: string) => {
+      const clean = newUsername.trim();
+      if (clean.length < 3 || clean.length > 20) {
+        throw new Error('Username must be between 3 and 20 characters.');
+      }
+      if (!/^[a-zA-Z0-9_-]+$/.test(clean)) {
+        throw new Error('Username can only contain letters, numbers, underscores, and hyphens.');
+      }
+      if (connected && userId) {
+        const { error } = await supabase.rpc('rename_username', { p_new_username: clean });
+        if (error) throw error;
+      } else {
+        writeLS(LS.profile, { username: clean });
+      }
+      return clean;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+  }).mutateAsync;
+
   // ── Auth ────────────────────────────────────────────────
   const signInWithDiscord = async () => {
     if (!connected) return;
@@ -411,6 +447,7 @@ export function useUserData() {
     startNode,
     completeTask,
     rateResource,
+    renameUsername,
     signInWithDiscord,
     signInWithPassword,
     signOut,

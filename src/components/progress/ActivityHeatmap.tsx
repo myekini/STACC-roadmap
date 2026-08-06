@@ -1,6 +1,7 @@
 'use client';
 
 import { CalendarDays } from 'lucide-react';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /** activity: map of YYYY-MM-DD -> modules completed that day */
 export default function ActivityHeatmap({ activity }: { activity: Record<string, number> }) {
@@ -10,72 +11,53 @@ export default function ActivityHeatmap({ activity }: { activity: Record<string,
   const getGridData = () => {
     const data: { date: string; count: number; dayOfWeek: number }[] = [];
     const today = new Date();
-    
-    // We want to start the grid on a Sunday 365 days ago
+
+    // Start on a Sunday ~365 days ago
     const startDate = new Date();
     startDate.setDate(today.getDate() - 364);
-    
-    // Adjust to the previous Sunday
-    const startDay = startDate.getDay();
-    startDate.setDate(startDate.getDate() - startDay);
+    startDate.setDate(startDate.getDate() - startDate.getDay());
 
     const tempDate = new Date(startDate);
-    
-    while (tempDate <= today || data.length < 371) { // 53 weeks * 7 days = 371
+
+    while (tempDate <= today || data.length < 371) {
       const dateString = tempDate.toISOString().split('T')[0];
-      const count = heatmapData[dateString] || 0;
-      
-      data.push({
-        date: dateString,
-        count: count,
-        dayOfWeek: tempDate.getDay(),
-      });
-      
+      data.push({ date: dateString, count: heatmapData[dateString] || 0, dayOfWeek: tempDate.getDay() });
       tempDate.setDate(tempDate.getDate() + 1);
     }
-    
-    // Group into 53 weeks
+
     const weeks: typeof data[] = [];
-    for (let i = 0; i < data.length; i += 7) {
-      weeks.push(data.slice(i, i + 7));
-    }
-    
+    for (let i = 0; i < data.length; i += 7) weeks.push(data.slice(i, i + 7));
     return weeks;
   };
 
   const weeks = getGridData();
 
-  // Color mapping based on activity count
+  // Cyan = signal/focus/progress energy (design DNA)
   const getCellColor = (count: number) => {
-    if (count === 0) return 'bg-surface-container-high dark:bg-inverse-surface/30';
-    if (count === 1) return 'bg-secondary/20 dark:bg-secondary-fixed-dim/20 text-secondary';
-    if (count === 2) return 'bg-secondary/40 dark:bg-secondary-fixed-dim/40';
-    if (count === 3) return 'bg-secondary/70 dark:bg-secondary-fixed-dim/70';
-    return 'bg-secondary dark:bg-secondary-fixed-dim'; // Max intensity
+    if (count === 0) return 'bg-surface-container-high';
+    if (count === 1) return 'bg-cyan/15';
+    if (count === 2) return 'bg-cyan/35';
+    if (count === 3) return 'bg-cyan/60';
+    return 'bg-cyan';
   };
 
-  // Month labels helper
   const getMonthLabels = () => {
     const labels: { text: string; colSpan: number }[] = [];
     let currentMonth = '';
     let colCount = 0;
 
     weeks.forEach((week) => {
-      // Look at the middle day of the week to decide month
       const midDay = new Date(week[3].date);
       const monthName = midDay.toLocaleString('default', { month: 'short' });
-      
       if (monthName !== currentMonth) {
-        if (currentMonth !== '') {
-          labels.push({ text: currentMonth, colSpan: colCount });
-        }
+        if (currentMonth !== '') labels.push({ text: currentMonth, colSpan: colCount });
         currentMonth = monthName;
         colCount = 1;
       } else {
         colCount++;
       }
     });
-    
+
     labels.push({ text: currentMonth, colSpan: colCount });
     return labels;
   };
@@ -83,25 +65,23 @@ export default function ActivityHeatmap({ activity }: { activity: Record<string,
   const monthLabels = getMonthLabels();
 
   return (
-    <div className="bg-surface border border-outline-variant rounded-xl p-5 shadow-sm dark:bg-inverse-surface/10 dark:border-outline/25">
+    <div className="border border-outline-variant bg-surface p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-headline-md text-base font-bold text-on-surface dark:text-on-surface flex items-center gap-2">
-          <CalendarDays className="h-5 w-5 text-secondary" />
+        <h3 className="font-headline-md text-base font-bold text-on-surface flex items-center gap-2">
+          <CalendarDays className="h-5 w-5 text-cyan" />
           Study Consistency
         </h3>
-        <span className="text-xs text-on-surface-variant dark:text-outline-variant font-medium">
-          Last 12 Months
-        </span>
+        <span className="micro-label text-outline">Last 12 Months</span>
       </div>
 
-      {/* Heatmap Grid Wrapper */}
-      <div className="overflow-x-auto no-scrollbar pb-2">
+      {/* ScrollArea for consistent cross-browser scrollbar styling */}
+      <ScrollArea className="w-full pb-2">
         <div className="min-w-[620px] flex flex-col">
-          {/* Month Labels Row */}
+          {/* Month Labels */}
           <div className="flex text-[10px] text-outline mb-1.5 font-code pl-6">
             {monthLabels.map((label, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 style={{ width: `${(label.colSpan / weeks.length) * 100}%` }}
                 className="truncate pr-1 text-left font-semibold"
               >
@@ -111,7 +91,7 @@ export default function ActivityHeatmap({ activity }: { activity: Record<string,
           </div>
 
           <div className="flex gap-2">
-            {/* Day of Week Labels Column */}
+            {/* Day-of-week labels */}
             <div className="flex flex-col justify-between text-[9px] text-outline font-code pr-1 h-[76px] py-0.5 select-none">
               <span>Sun</span>
               <span>Tue</span>
@@ -119,17 +99,15 @@ export default function ActivityHeatmap({ activity }: { activity: Record<string,
               <span>Sat</span>
             </div>
 
-            {/* Grid Columns (Weeks) */}
+            {/* Week columns */}
             <div className="flex-1 grid grid-flow-col auto-cols-max gap-[3px]">
               {weeks.map((week, weekIdx) => (
                 <div key={weekIdx} className="grid grid-rows-7 gap-[3px]">
                   {week.map((day) => (
                     <div
                       key={day.date}
-                      className={`w-[8px] h-[8px] sm:w-[9px] sm:h-[9px] rounded-none transition-all duration-200 cursor-pointer ${getCellColor(
-                        day.count
-                      )}`}
-                      title={`${day.count} activity points on ${new Date(day.date).toLocaleDateString()}`}
+                      className={`w-[8px] h-[8px] sm:w-[9px] sm:h-[9px] rounded-none transition-colors duration-200 cursor-pointer ${getCellColor(day.count)}`}
+                      title={`${day.count} activity on ${new Date(day.date).toLocaleDateString()}`}
                     />
                   ))}
                 </div>
@@ -137,16 +115,17 @@ export default function ActivityHeatmap({ activity }: { activity: Record<string,
             </div>
           </div>
         </div>
-      </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
 
       {/* Legend */}
-      <div className="flex justify-end items-center gap-1.5 mt-3 text-[10px] text-on-surface-variant dark:text-outline-variant font-code select-none">
+      <div className="flex justify-end items-center gap-1.5 mt-3 text-[10px] text-on-surface-variant font-code select-none">
         <span>Less</span>
-        <div className="w-2.5 h-2.5 rounded-none bg-surface-container-high dark:bg-inverse-surface/30"></div>
-        <div className="w-2.5 h-2.5 rounded-none bg-secondary/20 dark:bg-secondary-fixed-dim/20"></div>
-        <div className="w-2.5 h-2.5 rounded-none bg-secondary/40 dark:bg-secondary-fixed-dim/40"></div>
-        <div className="w-2.5 h-2.5 rounded-none bg-secondary/70 dark:bg-secondary-fixed-dim/70"></div>
-        <div className="w-2.5 h-2.5 rounded-none bg-secondary dark:bg-secondary-fixed-dim"></div>
+        <div className="w-2.5 h-2.5 rounded-none bg-surface-container-high" />
+        <div className="w-2.5 h-2.5 rounded-none bg-cyan/15" />
+        <div className="w-2.5 h-2.5 rounded-none bg-cyan/35" />
+        <div className="w-2.5 h-2.5 rounded-none bg-cyan/60" />
+        <div className="w-2.5 h-2.5 rounded-none bg-cyan" />
         <span>More</span>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { ArrowRight, CheckCircle2, Compass, Hourglass, Lock } from 'lucide-react
 import { useUserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { AppIcon } from '@/components/ui/app-icon';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +16,7 @@ const PATH_META: Record<string, { outcome: string; level: string; project: strin
   ds: { outcome: 'Model, test, and explain predictions', level: 'Intermediate', project: 'Predictive research project', accent: 'border-tertiary/40 bg-tertiary/10 text-tertiary' },
   'ai-engineering': { outcome: 'Build useful AI products', level: 'Advanced track', project: 'RAG-powered assistant', accent: 'border-primary/40 bg-primary/10 text-primary-neon' },
   mlops: { outcome: 'Ship and monitor ML systems', level: 'Advanced track', project: 'Automated ML platform', accent: 'border-outline-variant bg-surface-container-high text-on-surface-variant' },
+  'full-stack': { outcome: 'Build complete web apps end-to-end', level: 'Intermediate track', project: 'Production SaaS application', accent: 'border-orange/40 bg-orange/10 text-orange' },
 };
 
 export default function PathSelectionPage() {
@@ -119,9 +121,10 @@ export default function PathSelectionPage() {
               </dl>
 
               {done > 0 && (
-                <div className="mt-4 h-1 w-full bg-surface-container-high">
-                  <div className="h-full bg-cyan transition-all duration-500" style={{ width: `${pathNodes.length ? (done / pathNodes.length) * 100 : 0}%` }} />
-                </div>
+                <Progress
+                  value={pathNodes.length ? (done / pathNodes.length) * 100 : 0}
+                  className="mt-4 h-1 w-full rounded-none bg-surface-container-high [&>div]:rounded-none [&>div]:bg-cyan"
+                />
               )}
 
               <div className="mt-4 border border-outline-variant/60 bg-surface-container-low p-3">

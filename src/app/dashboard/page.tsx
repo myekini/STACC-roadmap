@@ -8,6 +8,7 @@ import { ArrowRight, Brain, CircleCheck, Flame, Hourglass, Trophy } from 'lucide
 import { useUserData } from '@/hooks/useUserData';
 import ActivityHeatmap from '@/components/progress/ActivityHeatmap';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { AppIcon } from '@/components/ui/app-icon';
 import { cn } from '@/lib/utils';
 
@@ -82,9 +83,11 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="micro-label text-outline">overall completion</p>
-              <span className="mt-1 inline-block h-1.5 w-36 bg-surface-container-high">
-                <span className="block h-full bg-cyan transition-all duration-700" style={{ width: `${overallPct}%` }} />
-              </span>
+              {/* Progress primitive — rounded-none + cyan fill per design DNA */}
+              <Progress
+                value={overallPct}
+                className="mt-1.5 h-1.5 w-36 rounded-none bg-surface-container-high [&>div]:rounded-none [&>div]:bg-cyan"
+              />
             </div>
             <span className="border-l border-outline-variant pl-4 font-display text-2xl font-bold text-cyan">{overallPct}%</span>
           </div>

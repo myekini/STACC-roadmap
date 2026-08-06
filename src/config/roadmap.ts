@@ -685,6 +685,106 @@ const PATH_DEFS: PathDef[] = [
       },
     ],
   },
+  {
+    id: 'full-stack',
+    title: 'Full Stack',
+    description: 'Build end-to-end web applications. Master modern frontend, robust backend APIs, databases, and deployment.',
+    icon: 'code',
+    tags: ['React', 'Next.js', 'Node.js', 'PostgreSQL', 'Docker', 'Vercel'],
+    requiresPaths: [],
+    nodes: [
+      {
+        slug: 'fs-web-arch', name: 'Web Architecture', subtitle: 'HTTP, APIs, & Browsers',
+        description: 'Client-server architecture, HTTP verbs, status codes, JSON APIs, and browser rendering.',
+        icon: 'language', estHours: 8, xp: 100,
+        skills: ['HTTP & REST', 'Browser rendering', 'API fundamentals'], prereqs: FOUNDATION_SLUGS,
+        resources: [
+          ['MDN Web Docs: Learn Web Development', 'documentation', 'Mozilla', 'https://developer.mozilla.org/en-US/docs/Learn'],
+          ['CS50: Intro to Computer Science', 'course', 'Harvard', 'https://cs50.harvard.edu/x/'],
+        ],
+        tasks: [
+          ['Work through MDN Web Architecture & HTTP guides', 'read'],
+          ['Build: inspect network requests of 3 real sites and document API schemas', 'build'],
+          ['Checkpoint quiz', 'quiz', quiz('Which HTTP status code signifies a resource was successfully created?', ['200 OK', '201 Created', '301 Moved', '404 Not Found'], 1, '201 Created explicitly indicates that the request succeeded and a new resource was created.')],
+        ],
+      },
+      {
+        slug: 'fs-frontend', name: 'Modern Frontend', subtitle: 'React & Next.js',
+        description: 'Component architecture, state management, hooks, and responsive UI design.',
+        icon: 'devices', estHours: 14, xp: 200,
+        skills: ['React Hooks', 'Next.js App Router', 'Tailwind CSS'], prereqs: ['fs-web-arch'],
+        resources: [
+          ['React Official Documentation', 'documentation', 'Meta', 'https://react.dev/learn'],
+          ['Full Stack Open: React', 'course', 'University of Helsinki', 'https://fullstackopen.com/en/'],
+        ],
+        tasks: [
+          ['Complete the official React Interactive Tutorial', 'read'],
+          ['Build: a responsive interactive web UI connected to mock API data', 'build'],
+          ['Checkpoint quiz', 'quiz', quiz('In React, useEffect with an empty dependency array [] runs…', ['On every render', 'Only once when the component mounts', 'Never', 'On state changes'], 1, 'An empty dependency array ensures the effect runs only once after the initial render.')],
+        ],
+      },
+      {
+        slug: 'fs-backend', name: 'Backend & APIs', subtitle: 'Node.js & Express',
+        description: 'Design RESTful APIs, authentication, request validation, and middleware pipelines.',
+        icon: 'dns', estHours: 14, xp: 200,
+        skills: ['Node.js & Express', 'REST APIs', 'Auth & JWT'], prereqs: ['fs-frontend'],
+        resources: [
+          ['The Odin Project: NodeJS Course', 'course', 'The Odin Project', 'https://www.theodinproject.com/paths/full-stack-javascript/courses/nodejs'],
+          ['Node.js Official Docs', 'documentation', 'NodeJS Foundation', 'https://nodejs.org/en/docs/'],
+        ],
+        tasks: [
+          ['Study Node.js REST API architecture and authentication patterns', 'read'],
+          ['Build: a REST API with CRUD endpoints, validation, and JWT auth', 'build'],
+          ['Checkpoint quiz', 'quiz', quiz('Express middleware functions execute…', ['In parallel', 'Sequentially in the order registered', 'After the response is sent', 'Only on errors'], 1, 'Middleware functions run in sequential order as declared until res.send() or next() is invoked.')],
+        ],
+      },
+      {
+        slug: 'fs-db', name: 'Database Integration', subtitle: 'PostgreSQL & ORMs',
+        description: 'Relational schema design, SQL migrations, query optimization, and ORM abstractions.',
+        icon: 'database', estHours: 12, xp: 250,
+        skills: ['PostgreSQL', 'Prisma / Drizzle ORM', 'Database migrations'], prereqs: ['fs-backend'],
+        resources: [
+          ['PostgreSQL Official Tutorial', 'documentation', 'PostgreSQL', 'https://www.postgresql.org/docs/online-resources/'],
+          ['Prisma ORM Guide', 'documentation', 'Prisma', 'https://www.prisma.io/docs'],
+        ],
+        tasks: [
+          ['Study relational data modeling and ORM migration workflows', 'read'],
+          ['Build: connect your backend service to PostgreSQL using an ORM with seed data', 'build'],
+          ['Checkpoint quiz', 'quiz', quiz('Foreign keys in relational databases enforce…', ['Faster index queries', 'Referential integrity', 'Automatic encryption', 'Compression'], 1, 'Foreign keys ensure referential integrity between matching columns across related tables.')],
+        ],
+      },
+      {
+        slug: 'fs-devops', name: 'DevOps & Deployment', subtitle: 'From localhost to prod',
+        description: 'Containerization, environment management, continuous deployment, and performance monitoring.',
+        icon: 'cloud_upload', estHours: 12, xp: 250,
+        skills: ['Docker containers', 'Vercel / Render', 'Environment security'], prereqs: ['fs-db'],
+        resources: [
+          ['Vercel Deployment Docs', 'documentation', 'Vercel', 'https://vercel.com/docs'],
+          ['Docker for Web Developers', 'course', 'Docker', 'https://docs.docker.com/language/nodejs/'],
+        ],
+        tasks: [
+          ['Study deployment pipelines and environment variable security', 'read'],
+          ['Build: deploy your full-stack app with production database hosting and SSL', 'build'],
+          ['Checkpoint quiz', 'quiz', quiz('Sensitive keys (DB passwords, secret tokens) should be stored in…', ['Git repository source code', 'Environment variables', 'Public HTML files', 'Browser LocalStorage'], 1, 'Environment variables keep secret credentials out of source repositories and client browsers.')],
+        ],
+      },
+      {
+        slug: 'fs-capstone', name: 'Full Stack Capstone', subtitle: 'Production Application',
+        description: 'Build and ship a production-grade full-stack web application with authentication, database, and CI/CD.',
+        icon: 'rocket_launch', estHours: 20, xp: 300,
+        skills: ['End-to-end architecture', 'Security & auth', 'Production delivery'], prereqs: ['fs-devops'],
+        resources: [
+          ['Full Stack Open Capstone Guidelines', 'course', 'University of Helsinki', 'https://fullstackopen.com/en/part9'],
+          ['System Design Primer', 'documentation', 'GitHub (donnemartin)', 'https://github.com/donnemartin/system-design-primer'],
+        ],
+        tasks: [
+          ['Design full-stack system architecture and schema', 'read'],
+          ['Build: ship a live full-stack app with public URL, repository, and automated tests', 'build'],
+          ['Checkpoint quiz', 'quiz', quiz('Before launching to real users, a full stack app must verify…', ['Color palette only', 'Auth security, database backups, and error logging', 'Localhost speed', 'Number of files'], 1, 'Production readiness requires security, backups, logging, and performance validation.')],
+        ],
+      },
+    ],
+  },
 ];
 
 // ── Flattened, DB-row-shaped exports (id === slug in local mode) ──
