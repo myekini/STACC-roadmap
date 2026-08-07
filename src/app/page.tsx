@@ -1,14 +1,29 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, LogIn } from 'lucide-react';
+import { AlertTriangle, ArrowRight, LogIn } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 import HeroRail from '@/components/landing/HeroRail';
 import { Button } from '@/components/ui/button';
 import { StaccMark } from '@/components/brand/StaccMark';
+
+// useSearchParams() opts this out of static prerendering unless isolated
+// behind a Suspense boundary, per Next 14 App Router requirements.
+function AuthErrorBanner() {
+  const authError = useSearchParams().get('authError');
+  if (!authError) return null;
+  return (
+    <div className="mt-6 flex items-start gap-2.5 border border-orange/40 bg-orange/10 px-4 py-3">
+      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange" />
+      <p className="font-code text-xs leading-5 text-on-surface-variant">
+        <span className="font-semibold uppercase text-orange">sign-in failed —</span> {authError}
+      </p>
+    </div>
+  );
+}
 
 export default function LandingPage() {
   const { isAuthenticated, signInWithDiscord, isSupabaseConnected, hasSelectedPath } = useUserData();
@@ -66,6 +81,10 @@ export default function LandingPage() {
               </Button>
             )}
           </div>
+
+          <Suspense fallback={null}>
+            <AuthErrorBanner />
+          </Suspense>
 
           <div className="mt-10 grid max-w-md grid-cols-3 gap-6 border-t border-outline-variant pt-6">
             {[['5', 'career paths'], ['38', 'skill modules'], ['1', 'next step at a time']].map(([value, label]) => (

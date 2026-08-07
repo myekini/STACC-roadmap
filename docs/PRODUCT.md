@@ -181,11 +181,17 @@ below. Two deliberate deviations from the earliest spec sketch:
   node can require several prerequisites, e.g. every specialization's first node requires all
   six Foundations nodes).
 - **No custom REST API layer.** There is no `/api/roadmap`, `/api/progress`, etc. The frontend
-  talks to Supabase directly (`@supabase/supabase-js`) for reads, and to four security-definer
-  RPCs for every write: `start_node`, `complete_task` (now takes an optional evidence URL —
-  migration `0002_evidence.sql`), `rate_resource`, and the anon-callable `get_public_profile`
-  for portfolio pages. See `supabase/README.md` for the full RLS/RPC design notes and setup
-  steps.
+  talks to Supabase directly (via `@supabase/ssr`'s cookie-based `createBrowserClient`, see
+  `src/utils/supabase/client.ts`) for reads, and to four security-definer RPCs for every write:
+  `start_node`, `complete_task` (now takes an optional evidence URL — migration
+  `0002_evidence.sql`), `rate_resource`, and the anon-callable `get_public_profile` for
+  portfolio pages. See `supabase/README.md` for the full RLS/RPC design notes and setup steps.
+- **Session storage is cookie-based, not localStorage.** `src/utils/supabase/client.ts` uses
+  `createBrowserClient`, `src/utils/supabase/server.ts` uses `createServerClient` (Route
+  Handlers), and root `middleware.ts` + `src/utils/supabase/middleware.ts` refresh the session
+  cookie on every request. This is required for the OAuth PKCE code exchange in
+  `src/app/auth/callback/route.ts` to reliably find the code verifier server-side — localStorage
+  doesn't survive the full-page redirect to Discord and back in all browsers/privacy modes.
 
 **Access control:**
 
@@ -308,7 +314,8 @@ on both sides.
 
 - `src/app/` — routes: `/` (landing), `/paths` (path selection), `/roadmap` (skill tree + node
   sheet), `/dashboard` (progress), `/admin` (admin panel), `/u/[handle]` (public portfolio),
-  `/tree` (public SEO tree), `/auth/callback` (Supabase OAuth).
+  `/tree` (public SEO tree), `/auth/callback` (Supabase OAuth — server Route Handler, see §6).
+  Root `middleware.ts` refreshes the session cookie on every request.
 - `src/config/roadmap.ts` — static path/node/resource/task/quiz content, source of truth for
   demo mode; mirrors `supabase/seed.sql` exactly. See the editorial rules at the top of that
   file (3 skills/node, 2 resources/node) before adding content.

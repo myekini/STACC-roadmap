@@ -11,6 +11,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import type { Session } from '@supabase/supabase-js';
 import { hasSupabaseEnv, supabase } from '@/utils/supabase/client';
 import {
@@ -85,6 +86,7 @@ const GUEST = { id: 'guest', username: 'Guest Dev', avatar_url: '', role: 'admin
 
 export function useUserData() {
   const queryClient = useQueryClient();
+  const pathname = usePathname();
   const [session, setSession] = useState<Session | null>(null);
   const connected = hasSupabaseEnv;
   const userId = session?.user?.id;
@@ -398,9 +400,10 @@ export function useUserData() {
   // ── Auth ────────────────────────────────────────────────
   const signInWithDiscord = async () => {
     if (!connected) return;
+    const next = pathname && pathname !== '/' ? `?next=${encodeURIComponent(pathname)}` : '';
     await supabase.auth.signInWithOAuth({
       provider: 'discord',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}/auth/callback${next}` },
     });
   };
 

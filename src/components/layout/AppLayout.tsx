@@ -14,16 +14,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { sidebarCollapsed } = useUiStore();
   const isRoadmap = pathname === '/roadmap';
 
-  // Landing, the public SEO tree, public portfolios, admin (its own dedicated shell), and the
-  // OAuth callback (its own full-screen status UI, must mount immediately) render without the
-  // member app shell — they must not be gated behind useUserData's isLoading.
-  if (
-    pathname === '/' ||
-    pathname === '/tree' ||
-    pathname === '/admin' ||
-    pathname === '/auth/callback' ||
-    pathname.startsWith('/u/')
-  ) {
+  // Landing, the public SEO tree, public portfolios, and admin (its own dedicated shell) render
+  // without the member app shell. /auth/callback is a server Route Handler (no React render
+  // there at all), so it never reaches this component.
+  if (pathname === '/' || pathname === '/tree' || pathname === '/admin' || pathname.startsWith('/u/')) {
     return <>{children}</>;
   }
 
