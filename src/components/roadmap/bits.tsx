@@ -1,8 +1,87 @@
 'use client';
 
-import { Check, Lock, Play, Star } from 'lucide-react';
+import { useState } from 'react';
+import { Check, ListVideo, Lock, Play, Star } from 'lucide-react';
 import type { NodeStatus, TaskType } from '@/lib/database.types';
 import { cn } from '@/lib/utils';
+
+export type YouTubeRef = { kind: 'video'; id: string } | { kind: 'playlist'; id: string };
+
+/** Extracts a YouTube video/playlist ref from watch/short/embed/playlist URL shapes; null if not YouTube. */
+export function getYouTubeRef(url: string): YouTubeRef | null {
+  try {
+    const u = new URL(url);
+    if (!/(^|\.)youtube\.com$/.test(u.hostname) && u.hostname !== 'youtu.be') return null;
+    if (u.hostname === 'youtu.be') {
+      const id = u.pathname.slice(1);
+      return id ? { kind: 'video', id } : null;
+    }
+    if (u.pathname === '/watch') {
+      const id = u.searchParams.get('v');
+      return id ? { kind: 'video', id } : null;
+    }
+    if (u.pathname === '/playlist') {
+      const id = u.searchParams.get('list');
+      return id ? { kind: 'playlist', id } : null;
+    }
+    const embedMatch = u.pathname.match(/^\/(embed|shorts)\/([^/?]+)/);
+    return embedMatch ? { kind: 'video', id: embedMatch[2] } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Click-to-load inline player — shows a thumbnail (or a playlist marker) until the user
+ * opts in, so the node sheet doesn't fire YouTube's embed scripts/cookies for every
+ * resource up front. */
+export function YouTubeEmbed({ source, title }: { source: YouTubeRef; title: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const embedSrc =
+    source.kind === 'video'
+      ? `https://www.youtube-nocookie.com/embed/${source.id}?autoplay=1`
+      : `https://www.youtube-nocookie.com/embed/videoseries?list=${source.id}&autoplay=1`;
+
+  if (loaded) {
+    return (
+      <div className="mt-3 aspect-video w-full overflow-hidden border border-outline-variant bg-black">
+        <iframe
+          className="h-full w-full"
+          src={embedSrc}
+          title={title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setLoaded(true)}
+      className="group/embed relative mt-3 block aspect-video w-full overflow-hidden border border-outline-variant bg-surface-container-low"
+    >
+      {source.kind === 'video' ? (
+        // eslint-disable-next-line @next/next/no-img-element -- external YouTube CDN thumbnail, not an app asset
+        <img
+          src={`https://i.ytimg.com/vi/${source.id}/hqdefault.jpg`}
+          alt=""
+          className="h-full w-full object-cover opacity-80 transition-opacity group-hover/embed:opacity-100"
+        />
+      ) : (
+        <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-surface-container-low">
+          <ListVideo className="h-8 w-8 text-outline" />
+          <span className="font-code text-[10px] uppercase tracking-[0.12em] text-outline">full playlist</span>
+        </div>
+      )}
+      <span className="absolute inset-0 flex items-center justify-center bg-black/25 transition-colors group-hover/embed:bg-black/10">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-transform group-hover/embed:scale-110">
+          <Play className="h-5 w-5 translate-x-0.5" fill="currentColor" />
+        </span>
+      </span>
+    </button>
+  );
+}
 
 /** Square status marker used on tree rails and cards */
 export function StatusMarker({ status, size = 'md' }: { status: NodeStatus; size?: 'sm' | 'md' }) {

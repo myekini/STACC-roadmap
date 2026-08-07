@@ -21,6 +21,9 @@ interface UiState {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
+  /** Node detail sheet: wide reading mode (more room for embedded video/resources), persisted */
+  nodeSheetExpanded: boolean;
+  toggleNodeSheetExpanded: () => void;
 }
 
 export const useUiStore = create<UiState>()(
@@ -37,6 +40,8 @@ export const useUiStore = create<UiState>()(
       theme: 'dark',
       setTheme: (theme) => set({ theme }),
       toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
+      nodeSheetExpanded: false,
+      toggleNodeSheetExpanded: () => set((s) => ({ nodeSheetExpanded: !s.nodeSheetExpanded })),
     }),
     {
       name: 'stacc.ui',
@@ -44,6 +49,7 @@ export const useUiStore = create<UiState>()(
         sidebarCollapsed: state.sidebarCollapsed,
         treeView: state.treeView,
         theme: state.theme,
+        nodeSheetExpanded: state.nodeSheetExpanded,
       }),
     },
   ),

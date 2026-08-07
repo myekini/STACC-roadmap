@@ -31,7 +31,6 @@ export default function PublicTreePage() {
             <StaccMark className="h-9 w-9" />
             <span className="font-code text-lg font-bold uppercase tracking-[0.14em] text-on-surface">Stacc</span>
           </Link>
-          <p className="micro-label text-cyan">{'// the full skill tree · public'}</p>
           <h1 className="mt-3 font-display text-3xl font-bold tracking-[-0.03em] text-on-surface sm:text-5xl">
             Every module. In order. Free.
           </h1>
@@ -45,7 +44,7 @@ export default function PublicTreePage() {
         </header>
 
         <div className="space-y-10">
-          {PATHS.map((path, pi) => {
+          {PATHS.map((path) => {
             const pathNodes = NODES.filter((n) => n.path_id === path.id);
             const gated = path.requires_paths.length > 0;
             const gateTitles = path.requires_paths
@@ -56,8 +55,7 @@ export default function PublicTreePage() {
               <section key={path.id} aria-labelledby={`path-${path.id}`}>
                 <div className="flex flex-wrap items-end justify-between gap-2 border-b border-outline-variant pb-3">
                   <div>
-                    <p className="micro-label text-outline">{`section ${String(pi).padStart(2, '0')}`}</p>
-                    <h2 id={`path-${path.id}`} className="mt-1 flex items-center gap-2.5 font-display text-xl font-bold uppercase tracking-wide text-on-surface">
+                    <h2 id={`path-${path.id}`} className="flex items-center gap-2.5 font-display text-xl font-bold uppercase tracking-wide text-on-surface">
                       <AppIcon name={path.icon} className="h-5 w-5 text-cyan" />
                       {path.title}
                     </h2>
@@ -75,7 +73,7 @@ export default function PublicTreePage() {
                       <span className="font-code text-[11px] font-bold text-outline">{String(i + 1).padStart(2, '0')}</span>
                       <div className="min-w-0 flex-1">
                         <h3 className="truncate text-sm font-semibold text-on-surface">{node.name}</h3>
-                        <p className="truncate font-code text-[10px] lowercase text-on-surface-variant">{`// ${node.subtitle}`}</p>
+                        <p className="truncate text-[10px] text-on-surface-variant">{node.subtitle}</p>
                       </div>
                       <span className="shrink-0 font-code text-[10px] text-outline">{node.est_hours}h</span>
                     </li>

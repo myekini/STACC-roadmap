@@ -305,7 +305,7 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
     const complete = statusOf(n) === 'complete';
     edges.push({
       id: `e-${n.id}-junction`,
-      type: 'smoothstep',
+      type: 'default',
       source: n.id,
       sourceHandle: 'out',
       target: 'junction',
@@ -354,13 +354,14 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
       });
       edges.push({
         id: `e-${chipId}`,
-        type: 'smoothstep',
+        type: 'default',
         source: n.id,
         sourceHandle: side === 'r' ? 'skills-r' : 'skills-l',
         target: chipId,
         targetHandle: side === 'r' ? 'in-l' : 'in-r',
         style: chipEdgeStyle(status),
-      });
+        pathOptions: { curvature: 0.45 },
+      } as Edge);
     });
   });
 
@@ -369,7 +370,7 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
   const firstStatus = statusOf(first);
   edges.push({
     id: 'e-junction-first',
-    type: 'smoothstep',
+    type: 'default',
     source: 'junction',
     sourceHandle: 'out',
     target: first.id,
@@ -387,7 +388,7 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
       const isNext = current?.id === n.id && data.nodeStatus(prereq) === 'complete';
       edges.push({
         id: `e-${prereq}-${n.id}`,
-        type: 'smoothstep',
+        type: 'default',
         source: prereq,
         sourceHandle: 'out',
         target: n.id,
@@ -408,7 +409,7 @@ function Canvas({ data, pathId }: { data: UserData; pathId: string }) {
   const { nodes, edges, focusIds } = useMemo(() => buildGraph(data, pathId, reduceMotion), [data, pathId, reduceMotion]);
 
   return (
-    <div className="relative h-[72vh] min-h-[540px] w-full border border-outline-variant bg-surface/70">
+    <div className="relative h-[calc(100dvh-220px)] min-h-[540px] w-full">
       <ReactFlow
         nodes={nodes}
         edges={edges}

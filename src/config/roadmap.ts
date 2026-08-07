@@ -69,7 +69,7 @@ const PATH_DEFS: PathDef[] = [
         icon: 'code', estHours: 12, xp: 100,
         skills: ['Python syntax', 'Functions', 'Pandas intro'], prereqs: [],
         resources: [
-          ['Python for Everybody', 'course', 'freeCodeCamp', 'https://www.freecodecamp.org/learn/python-for-everybody/'],
+          ['Python for Everybody — Full Course', 'video', 'YouTube (freeCodeCamp)', 'https://www.youtube.com/watch?v=8DvywoWv6fI'],
           ['Pandas Getting Started Guide', 'documentation', 'pandas.pydata.org', 'https://pandas.pydata.org/docs/getting_started/index.html'],
         ],
         tasks: [
@@ -169,7 +169,7 @@ const PATH_DEFS: PathDef[] = [
         icon: 'transform', estHours: 10, xp: 150,
         skills: ['Batch vs streaming', 'Idempotency', 'Data quality'], prereqs: FOUNDATION_SLUGS,
         resources: [
-          ['Data Engineering Zoomcamp', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/data-engineering-zoomcamp'],
+          ['Data Engineering Zoomcamp — Lecture Playlist', 'video', 'YouTube (DataTalksClub)', 'https://www.youtube.com/playlist?list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb'],
           ['The Data Engineering Cookbook', 'documentation', 'Andreas Kretz (GitHub)', 'https://github.com/andkret/Cookbook'],
         ],
         tasks: [
@@ -674,7 +674,7 @@ const PATH_DEFS: PathDef[] = [
         icon: 'schema', estHours: 16, xp: 300,
         skills: ['Experiment tracking', 'Model registries', 'Platform architecture'], prereqs: ['ml-production'],
         resources: [
-          ['MLOps Zoomcamp', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/mlops-zoomcamp'],
+          ['MLOps Zoomcamp — Lecture Playlist', 'video', 'YouTube (DataTalksClub)', 'https://www.youtube.com/playlist?list=PL3MmuxUbc_hIUISrluw_A7wDSmfOhErJK'],
           ['MLflow Documentation', 'documentation', 'MLflow', 'https://mlflow.org/docs/latest/index.html'],
         ],
         tasks: [

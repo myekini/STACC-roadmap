@@ -52,99 +52,100 @@ export default function RoadmapPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 pb-24 pt-6 sm:px-6 md:pb-12">
+    <div className="w-full pb-24 pt-6 md:pb-12">
       {/* Command header */}
-      <motion.header
-        initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="border border-outline-variant bg-surface/80 backdrop-blur"
-      >
-        <div className="flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
-          <div>
-            <p className="micro-label text-cyan">{`// roadmap · all systems`}</p>
-            <h1 className="mt-1 font-display text-2xl font-bold tracking-[-0.02em] text-on-surface sm:text-3xl">
-              Your skill tree
-            </h1>
-          </div>
-          <div className="flex items-center gap-5">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        <motion.header
+          initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="border border-outline-variant bg-surface/80 backdrop-blur"
+        >
+          <div className="flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
             <div>
-              <p className="micro-label text-outline">overall</p>
-              <div className="mt-1 flex items-center gap-2">
-                {/* Progress primitive — rounded-none + cyan fill */}
-                <Progress
-                  value={overallPct}
-                  className="h-1.5 w-28 rounded-none bg-surface-container-high [&>div]:rounded-none [&>div]:bg-cyan"
-                />
-                <span className="font-code text-sm font-bold text-cyan">{overallPct}%</span>
+              <h1 className="mt-1 font-display text-2xl font-bold tracking-[-0.02em] text-on-surface sm:text-3xl">
+                Your skill tree
+              </h1>
+            </div>
+            <div className="flex items-center gap-5">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-outline">Overall</p>
+                <div className="mt-1 flex items-center gap-2">
+                  {/* Progress primitive — rounded-none + cyan fill */}
+                  <Progress
+                    value={overallPct}
+                    className="h-1.5 w-28 rounded-none bg-surface-container-high [&>div]:rounded-none [&>div]:bg-cyan"
+                  />
+                  <span className="font-code text-sm font-bold text-cyan">{overallPct}%</span>
+                </div>
               </div>
-            </div>
-            <div className="border-l border-outline-variant pl-5">
-              <p className="micro-label text-outline">streak</p>
-              <p className="mt-1 flex items-center gap-1 font-code text-sm font-bold text-tertiary">
-                <Flame className="h-3.5 w-3.5" />{data.streak}d
-              </p>
-            </div>
-            {/* View toggle (desktop only; mobile always gets the rail) */}
-            <div className="hidden border-l border-outline-variant pl-5 md:block">
-              <p className="micro-label text-outline">view</p>
-              <div className="mt-1 flex border border-outline-variant">
-                {TREE_VIEWS.map(({ id, label, icon: Icon }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setTreeView(id)}
-                    aria-pressed={treeView === id}
-                    className={cn(
-                      'flex items-center gap-1.5 px-2.5 py-1 font-code text-[10px] font-semibold uppercase tracking-[0.1em] transition-colors',
-                      treeView === id ? 'bg-cyan/10 text-cyan' : 'text-on-surface-variant hover:text-on-surface',
-                    )}
-                  >
-                    <Icon className="h-3 w-3" />
-                    {label}
-                  </button>
-                ))}
+              <div className="border-l border-outline-variant pl-5">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-outline">Streak</p>
+                <p className="mt-1 flex items-center gap-1 font-code text-sm font-bold text-tertiary">
+                  <Flame className="h-3.5 w-3.5" />{data.streak}d
+                </p>
+              </div>
+              {/* View toggle (desktop only; mobile always gets the rail) */}
+              <div className="hidden border-l border-outline-variant pl-5 md:block">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-outline">View</p>
+                <div className="mt-1 flex border border-outline-variant">
+                  {TREE_VIEWS.map(({ id, label, icon: Icon }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setTreeView(id)}
+                      aria-pressed={treeView === id}
+                      className={cn(
+                        'flex items-center gap-1.5 px-2.5 py-1 font-code text-[10px] font-semibold uppercase tracking-[0.1em] transition-colors',
+                        treeView === id ? 'bg-cyan/10 text-cyan' : 'text-on-surface-variant hover:text-on-surface',
+                      )}
+                    >
+                      <Icon className="h-3 w-3" />
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Path switcher */}
-        <div className="flex gap-1 overflow-x-auto border-t border-outline-variant p-2 no-scrollbar">
-          {specializations.map((path) => {
-            const pathNodes = nodesByPath[path.id] ?? [];
-            const done = pathNodes.filter((n) => progress.completedNodes[n.id]).length;
-            const locked = !data.pathUnlocked(path.id);
-            const active = path.id === pathId;
-            return (
-              <button
-                key={path.id}
-                type="button"
-                onClick={() => data.selectPath(path.id)}
-                className={cn(
-                  'flex shrink-0 items-center gap-2 border px-3 py-2 font-code text-[10px] font-semibold uppercase tracking-[0.1em] transition-colors',
-                  active
-                    ? 'border-cyan/50 bg-cyan/10 text-cyan'
-                    : 'border-transparent text-on-surface-variant hover:border-outline-variant hover:text-on-surface',
-                )}
-              >
-                {locked ? <Lock className="h-3 w-3 text-outline" /> : <AppIcon name={path.icon} className="h-3.5 w-3.5" />}
-                {path.title}
-                <span className={cn('font-bold', done === pathNodes.length && pathNodes.length > 0 ? 'text-secondary' : 'text-outline')}>
-                  {done}/{pathNodes.length}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </motion.header>
+          {/* Path switcher */}
+          <div className="flex gap-1 overflow-x-auto border-t border-outline-variant p-2 no-scrollbar">
+            {specializations.map((path) => {
+              const pathNodes = nodesByPath[path.id] ?? [];
+              const done = pathNodes.filter((n) => progress.completedNodes[n.id]).length;
+              const locked = !data.pathUnlocked(path.id);
+              const active = path.id === pathId;
+              return (
+                <button
+                  key={path.id}
+                  type="button"
+                  onClick={() => data.selectPath(path.id)}
+                  className={cn(
+                    'flex shrink-0 items-center gap-2 border px-3 py-2 font-code text-[10px] font-semibold uppercase tracking-[0.1em] transition-colors',
+                    active
+                      ? 'border-cyan/50 bg-cyan/10 text-cyan'
+                      : 'border-transparent text-on-surface-variant hover:border-outline-variant hover:text-on-surface',
+                  )}
+                >
+                  {locked ? <Lock className="h-3 w-3 text-outline" /> : <AppIcon name={path.icon} className="h-3.5 w-3.5" />}
+                  {path.title}
+                  <span className={cn('font-bold', done === pathNodes.length && pathNodes.length > 0 ? 'text-secondary' : 'text-outline')}>
+                    {done}/{pathNodes.length}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </motion.header>
+      </div>
 
-      {/* Tree */}
+      {/* Tree — full-bleed canvas; list views stay in the readable column */}
       <div ref={treeRef} className="relative mt-8">
         <div aria-hidden className="pointer-events-none absolute inset-0 blueprint-grid opacity-50" />
         <div className="relative">
           {isLoading ? (
-            <div className="space-y-4 py-10">
+            <div className="mx-auto max-w-5xl space-y-4 px-4 py-10 sm:px-6">
               {[0, 1, 2].map((i) => (
                 <div key={i} className="h-28 animate-pulse border border-outline-variant/40 bg-surface/50" />
               ))}
@@ -152,11 +153,17 @@ export default function RoadmapPage() {
           ) : (
             pathId && (
               <>
-                <div className="md:hidden">
+                <div className="mx-auto max-w-5xl px-4 sm:px-6 md:hidden">
                   <SkillTree data={data} pathId={pathId} />
                 </div>
                 <div className="hidden md:block">
-                  {treeView === 'canvas' ? <SkillTreeCanvas data={data} pathId={pathId} /> : <SkillTree data={data} pathId={pathId} variant="spine" />}
+                  {treeView === 'canvas' ? (
+                    <SkillTreeCanvas data={data} pathId={pathId} />
+                  ) : (
+                    <div className="mx-auto max-w-5xl px-4 sm:px-6">
+                      <SkillTree data={data} pathId={pathId} variant="spine" />
+                    </div>
+                  )}
                 </div>
               </>
             )

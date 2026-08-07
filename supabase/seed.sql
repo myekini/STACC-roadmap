@@ -102,7 +102,7 @@ with n as (select slug, id from public.nodes)
 insert into public.resources (node_id, name, type, platform, url)
 select n.id, r.name, r.type, r.platform, r.url
 from (values
-  ('found-python', 'Python for Everybody', 'course', 'freeCodeCamp', 'https://www.freecodecamp.org/learn/python-for-everybody/'),
+  ('found-python', 'Python for Everybody — Full Course', 'video', 'YouTube (freeCodeCamp)', 'https://www.youtube.com/watch?v=8DvywoWv6fI'),
   ('found-python', 'Pandas Getting Started Guide', 'documentation', 'pandas.pydata.org', 'https://pandas.pydata.org/docs/getting_started/index.html'),
   ('found-sql', 'Kaggle: Intro to SQL', 'course', 'Kaggle', 'https://www.kaggle.com/learn/intro-to-sql'),
   ('found-sql', 'SQLBolt Interactive Lessons', 'article', 'SQLBolt', 'https://sqlbolt.com/'),
@@ -115,7 +115,7 @@ from (values
   ('found-ai', 'Prompt Engineering Guide', 'documentation', 'promptingguide.ai', 'https://www.promptingguide.ai/'),
   ('found-ai', 'Intro to Large Language Models', 'video', 'YouTube (Karpathy)', 'https://www.youtube.com/watch?v=zjkBMFhNj_g'),
 
-  ('de-etl', 'Data Engineering Zoomcamp', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/data-engineering-zoomcamp'),
+  ('de-etl', 'Data Engineering Zoomcamp — Lecture Playlist', 'video', 'YouTube (DataTalksClub)', 'https://www.youtube.com/playlist?list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb'),
   ('de-etl', 'The Data Engineering Cookbook', 'documentation', 'Andreas Kretz (GitHub)', 'https://github.com/andkret/Cookbook'),
   ('de-modeling', 'Kimball Dimensional Modeling Resources', 'documentation', 'Kimball Group', 'https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/'),
   ('de-modeling', 'dbt: How We Structure Our dbt Projects', 'documentation', 'dbt Labs', 'https://docs.getdbt.com/best-practices/how-we-structure/1-guide-overview'),
@@ -181,7 +181,7 @@ from (values
   ('ml-monitoring', 'Evidently AI Documentation', 'documentation', 'Evidently', 'https://docs.evidentlyai.com/'),
   ('ml-production', 'Designing Machine Learning Systems (notes)', 'article', 'Chip Huyen', 'https://huyenchip.com/machine-learning-systems-design/toc.html'),
   ('ml-production', 'Feast Documentation', 'documentation', 'Feast', 'https://docs.feast.dev/'),
-  ('ml-platform', 'MLOps Zoomcamp', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/mlops-zoomcamp'),
+  ('ml-platform', 'MLOps Zoomcamp — Lecture Playlist', 'video', 'YouTube (DataTalksClub)', 'https://www.youtube.com/playlist?list=PL3MmuxUbc_hIUISrluw_A7wDSmfOhErJK'),
   ('ml-platform', 'MLflow Documentation', 'documentation', 'MLflow', 'https://mlflow.org/docs/latest/index.html')
 ) as r(node_slug, name, type, platform, url)
 join n on n.slug = r.node_slug;

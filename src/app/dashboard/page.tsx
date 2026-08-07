@@ -64,8 +64,7 @@ export default function DashboardPage() {
         className="flex flex-col justify-between gap-5 md:flex-row md:items-end"
       >
         <div>
-          <p className="micro-label text-primary-neon">{'// learning progress'}</p>
-          <h1 className="mt-2 font-display text-3xl font-bold tracking-[-0.03em] text-on-surface sm:text-4xl">Your progress, clearly.</h1>
+          <h1 className="font-display text-3xl font-bold tracking-[-0.03em] text-on-surface sm:text-4xl">Your progress, clearly.</h1>
           <p className="mt-2 text-sm leading-6 text-on-surface-variant">What you have finished, how consistent you are, and what comes next.</p>
         </div>
         <Button asChild>
@@ -73,17 +72,15 @@ export default function DashboardPage() {
         </Button>
       </motion.div>
 
-      {/* Overview strip */}
       <section className="overflow-hidden border border-outline-variant bg-surface">
         <div className="flex flex-col justify-between gap-5 border-b border-outline-variant p-5 sm:flex-row sm:items-center sm:p-6">
           <div>
-            <p className="micro-label text-outline">active path</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-outline">Active Path</p>
             <h2 className="mt-1 font-display text-xl font-bold text-on-surface">{activePathInfo?.title ?? 'Foundations'}</h2>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="micro-label text-outline">overall completion</p>
-              {/* Progress primitive — rounded-none + cyan fill per design DNA */}
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-outline">Overall Completion</p>
               <Progress
                 value={overallPct}
                 className="mt-1.5 h-1.5 w-36 rounded-none bg-surface-container-high [&>div]:rounded-none [&>div]:bg-cyan"
@@ -99,7 +96,7 @@ export default function DashboardPage() {
                 <metric.icon className="h-5 w-5" />
               </div>
               <div>
-                <p className="micro-label text-outline">{metric.label}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-outline">{metric.label}</p>
                 <p className="mt-1 font-display text-xl font-bold text-on-surface">{metric.value}</p>
               </div>
             </div>
@@ -116,7 +113,7 @@ export default function DashboardPage() {
         <div className="space-y-6">
           {/* Next move */}
           <div className="border border-cyan/30 bg-gradient-to-br from-cyan/[0.07] to-transparent p-5">
-            <p className="micro-label text-cyan">{'// next move'}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-cyan">Next Up</p>
             {currentNode ? (
               <>
                 <div className="mt-3 flex items-start gap-3">
@@ -125,7 +122,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <h3 className="font-display text-base font-semibold text-on-surface">{currentNode.name}</h3>
-                    <p className="mt-0.5 font-code text-[10px] lowercase text-on-surface-variant">{`// ${currentNode.subtitle}`}</p>
+                    <p className="mt-0.5 text-[10px] text-on-surface-variant">{currentNode.subtitle}</p>
                   </div>
                 </div>
                 <p className="mt-3 line-clamp-2 text-xs leading-5 text-on-surface-variant">{currentNode.description}</p>
@@ -162,7 +159,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-on-surface">{m.title}</p>
-                    <p className="mt-0.5 truncate font-code text-[10px] lowercase text-on-surface-variant">{`// ${m.description.toLowerCase()}`}</p>
+                    <p className="mt-0.5 truncate text-[10px] text-on-surface-variant">{m.description}</p>
                   </div>
                 </li>
               ))}

@@ -14,6 +14,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/dashboard': 'Progress',
   '/roadmap': 'Roadmap',
   '/paths': 'Explore paths',
+  '/settings': 'Member settings',
   '/admin': 'Admin',
 };
 
@@ -63,13 +64,15 @@ export default function TopBar() {
           {theme === 'dark' ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-cyan" />}
         </Button>
 
-        {/* User avatar — Avatar primitive, rounded-none preserves brutalist aesthetic */}
-        <Avatar className="hidden sm:flex h-8 w-8 rounded-none border border-outline-variant">
-          <AvatarImage src={user.avatar_url ?? undefined} alt={user.username} className="object-cover" />
-          <AvatarFallback className="rounded-none bg-surface-container-high font-code text-[10px] font-bold uppercase text-on-surface-variant">
-            {user.username.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        {/* User avatar — clickable link to /settings */}
+        <Link href="/settings" title="Member Settings & Profile">
+          <Avatar className="hidden sm:flex h-8 w-8 rounded-none border border-outline-variant hover:border-cyan transition-colors">
+            <AvatarImage src={user.avatar_url ?? undefined} alt={user.username} className="object-cover" />
+            <AvatarFallback className="rounded-none bg-surface-container-high font-code text-[10px] font-bold uppercase text-on-surface-variant">
+              {user.username.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
       </div>
     </header>
   );

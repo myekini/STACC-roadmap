@@ -16,7 +16,6 @@ const PATH_META: Record<string, { outcome: string; level: string; project: strin
   ds: { outcome: 'Model, test, and explain predictions', level: 'Intermediate', project: 'Predictive research project', accent: 'border-tertiary/40 bg-tertiary/10 text-tertiary' },
   'ai-engineering': { outcome: 'Build useful AI products', level: 'Advanced track', project: 'RAG-powered assistant', accent: 'border-primary/40 bg-primary/10 text-primary-neon' },
   mlops: { outcome: 'Ship and monitor ML systems', level: 'Advanced track', project: 'Automated ML platform', accent: 'border-outline-variant bg-surface-container-high text-on-surface-variant' },
-  'full-stack': { outcome: 'Build complete web apps end-to-end', level: 'Intermediate track', project: 'Production SaaS application', accent: 'border-orange/40 bg-orange/10 text-orange' },
 };
 
 export default function PathSelectionPage() {
@@ -34,13 +33,11 @@ export default function PathSelectionPage() {
   return (
     <div className="py-8 md:py-12">
       <header className="mx-auto mb-10 max-w-3xl text-center">
-        <span className="micro-label text-cyan">{'// choose your direction'}</span>
-        <h1 className="mt-3 font-display text-3xl font-bold tracking-[-0.03em] text-on-surface sm:text-5xl">
-          What do you want to become good at?
+        <h1 className="font-display text-3xl font-bold tracking-[-0.03em] text-on-surface sm:text-5xl">
+          What do you want to build?
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-on-surface-variant">
-          Choose by the work you want to do. Every path starts from the same Foundations block, and you can switch
-          later without losing progress.
+          Pick the work you want to do. Every path starts from the same Foundations block — and you can switch later without losing progress.
         </p>
       </header>
 
@@ -77,68 +74,81 @@ export default function PathSelectionPage() {
               className={cn(
                 'group relative flex h-full flex-col border bg-surface p-5 transition-all sm:p-6',
                 isActive ? 'border-primary ring-1 ring-primary/15' : 'border-outline-variant',
-                locked ? 'opacity-80' : 'hover:-translate-y-0.5 hover:border-cyan/35 hover:shadow-[0_16px_50px_rgba(0,0,0,0.35)]',
+                locked ? 'border-outline-variant/60 bg-surface/60' : 'hover:-translate-y-0.5 hover:border-cyan/35 hover:shadow-[0_16px_50px_rgba(0,0,0,0.35)]',
               )}
             >
               {isActive && (
-                <Badge variant="success" className="absolute -top-2.5 right-5 gap-1 shadow-sm">
+                <Badge variant="success" className="absolute -top-2.5 right-5 gap-1 shadow-sm z-10">
                   <CheckCircle2 className="h-3 w-3" /> current path
                 </Badge>
               )}
               {locked && (
-                <span className="absolute -top-2.5 right-5 inline-flex items-center gap-1 border border-outline-variant bg-navy px-2 py-0.5 font-code text-[10px] font-semibold uppercase tracking-[0.12em] text-outline">
-                  <Lock className="h-3 w-3" /> unlocks after {gateTitles}
+                <span className="absolute -top-2.5 right-5 z-10 inline-flex items-center gap-1.5 border border-warning/40 bg-surface-container-high px-2.5 py-1 font-code text-[10px] font-bold uppercase tracking-[0.12em] text-warning shadow-md">
+                  <Lock className="h-3 w-3 text-warning" /> unlocks after {gateTitles}
                 </span>
               )}
 
-              <div className="flex items-start gap-4">
-                <div className={cn('flex h-12 w-12 shrink-0 items-center justify-center border', meta.accent)}>
-                  <AppIcon name={path.icon} className="h-6 w-6" />
+              {/* Main Content — blurred/dimmed when locked per Udacity/Coursera design */}
+              <div className={cn('flex flex-col flex-1', locked && 'card-locked-blur')}>
+                <div className="flex items-start gap-4">
+                  <div className={cn('flex h-12 w-12 shrink-0 items-center justify-center border', meta.accent)}>
+                    <AppIcon name={path.icon} className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h2 className="font-display text-xl font-bold text-on-surface">{path.title}</h2>
+                    <p className="mt-1 text-xs font-medium text-cyan">{meta.outcome}</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="font-display text-xl font-bold text-on-surface">{path.title}</h2>
-                  <p className="mt-1 font-code text-[11px] lowercase text-cyan">{`// ${meta.outcome.toLowerCase()}`}</p>
+
+                <p className="mt-5 flex-grow text-sm leading-6 text-on-surface-variant">{path.description}</p>
+
+                <dl className="mt-5 grid grid-cols-3 gap-3 border-y border-outline-variant py-4 text-xs">
+                  <div>
+                    <dt className="text-[10px] font-semibold uppercase tracking-wider text-outline">Est. Time</dt>
+                    <dd className="mt-1 flex items-center gap-1 font-semibold text-on-surface"><Hourglass className="h-3 w-3 text-outline" />{estHours}h</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-semibold uppercase tracking-wider text-outline">Level</dt>
+                    <dd className="mt-1 font-semibold text-on-surface">{meta.level}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-semibold uppercase tracking-wider text-outline">Modules</dt>
+                    <dd className="mt-1 font-semibold text-on-surface">
+                      {done > 0 ? `${done}/${pathNodes.length}` : pathNodes.length}
+                    </dd>
+                  </div>
+                </dl>
+
+                {done > 0 && (
+                  <Progress
+                    value={pathNodes.length ? (done / pathNodes.length) * 100 : 0}
+                    className="mt-4 h-1 w-full rounded-none bg-surface-container-high [&>div]:rounded-none [&>div]:bg-cyan"
+                  />
+                )}
+
+                <div className="mt-4 border border-outline-variant/60 bg-surface-container-low p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-outline">Portfolio Project</p>
+                  <p className="mt-1 text-sm font-medium text-on-surface">{meta.project}</p>
                 </div>
               </div>
 
-              <p className="mt-5 flex-grow text-sm leading-6 text-on-surface-variant">{path.description}</p>
-
-              <dl className="mt-5 grid grid-cols-3 gap-3 border-y border-outline-variant py-4 text-xs">
-                <div>
-                  <dt className="micro-label text-outline">est time</dt>
-                  <dd className="mt-1 flex items-center gap-1 font-code font-semibold text-on-surface"><Hourglass className="h-3 w-3 text-outline" />{estHours}h</dd>
+              {locked && (
+                <div className="mt-4 border border-warning/30 bg-warning/[0.06] p-3 flex items-start gap-2.5 text-xs">
+                  <Lock className="h-4 w-4 shrink-0 mt-0.5 text-warning" />
+                  <p className="text-[11px] text-on-surface-variant leading-4">
+                    Finish <span className="font-semibold text-warning">{gateTitles}</span> to unlock this track.
+                  </p>
                 </div>
-                <div>
-                  <dt className="micro-label text-outline">level</dt>
-                  <dd className="mt-1 font-semibold text-on-surface">{meta.level}</dd>
-                </div>
-                <div>
-                  <dt className="micro-label text-outline">modules</dt>
-                  <dd className="mt-1 font-code font-semibold text-on-surface">
-                    {done > 0 ? `${done}/${pathNodes.length}` : pathNodes.length}
-                  </dd>
-                </div>
-              </dl>
-
-              {done > 0 && (
-                <Progress
-                  value={pathNodes.length ? (done / pathNodes.length) * 100 : 0}
-                  className="mt-4 h-1 w-full rounded-none bg-surface-container-high [&>div]:rounded-none [&>div]:bg-cyan"
-                />
               )}
-
-              <div className="mt-4 border border-outline-variant/60 bg-surface-container-low p-3">
-                <p className="micro-label text-outline">portfolio outcome</p>
-                <p className="mt-1 text-sm font-medium text-on-surface">{meta.project}</p>
-              </div>
 
               <Button
                 onClick={() => handlePathSelect(path.id)}
-                variant={isActive ? 'default' : 'outline'}
-                className="mt-5 w-full"
+                variant={isActive ? 'default' : locked ? 'outline' : 'outline'}
+                className={cn('mt-5 w-full', locked && 'border-outline-variant text-outline hover:bg-transparent hover:text-outline cursor-not-allowed')}
+                disabled={locked}
               >
-                {isActive ? 'Open roadmap' : locked ? 'Preview path' : 'Choose this path'}
-                <ArrowRight className="transition-transform group-hover:translate-x-0.5" />
+                {isActive ? 'Open roadmap' : locked ? `Locked — Finish ${gateTitles}` : 'Choose this path'}
+                {!locked && <ArrowRight className="transition-transform group-hover:translate-x-0.5" />}
               </Button>
             </motion.article>
           );

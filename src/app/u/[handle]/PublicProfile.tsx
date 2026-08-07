@@ -69,7 +69,7 @@ const fmtDate = (iso: string | null | undefined) =>
   iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
 
 export default function PublicProfile({ handle }: { handle: string }) {
-  const { payload, isLoading, demo } = useProfilePayload(handle);
+  const { payload, isLoading } = useProfilePayload(handle);
 
   const shipped = payload?.shipped ?? [];
   const artifacts = shipped.reduce((sum, s) => sum + s.evidence.length, 0);
@@ -97,7 +97,7 @@ export default function PublicProfile({ handle }: { handle: string }) {
           </div>
         ) : !payload ? (
           <div className="border border-outline-variant bg-surface/70 p-10 text-center">
-            <p className="micro-label text-outline">404 // no such member</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-outline">Member Not Found</p>
             <h1 className="mt-2 font-display text-2xl font-bold text-on-surface">@{handle} isn&apos;t on the roadmap</h1>
             <p className="mt-2 text-sm leading-6 text-on-surface-variant">Check the handle, or claim it by joining.</p>
             <Button asChild className="mt-6"><Link href="/">Start your roadmap <ArrowRight /></Link></Button>
@@ -106,7 +106,6 @@ export default function PublicProfile({ handle }: { handle: string }) {
           <>
             {/* Identity */}
             <header className="border border-outline-variant bg-surface/80 p-6 sm:p-8">
-              <p className="micro-label text-cyan">{`// member profile · public${demo ? ' · demo mode' : ''}`}</p>
               <div className="mt-4 flex items-center gap-4">
                 {/* Avatar — shadcn primitive, rounded-none for brutalist aesthetic */}
                 <Avatar className="h-16 w-16 rounded-none border border-outline-variant">
@@ -138,7 +137,7 @@ export default function PublicProfile({ handle }: { handle: string }) {
                     <p className="flex items-center justify-center gap-1.5 font-display text-xl font-bold text-on-surface">
                       <Icon className="h-4 w-4 text-cyan" />{value}
                     </p>
-                    <p className="micro-label mt-1 text-outline">{label}</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider mt-1 text-outline">{label}</p>
                   </div>
                 ))}
               </div>
@@ -147,10 +146,8 @@ export default function PublicProfile({ handle }: { handle: string }) {
             {/* Shipped work */}
             {shipped.length === 0 ? (
               <div className="mt-8 border border-outline-variant bg-surface/70 p-8 text-center">
-                <p className="micro-label text-outline">{'// nothing shipped yet'}</p>
-                <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                  The tree is waiting. First module shipped shows up here.
-                </p>
+                <p className="text-sm text-on-surface-variant font-medium">Nothing shipped yet.</p>
+                <p className="mt-1 text-xs text-on-surface-variant">The tree is waiting. First module shipped shows up here.</p>
               </div>
             ) : (
               <div className="mt-8 space-y-8">
@@ -174,7 +171,7 @@ export default function PublicProfile({ handle }: { handle: string }) {
                                   <span className="font-code text-[10px] text-outline">{fmtDate(item.completed_at)}</span>
                                 )}
                               </div>
-                              <p className="font-code text-[10px] lowercase text-on-surface-variant">{`// ${item.subtitle}`}</p>
+                              <p className="text-[10px] text-on-surface-variant">{item.subtitle}</p>
                               {item.evidence.length > 0 && (
                                 <div className="mt-2.5 flex flex-wrap gap-1.5">
                                   {item.evidence.map((e) => (

@@ -11,6 +11,10 @@
   --surface-alt: #0f151d;
   --surface-high: #161e2e;
   --surface-card: #12263f;
+  --surface-container-low: #101b2c;
+  --surface-container-high: #1a2744;
+  --surface-container: #17243a;
+  --surface-bright: #12263f;
 
   --orange: #d9622e;
   --orange-2: #e8895c;
@@ -26,7 +30,7 @@
   --fg-dim: rgba(255, 255, 255, 0.35);
 
   --border: rgba(0, 217, 255, 0.25);
-  --border-subtle: rgba(255, 255, 255, 0.1);
+  --border-subtle: #2a3547;
 
   --success: #10b981;
   --warning: #f59e0b;
@@ -41,13 +45,17 @@
 }
 
 html.light {
-  --navy: #f8fafc;
-  --navy-2: #f1f5f9;
-  --navy-3: #e2e8f0;
-  --surface: #ffffff;
-  --surface-alt: #f8fafc;
-  --surface-high: #f1f5f9;
+  --navy: #ffffff;
+  --navy-2: #f8fafc;
+  --navy-3: #f1f5f9;
+  --surface: #f8fafc;
+  --surface-alt: #f1f5f9;
+  --surface-high: #e2e8f0;
   --surface-card: #ffffff;
+  --surface-container-low: #f8fafc;
+  --surface-container-high: #f1f5f9;
+  --surface-container: #ffffff;
+  --surface-bright: #ffffff;
 
   --orange: #ea580c;
   --orange-2: #f97316;
@@ -60,10 +68,10 @@ html.light {
 
   --fg: #0f172a;
   --fg-muted: #475569;
-  --fg-dim: rgba(15, 23, 42, 0.4);
+  --fg-dim: rgba(15, 23, 42, 0.45);
 
   --border: rgba(2, 132, 199, 0.3);
-  --border-subtle: rgba(15, 23, 42, 0.12);
+  --border-subtle: #e2e8f0;
 
   --background: #f8fafc;
   --foreground: #0f172a;
@@ -183,6 +191,32 @@ body {
   -webkit-backdrop-filter: blur(16px);
 }
 
+/* DataCamp-inspired Navigation & Surface Utilities */
+.nav-item-active {
+  position: relative;
+  background-color: rgba(0, 217, 255, 0.08);
+  color: var(--cyan);
+  font-weight: 600;
+}
+.nav-item-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--cyan);
+  box-shadow: 0 0 8px rgba(0, 217, 255, 0.6);
+}
+
+/* Locked surface treatment for Coursera/Udacity/DataCamp comparison */
+.card-locked-blur {
+  filter: blur(0.5px);
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
 :where(a, button, input):focus-visible {
   outline: 2px solid var(--cyan);
   outline-offset: 3px;
@@ -196,8 +230,6 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
-
-
 
 /* shadcn block support: sidebar + chart vars in the Stacc palette (dark-only app) */
 @layer base {
@@ -217,3 +249,4 @@ body {
     --chart-5: #8395ac;
   }
 }
+

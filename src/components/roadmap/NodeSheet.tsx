@@ -8,13 +8,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowUpRight, Check, CircleHelp, Hourglass, LogIn, Play, Rocket } from 'lucide-react';
+import { ArrowUpRight, Check, CircleHelp, Hourglass, LogIn, Maximize2, Minimize2, Play, Rocket } from 'lucide-react';
 import type { QuizPayload, TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
 import { useUiStore } from '@/store/useUiStore';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
-import { Stars, StatusChip, TaskTypeBadge } from './bits';
+import { getYouTubeRef, Stars, StatusChip, TaskTypeBadge, YouTubeEmbed } from './bits';
 import { cn } from '@/lib/utils';
 
 function QuizBlock({ quiz, onPass, disabled }: { quiz: QuizPayload; onPass: () => void; disabled: boolean }) {
@@ -183,7 +183,7 @@ function TaskRowItem({ task, data, canWork, onComplete }: { task: TaskRow; data:
 }
 
 export default function NodeSheet({ data }: { data: UserData }) {
-  const { activeNodeId, setActiveNodeId } = useUiStore();
+  const { activeNodeId, setActiveNodeId, nodeSheetExpanded, toggleNodeSheetExpanded } = useUiStore();
   const reduceMotion = useReducedMotion();
   const [justCompleted, setJustCompleted] = useState(false);
 
@@ -217,7 +217,21 @@ export default function NodeSheet({ data }: { data: UserData }) {
 
   return (
     <Sheet open={!!activeNodeId} onOpenChange={(open) => !open && setActiveNodeId(null)}>
-      <SheetContent className="overflow-y-auto no-scrollbar">
+      <SheetContent
+        className={cn(
+          'overflow-y-auto no-scrollbar transition-[max-width] duration-200',
+          nodeSheetExpanded && 'sm:max-w-[760px]',
+        )}
+      >
+        <button
+          type="button"
+          onClick={toggleNodeSheetExpanded}
+          aria-label={nodeSheetExpanded ? 'Collapse panel' : 'Expand panel'}
+          className="absolute right-14 top-4 hidden h-10 w-10 items-center justify-center border border-transparent text-on-surface-variant transition-colors hover:border-outline-variant hover:bg-surface-container hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan sm:flex"
+        >
+          {nodeSheetExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </button>
+
         {/* Header */}
         <div className="border-b border-outline-variant bg-navy/60 p-6 pb-5">
           <p className="micro-label text-cyan">{`// module ${String(node.order).padStart(2, '0')} · ${path?.title ?? ''}`}</p>
@@ -315,8 +329,10 @@ export default function NodeSheet({ data }: { data: UserData }) {
               <ul className="mt-3 space-y-3">
                 {resources.map((resource) => {
                   const myRating = data.progress.ratings[resource.id] ?? 0;
-                  const displayRating = resource.avg_rating > 0 ? resource.avg_rating : (myRating > 0 ? myRating : 4.8);
-                  const displayCount = resource.rating_count > 0 ? resource.rating_count : (myRating > 0 ? 1 : 124);
+                  const hasRealRating = resource.avg_rating > 0;
+                  const displayRating = hasRealRating ? resource.avg_rating : myRating;
+                  const displayCount = resource.rating_count > 0 ? resource.rating_count : (myRating > 0 ? 1 : 0);
+                  const youtubeRef = getYouTubeRef(resource.url);
 
                   return (
                     <li key={resource.id} className="group relative border border-outline-variant bg-surface/80 p-4 transition-all hover:border-cyan/40 hover:shadow-md">
@@ -329,9 +345,6 @@ export default function NodeSheet({ data }: { data: UserData }) {
                             <span className="border border-outline-variant bg-surface-container-low px-2 py-0.5 font-code text-[9px] lowercase text-on-surface-variant">
                               {resource.type}
                             </span>
-                            <span className="border border-secondary/30 bg-secondary/10 px-1.5 py-0.5 font-code text-[9px] font-semibold lowercase text-secondary">
-                              free
-                            </span>
                           </div>
                           <h4 className="font-display text-sm font-bold text-on-surface group-hover:text-cyan transition-colors">
                             {resource.name}
@@ -341,17 +354,28 @@ export default function NodeSheet({ data }: { data: UserData }) {
                           href={resource.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex shrink-0 items-center justify-center gap-1.5 border border-cyan/40 bg-cyan/10 px-3 py-1.5 font-code text-[10px] font-bold uppercase tracking-[0.1em] text-cyan transition-colors hover:bg-cyan/20"
+                          className={cn(
+                            'inline-flex shrink-0 items-center justify-center gap-1.5 border border-cyan/40 bg-cyan/10 font-code font-bold uppercase tracking-[0.1em] text-cyan transition-colors hover:bg-cyan/20',
+                            youtubeRef ? 'px-2 py-1 text-[9px]' : 'px-3 py-1.5 text-[10px]',
+                          )}
                         >
-                          Open Resource <ArrowUpRight className="h-3 w-3" />
+                          {youtubeRef ? 'Open on YouTube' : 'Open Resource'} <ArrowUpRight className="h-3 w-3" />
                         </a>
                       </div>
 
+                      {youtubeRef && <YouTubeEmbed source={youtubeRef} title={resource.name} />}
+
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant/60 pt-2.5">
                         <div className="flex items-center gap-2 font-code text-[10px]">
-                          <Stars value={displayRating} />
-                          <span className="font-bold text-on-surface">{displayRating.toFixed(1)}</span>
-                          <span className="text-outline">({displayCount} reviews)</span>
+                          {displayRating > 0 ? (
+                            <>
+                              <Stars value={displayRating} />
+                              <span className="font-bold text-on-surface">{displayRating.toFixed(1)}</span>
+                              <span className="text-outline">({displayCount} review{displayCount === 1 ? '' : 's'})</span>
+                            </>
+                          ) : (
+                            <span className="text-outline">not yet rated</span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-code text-[9px] uppercase tracking-[0.12em] text-outline">
