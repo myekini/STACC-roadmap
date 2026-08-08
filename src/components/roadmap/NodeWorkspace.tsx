@@ -15,7 +15,7 @@ import { ArrowLeft, ArrowUpRight, Check, CircleHelp, Hourglass, LogIn, Play, Roc
 import type { QuizPayload, TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
-import { getYouTubeRef, Stars, StatusChip, TaskTypeBadge, YouTubeEmbed } from './bits';
+import { getYouTubeRef, StatusChip, TaskTypeBadge, YouTubeEmbed } from './bits';
 import { cn } from '@/lib/utils';
 
 function QuizBlock({ quiz, onPass, disabled }: { quiz: QuizPayload; onPass: () => void; disabled: boolean }) {
@@ -337,10 +337,6 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
               <p className="micro-label text-outline">resources</p>
               <ul className="mt-3 space-y-3">
                 {resources.map((resource) => {
-                  const myRating = data.progress.ratings[resource.id] ?? 0;
-                  const hasRealRating = resource.avg_rating > 0;
-                  const displayRating = hasRealRating ? resource.avg_rating : myRating;
-                  const displayCount = resource.rating_count > 0 ? resource.rating_count : (myRating > 0 ? 1 : 0);
                   const youtubeRef = getYouTubeRef(resource.url);
 
                   return (
@@ -368,26 +364,6 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                       </div>
 
                       {youtubeRef && <YouTubeEmbed source={youtubeRef} title={resource.name} onPlay={() => setWatchedAny(true)} />}
-
-                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant/60 pt-2.5">
-                        <div className="flex items-center gap-2 font-code text-[10px]">
-                          {displayRating > 0 ? (
-                            <>
-                              <Stars value={displayRating} />
-                              <span className="font-bold text-on-surface">{displayRating.toFixed(1)}</span>
-                              <span className="text-outline">({displayCount} review{displayCount === 1 ? '' : 's'})</span>
-                            </>
-                          ) : (
-                            <span className="text-outline">not yet rated</span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-code text-[9px] uppercase tracking-[0.12em] text-outline">
-                            {myRating > 0 ? 'your rating:' : 'rate resource:'}
-                          </span>
-                          <Stars value={myRating} onRate={(rating) => data.rateResource({ resourceId: resource.id, rating })} />
-                        </div>
-                      </div>
                     </li>
                   );
                 })}
