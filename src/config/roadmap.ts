@@ -75,7 +75,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Work through the core Python course modules', 'watch'],
           ['Build: clean a messy CSV with pandas and export a tidy dataset', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Which pandas method returns the first 5 rows of a DataFrame?', ['df.first()', 'df.head()', 'df.top()', 'df.preview()'], 1, 'df.head() returns the first n rows (default 5). There is no first()/top()/preview() in pandas.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the Pandas Getting Started Guide, which method returns the first 5 rows of a DataFrame?', ['df.first()', 'df.head()', 'df.top()', 'df.preview()'], 1, 'df.head() returns the first n rows (default 5). There is no first()/top()/preview() in pandas.')],
         ],
       },
       {
@@ -90,7 +90,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Complete the interactive SQL lessons', 'read'],
           ['Build: answer 5 business questions against a sample database', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Which SQL clause filters results after aggregation?', ['WHERE', 'HAVING', 'GROUP BY', 'ORDER BY'], 1, 'HAVING filters after GROUP BY has aggregated rows; WHERE filters rows before aggregation.')],
+          ['Checkpoint quiz', 'quiz', quiz('In the Kaggle Intro to SQL course, which clause filters results after aggregation?', ['WHERE', 'HAVING', 'GROUP BY', 'ORDER BY'], 1, 'HAVING filters after GROUP BY has aggregated rows; WHERE filters rows before aggregation.')],
         ],
       },
       {
@@ -105,7 +105,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Read Pro Git chapters 1–3', 'read'],
           ['Build: open a pull request with a reviewed change on your own repo', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('What does git rebase do compared to merge?', ['Deletes the branch', 'Replays commits onto a new base for linear history', 'Creates a merge commit', 'Pushes to remote'], 1, 'Rebase replays your commits on top of another base commit, producing a linear history; merge preserves both histories with a merge commit.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per Pro Git, what does git rebase do compared to merge?', ['Deletes the branch', 'Replays commits onto a new base for linear history', 'Creates a merge commit', 'Pushes to remote'], 1, 'Rebase replays your commits on top of another base commit, producing a linear history; merge preserves both histories with a merge commit.')],
         ],
       },
       {
@@ -120,7 +120,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Watch the Missing Semester shell lecture', 'watch'],
           ['Build: write a shell script that organizes files by extension', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Which operator sends the output of one command into another?', ['>', '>>', '|', '&'], 2, 'The pipe | streams stdout of one command into stdin of the next; > and >> redirect to files.')],
+          ['Checkpoint quiz', 'quiz', quiz('In the Missing Semester shell lecture, which operator sends the output of one command into another?', ['>', '>>', '|', '&'], 2, 'The pipe | streams stdout of one command into stdin of the next; > and >> redirect to files.')],
         ],
       },
       {
@@ -135,7 +135,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Explore distributions and inference on Seeing Theory', 'read'],
           ['Build: analyze a dataset and report mean/median skew with plots', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Correlation between X and Y means…', ['X causes Y', 'Y causes X', 'X and Y move together', 'X and Y are independent'], 2, 'Correlation measures co-movement only; causation needs experimental or quasi-experimental evidence.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per Seeing Theory, correlation between X and Y means…', ['X causes Y', 'Y causes X', 'X and Y move together', 'X and Y are independent'], 2, 'Correlation measures co-movement only; causation needs experimental or quasi-experimental evidence.')],
         ],
       },
       {
@@ -150,7 +150,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Read the prompt engineering fundamentals guide', 'read'],
           ['Build: solve a coding task end-to-end with an AI assistant, documenting prompts', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('LLMs generate text by…', ['Querying a database of answers', 'Predicting the next token', 'Running rule-based grammar', 'Searching the web'], 1, 'LLMs are next-token predictors trained on large corpora; they do not look up answers in a database.')],
+          ['Checkpoint quiz', 'quiz', quiz("Per Karpathy's Intro to Large Language Models, LLMs generate text by…", ['Querying a database of answers', 'Predicting the next token', 'Running rule-based grammar', 'Searching the web'], 1, 'LLMs are next-token predictors trained on large corpora; they do not look up answers in a database.')],
         ],
       },
     ],
@@ -175,7 +175,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study the ingestion + ETL weeks of the DE Zoomcamp', 'watch'],
           ['Build: a pipeline that ingests a public API into a database daily', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('An idempotent pipeline run…', ['Runs faster each time', 'Produces the same result if re-run', 'Never fails', 'Requires no scheduler'], 1, 'Idempotency means re-running the same load does not duplicate or corrupt data — key for safe retries and backfills.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the DE Zoomcamp ingestion lectures, an idempotent pipeline run…', ['Runs faster each time', 'Produces the same result if re-run', 'Never fails', 'Requires no scheduler'], 1, 'Idempotency means re-running the same load does not duplicate or corrupt data — key for safe retries and backfills.')],
         ],
       },
       {
@@ -190,7 +190,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ["Read Kimball's dimensional modeling essentials", 'read'],
           ['Build: design a star schema for an e-commerce domain', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('In a star schema, facts are…', ['Descriptive attributes', 'Measurable events at a declared grain', 'Lookup tables', 'Slowly changing dimensions'], 1, 'Fact tables hold measurable events at a specific grain; dimensions carry the descriptive context.')],
+          ['Checkpoint quiz', 'quiz', quiz("Per Kimball's dimensional modeling resources, in a star schema, facts are…", ['Descriptive attributes', 'Measurable events at a declared grain', 'Lookup tables', 'Slowly changing dimensions'], 1, 'Fact tables hold measurable events at a specific grain; dimensions carry the descriptive context.')],
         ],
       },
       {
@@ -205,7 +205,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Complete dbt Fundamentals', 'watch'],
           ['Build: a dbt project with staging/marts models and tests', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('dbt primarily handles which part of ELT?', ['Extract', 'Load', 'Transform', 'Orchestration'], 2, 'dbt transforms data already loaded in the warehouse using SQL models with testing and docs.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per dbt Fundamentals, dbt primarily handles which part of ELT?', ['Extract', 'Load', 'Transform', 'Orchestration'], 2, 'dbt transforms data already loaded in the warehouse using SQL models with testing and docs.')],
         ],
       },
       {
@@ -220,7 +220,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Work through Airflow fundamentals', 'watch'],
           ['Build: schedule your ETL pipeline as a DAG with retries and alerts', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('A DAG in orchestration is…', ['A database table', 'A directed acyclic graph of tasks', 'A deployment artifact', 'A data quality rule'], 1, 'Workflows are modeled as directed acyclic graphs so dependencies run in order without cycles.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per Astronomer Airflow Academy, a DAG in orchestration is…', ['A database table', 'A directed acyclic graph of tasks', 'A deployment artifact', 'A data quality rule'], 1, 'Workflows are modeled as directed acyclic graphs so dependencies run in order without cycles.')],
         ],
       },
       {
@@ -235,7 +235,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study object storage, warehouse, and IAM basics on one cloud', 'watch'],
           ['Build: deploy your pipeline to run on cloud infrastructure', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Object storage (S3/GCS) is best suited for…', ['Low-latency transactions', 'Files and immutable data at scale', 'Relational joins', 'In-memory caching'], 1, 'Object stores are cheap, durable homes for files and raw/lake data — not transactional workloads.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the AWS Skill Builder data analytics course, object storage (S3/GCS) is best suited for…', ['Low-latency transactions', 'Files and immutable data at scale', 'Relational joins', 'In-memory caching'], 1, 'Object stores are cheap, durable homes for files and raw/lake data — not transactional workloads.')],
         ],
       },
       {
@@ -250,7 +250,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study the Spark SQL programming guide', 'read'],
           ['Build: process a dataset too large for pandas with PySpark', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('A shuffle in Spark is expensive because…', ['It uses GPUs', 'Data moves across the network between partitions', 'It recompiles the job', 'It writes to the driver'], 1, 'Shuffles repartition data across executors over the network — the main cost to minimize in Spark jobs.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the Spark Tuning Guide, a shuffle in Spark is expensive because…', ['It uses GPUs', 'Data moves across the network between partitions', 'It recompiles the job', 'It writes to the driver'], 1, 'Shuffles repartition data across executors over the network — the main cost to minimize in Spark jobs.')],
         ],
       },
       {
@@ -265,7 +265,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Complete Kafka 101', 'watch'],
           ['Build: a producer/consumer pair processing events in real time', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Consumer groups in Kafka enable…', ['Message encryption', 'Parallel consumption with each partition read by one member', 'Schema validation', 'Exactly-once storage'], 1, 'Partitions are divided among group members, giving horizontal scale while preserving per-partition order.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per Kafka 101, consumer groups in Kafka enable…', ['Message encryption', 'Parallel consumption with each partition read by one member', 'Schema validation', 'Exactly-once storage'], 1, 'Partitions are divided among group members, giving horizontal scale while preserving per-partition order.')],
         ],
       },
       {
@@ -280,7 +280,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Read the vector database fundamentals guide', 'read'],
           ['Build: embed a document set and serve similarity search', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Embeddings are…', ['Compressed files', 'Dense vectors capturing semantic meaning', 'Database indexes', 'Encrypted tokens'], 1, 'Embeddings map text/images into dense vectors where semantic similarity becomes geometric closeness.')],
+          ['Checkpoint quiz', 'quiz', quiz("Per Pinecone's Vector Databases Explained, embeddings are…", ['Compressed files', 'Dense vectors capturing semantic meaning', 'Database indexes', 'Encrypted tokens'], 1, 'Embeddings map text/images into dense vectors where semantic similarity becomes geometric closeness.')],
         ],
       },
     ],
@@ -305,7 +305,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Complete the data cleaning course', 'watch'],
           ['Build: a full EDA notebook on a dataset you have never seen', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('The first thing to check in a new dataset is…', ['Model accuracy', 'Missing values, types, and distributions', 'Dashboard colors', 'Feature importance'], 1, 'Profiling — completeness, types, ranges, distributions — comes before any analysis or modeling.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the Kaggle Data Cleaning course, the first thing to check in a new dataset is…', ['Model accuracy', 'Missing values, types, and distributions', 'Dashboard colors', 'Feature importance'], 1, 'Profiling — completeness, types, ranges, distributions — comes before any analysis or modeling.')],
         ],
       },
       {
@@ -320,7 +320,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study chart-choice and perception principles', 'read'],
           ['Build: remake three bad charts into honest, readable ones', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('For comparing quantities across categories, prefer…', ['Pie chart', 'Bar chart', '3D surface', 'Word cloud'], 1, 'Length on a common baseline (bars) is the most accurately perceived encoding for comparisons.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per Storytelling with Data, for comparing quantities across categories, prefer…', ['Pie chart', 'Bar chart', '3D surface', 'Word cloud'], 1, 'Length on a common baseline (bars) is the most accurately perceived encoding for comparisons.')],
         ],
       },
       {
@@ -335,7 +335,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Read dashboard design best practices', 'read'],
           ['Build: a KPI dashboard answering three stakeholder questions', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('A good dashboard leads with…', ['Every available metric', 'The most decision-relevant KPIs', 'Raw tables', 'Filters'], 1, 'Hierarchy matters: the questions users came to answer belong at the top, detail below.')],
+          ['Checkpoint quiz', 'quiz', quiz("Per Metabase's dashboard best practices, a good dashboard leads with…", ['Every available metric', 'The most decision-relevant KPIs', 'Raw tables', 'Filters'], 1, 'Hierarchy matters: the questions users came to answer belong at the top, detail below.')],
         ],
       },
       {
@@ -350,7 +350,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Work through storytelling-with-data exercises', 'read'],
           ['Build: a 5-slide narrative from one of your analyses', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('A data story should end with…', ['The methodology', 'A recommended action', 'All caveats', 'The raw data'], 1, 'Analyses drive decisions: close with the action the evidence supports, then back it up.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the SWD storytelling exercises, a data story should end with…', ['The methodology', 'A recommended action', 'All caveats', 'The raw data'], 1, 'Analyses drive decisions: close with the action the evidence supports, then back it up.')],
         ],
       },
       {
@@ -365,7 +365,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Complete a Power BI (or Metabase) learning path', 'watch'],
           ['Build: publish a governed dashboard with a shared metric definition', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('A semantic layer exists to…', ['Speed up SQL', 'Define metrics once and reuse everywhere', 'Replace the warehouse', 'Encrypt data'], 1, 'Semantic layers centralize metric definitions so every tool and team reports the same numbers.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the Power BI learning path, a semantic layer exists to…', ['Speed up SQL', 'Define metrics once and reuse everywhere', 'Replace the warehouse', 'Encrypt data'], 1, 'Semantic layers centralize metric definitions so every tool and team reports the same numbers.')],
         ],
       },
       {
@@ -380,7 +380,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study prompting patterns for analysis work', 'read'],
           ['Build: run an analysis with an LLM assistant and validate every claim', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('When an LLM produces an analysis claim, you should…', ['Ship it', 'Verify it against the data before using it', 'Ask it to be confident', 'Lower the temperature'], 1, 'LLMs speed up analysis but hallucinate; every number and claim must be validated against the source data.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the prompt engineering guide, when an LLM produces an analysis claim, you should…', ['Ship it', 'Verify it against the data before using it', 'Ask it to be confident', 'Lower the temperature'], 1, 'LLMs speed up analysis but hallucinate; every number and claim must be validated against the source data.')],
         ],
       },
     ],
@@ -405,7 +405,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Complete the intro ML course', 'watch'],
           ['Build: train and compare two models on a tabular dataset', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('High training accuracy but poor test accuracy indicates…', ['Underfitting', 'Overfitting', 'Data leakage is impossible', 'A perfect model'], 1, 'The model memorized training data instead of generalizing — the classic overfitting signature.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the Kaggle Intro to Machine Learning course, high training accuracy but poor test accuracy indicates…', ['Underfitting', 'Overfitting', 'Data leakage is impossible', 'A perfect model'], 1, 'The model memorized training data instead of generalizing — the classic overfitting signature.')],
         ],
       },
       {
@@ -420,7 +420,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Complete the feature engineering course', 'watch'],
           ['Build: engineer features that measurably beat the raw baseline', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Data leakage means…', ['Missing values', 'Information from the target/future leaking into features', 'Slow training', 'Too many features'], 1, 'Leakage lets the model peek at information unavailable at prediction time, inflating offline metrics.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the Kaggle Feature Engineering course, data leakage means…', ['Missing values', 'Information from the target/future leaking into features', 'Slow training', 'Too many features'], 1, 'Leakage lets the model peek at information unavailable at prediction time, inflating offline metrics.')],
         ],
       },
       {
@@ -435,7 +435,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study evaluation metrics and cross-validation', 'read'],
           ['Build: an evaluation report with CV, baselines, and the right metric', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('For imbalanced classification, accuracy is misleading because…', ['It is slow', 'Predicting the majority class scores high', 'It needs GPUs', 'It requires calibration'], 1, 'With 99/1 class balance, always predicting the majority hits 99% accuracy while catching nothing.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the scikit-learn model evaluation guide, for imbalanced classification, accuracy is misleading because…', ['It is slow', 'Predicting the majority class scores high', 'It needs GPUs', 'It requires calibration'], 1, 'With 99/1 class balance, always predicting the majority hits 99% accuracy while catching nothing.')],
         ],
       },
       {
@@ -450,7 +450,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study experiment design and statistical power', 'read'],
           ['Build: design an A/B test plan with hypothesis, sample size, and decision rule', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Peeking at A/B results daily and stopping early…', ['Is best practice', 'Inflates false positives', 'Reduces variance', 'Has no effect'], 1, 'Repeated significance checks without correction dramatically inflate the false-positive rate.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per Trustworthy Online Controlled Experiments, peeking at A/B results daily and stopping early…', ['Is best practice', 'Inflates false positives', 'Reduces variance', 'Has no effect'], 1, 'Repeated significance checks without correction dramatically inflate the false-positive rate.')],
         ],
       },
       {
@@ -465,7 +465,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study FastAPI model-serving patterns', 'read'],
           ['Build: serve a trained model behind a versioned REST endpoint', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Model artifacts should be…', ['Retrained per request', 'Versioned and loaded at startup', 'Stored in the client', 'Hardcoded'], 1, 'Versioned artifacts loaded at startup give reproducible, fast inference and clean rollbacks.')],
+          ['Checkpoint quiz', 'quiz', quiz("Following FastAPI's model-serving docs, model artifacts should be…", ['Retrained per request', 'Versioned and loaded at startup', 'Stored in the client', 'Hardcoded'], 1, 'Versioned artifacts loaded at startup give reproducible, fast inference and clean rollbacks.')],
         ],
       },
       {
@@ -480,7 +480,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Work through fast.ai practical deep learning', 'watch'],
           ['Build: fine-tune a pretrained network on your own image/text data', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Transfer learning works because…', ['Small data trains from scratch', 'Early layers learn reusable general features', 'GPUs are fast', 'Labels are optional'], 1, 'Pretrained networks capture general features; fine-tuning adapts them to your task with little data.')],
+          ['Checkpoint quiz', 'quiz', quiz("Per fast.ai's Practical Deep Learning for Coders, transfer learning works because…", ['Small data trains from scratch', 'Early layers learn reusable general features', 'GPUs are fast', 'Labels are optional'], 1, 'Pretrained networks capture general features; fine-tuning adapts them to your task with little data.')],
         ],
       },
       {
@@ -495,7 +495,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Complete the Hugging Face NLP course core chapters', 'watch'],
           ['Build: compare a RAG baseline vs fine-tuning on one task, with evals', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Prefer RAG over fine-tuning when…', ['Knowledge changes frequently', 'You need a new output style', 'Latency must be minimal', 'You have no documents'], 0, 'RAG serves fresh, updatable knowledge at query time; fine-tuning bakes behavior/style into weights.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the Hugging Face NLP Course, prefer RAG over fine-tuning when…', ['Knowledge changes frequently', 'You need a new output style', 'Latency must be minimal', 'You have no documents'], 0, 'RAG serves fresh, updatable knowledge at query time; fine-tuning bakes behavior/style into weights.')],
         ],
       },
     ],
@@ -520,7 +520,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study tool use, structured outputs, and streaming in the API docs', 'read'],
           ['Build: a CLI app using tool calls and streamed responses', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Tool use lets an LLM…', ['Train itself', 'Call functions you define and use the results', 'Access weights', 'Skip safety'], 1, 'You declare tools; the model requests calls with arguments and incorporates your returned results.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the Anthropic API docs, tool use lets an LLM…', ['Train itself', 'Call functions you define and use the results', 'Access weights', 'Skip safety'], 1, 'You declare tools; the model requests calls with arguments and incorporates your returned results.')],
         ],
       },
       {
@@ -535,7 +535,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study chunking, hybrid retrieval, and reranking', 'read'],
           ['Build: a RAG system over your own documents with cited answers', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Reranking improves RAG by…', ['Making embeddings smaller', 'Reordering retrieved candidates by relevance before generation', 'Caching responses', 'Increasing chunk size'], 1, 'A reranker scores query-document pairs precisely, promoting the truly relevant chunks into context.')],
+          ['Checkpoint quiz', 'quiz', quiz("Per Pinecone's Retrieval-Augmented Generation guide, reranking improves RAG by…", ['Making embeddings smaller', 'Reordering retrieved candidates by relevance before generation', 'Caching responses', 'Increasing chunk size'], 1, 'A reranker scores query-document pairs precisely, promoting the truly relevant chunks into context.')],
         ],
       },
       {
@@ -550,7 +550,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Read Building Effective Agents', 'read'],
           ['Build: an agent with 2–3 tools, guardrails, and a stop condition', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz("Per Anthropic's guidance, you should reach for an agent when…", ['Always', "A workflow's steps cannot be predetermined", 'Latency is critical', 'Costs must be fixed'], 1, 'If the path is predictable, a fixed workflow is cheaper and more reliable; agents earn their cost on open-ended tasks.')],
+          ['Checkpoint quiz', 'quiz', quiz("Per Anthropic's Building Effective Agents, you should reach for an agent when…", ['Always', "A workflow's steps cannot be predetermined", 'Latency is critical', 'Costs must be fixed'], 1, 'If the path is predictable, a fixed workflow is cheaper and more reliable; agents earn their cost on open-ended tasks.')],
         ],
       },
       {
@@ -565,7 +565,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study vision/document understanding patterns', 'read'],
           ['Build: an app that extracts structured data from images or PDFs', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('For extracting fields from documents, the most robust approach is…', ['Regex on OCR text only', 'Multimodal model with a strict output schema and validation', 'Manual entry', 'Screenshots in prompts without structure'], 1, 'Schema-constrained multimodal extraction plus validation catches errors that brittle regex/OCR pipelines miss.')],
+          ['Checkpoint quiz', 'quiz', quiz("Per Anthropic's vision documentation, for extracting fields from documents, the most robust approach is…", ['Regex on OCR text only', 'Multimodal model with a strict output schema and validation', 'Manual entry', 'Screenshots in prompts without structure'], 1, 'Schema-constrained multimodal extraction plus validation catches errors that brittle regex/OCR pipelines miss.')],
         ],
       },
       {
@@ -580,7 +580,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study LLM evaluation approaches', 'read'],
           ['Build: an eval suite that gates a prompt change in CI', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Prompt changes should ship only after…', ['Manual vibes check', 'Passing a regression eval suite', 'A bigger model is used', 'Temperature is zeroed'], 1, 'Evals turn prompt engineering into engineering: regressions get caught before users see them.')],
+          ['Checkpoint quiz', 'quiz', quiz("Per Eugene Yan's Guide to LLM Evals, prompt changes should ship only after…", ['Manual vibes check', 'Passing a regression eval suite', 'A bigger model is used', 'Temperature is zeroed'], 1, 'Evals turn prompt engineering into engineering: regressions get caught before users see them.')],
         ],
       },
       {
@@ -595,7 +595,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study AI product architecture patterns', 'read'],
           ['Build: design doc + prototype for an AI product with fallbacks and latency budget', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('When the model fails or times out, a production AI product should…', ['Show a stack trace', 'Degrade gracefully to a designed fallback', 'Retry forever', 'Block the UI'], 1, 'Fallbacks (cached answers, simpler models, honest empty states) are part of the product design, not an afterthought.')],
+          ['Checkpoint quiz', 'quiz', quiz("Per Chip Huyen's AI Engineering notes, when the model fails or times out, a production AI product should…", ['Show a stack trace', 'Degrade gracefully to a designed fallback', 'Retry forever', 'Block the UI'], 1, 'Fallbacks (cached answers, simpler models, honest empty states) are part of the product design, not an afterthought.')],
         ],
       },
     ],
@@ -620,7 +620,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Work through Docker getting started', 'read'],
           ['Build: containerize a model service with a slim, reproducible image', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Docker image layers are…', ['Random snapshots', 'Cached filesystem diffs created per instruction', 'VM disks', 'Encrypted volumes'], 1, 'Each Dockerfile instruction creates a cached layer; ordering instructions well makes rebuilds fast.')],
+          ['Checkpoint quiz', 'quiz', quiz("Per Docker's Getting Started guide, Docker image layers are…", ['Random snapshots', 'Cached filesystem diffs created per instruction', 'VM disks', 'Encrypted volumes'], 1, 'Each Dockerfile instruction creates a cached layer; ordering instructions well makes rebuilds fast.')],
         ],
       },
       {
@@ -635,7 +635,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study GitHub Actions pipelines', 'read'],
           ['Build: a CI pipeline that tests data, code, and model quality before deploy', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('CI for ML differs from app CI because it must also validate…', ['Only code style', 'Data and model quality', 'Commit messages', 'Branch names'], 1, 'ML behavior depends on data and weights, so pipelines test datasets and model metrics, not just code.')],
+          ['Checkpoint quiz', 'quiz', quiz('Working through the GitHub Actions docs, CI for ML differs from app CI because it must also validate…', ['Only code style', 'Data and model quality', 'Commit messages', 'Branch names'], 1, 'ML behavior depends on data and weights, so pipelines test datasets and model metrics, not just code.')],
         ],
       },
       {
@@ -650,7 +650,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study drift detection and ML monitoring', 'read'],
           ['Build: a monitoring dashboard that alerts on input drift', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Concept drift means…', ['Inputs changed distribution', 'The relationship between inputs and target changed', 'The model file corrupted', 'Latency increased'], 1, "Concept drift is when P(y|x) changes — the world's behavior shifted, so the learned mapping decays.")],
+          ['Checkpoint quiz', 'quiz', quiz("Per Evidently AI's monitoring guides, concept drift means…", ['Inputs changed distribution', 'The relationship between inputs and target changed', 'The model file corrupted', 'Latency increased'], 1, "Concept drift is when P(y|x) changes — the world's behavior shifted, so the learned mapping decays.")],
         ],
       },
       {
@@ -665,7 +665,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Study serving patterns and feature stores', 'read'],
           ['Build: an online + batch serving path for the same model', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('A feature store primarily solves…', ['GPU scheduling', 'Consistent features between training and serving', 'Model compression', 'Data visualization'], 1, 'Training/serving skew disappears when both read identical feature definitions from one store.')],
+          ['Checkpoint quiz', 'quiz', quiz("Per Chip Huyen's Designing Machine Learning Systems notes, a feature store primarily solves…", ['GPU scheduling', 'Consistent features between training and serving', 'Model compression', 'Data visualization'], 1, 'Training/serving skew disappears when both read identical feature definitions from one store.')],
         ],
       },
       {
@@ -680,107 +680,7 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Work through the MLOps Zoomcamp capstone material', 'watch'],
           ['Build: an end-to-end platform design doc — tracking, registry, deploy paths', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('A model registry provides…', ['Faster training', 'Versioned, stage-managed models with lineage', 'Data labeling', 'Feature computation'], 1, 'Registries track model versions, stages (staging/prod), and lineage — the backbone of controlled deployment.')],
-        ],
-      },
-    ],
-  },
-  {
-    id: 'full-stack',
-    title: 'Full Stack',
-    description: 'Build end-to-end web applications. Master modern frontend, robust backend APIs, databases, and deployment.',
-    icon: 'code',
-    tags: ['React', 'Next.js', 'Node.js', 'PostgreSQL', 'Docker', 'Vercel'],
-    requiresPaths: [],
-    nodes: [
-      {
-        slug: 'fs-web-arch', name: 'Web Architecture', subtitle: 'HTTP, APIs, & Browsers',
-        description: 'Client-server architecture, HTTP verbs, status codes, JSON APIs, and browser rendering.',
-        icon: 'language', estHours: 8, xp: 100,
-        skills: ['HTTP & REST', 'Browser rendering', 'API fundamentals'], prereqs: FOUNDATION_SLUGS,
-        resources: [
-          ['MDN Web Docs: Learn Web Development', 'documentation', 'Mozilla', 'https://developer.mozilla.org/en-US/docs/Learn'],
-          ['CS50: Intro to Computer Science', 'course', 'Harvard', 'https://cs50.harvard.edu/x/'],
-        ],
-        tasks: [
-          ['Work through MDN Web Architecture & HTTP guides', 'read'],
-          ['Build: inspect network requests of 3 real sites and document API schemas', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Which HTTP status code signifies a resource was successfully created?', ['200 OK', '201 Created', '301 Moved', '404 Not Found'], 1, '201 Created explicitly indicates that the request succeeded and a new resource was created.')],
-        ],
-      },
-      {
-        slug: 'fs-frontend', name: 'Modern Frontend', subtitle: 'React & Next.js',
-        description: 'Component architecture, state management, hooks, and responsive UI design.',
-        icon: 'devices', estHours: 14, xp: 200,
-        skills: ['React Hooks', 'Next.js App Router', 'Tailwind CSS'], prereqs: ['fs-web-arch'],
-        resources: [
-          ['React Official Documentation', 'documentation', 'Meta', 'https://react.dev/learn'],
-          ['Full Stack Open: React', 'course', 'University of Helsinki', 'https://fullstackopen.com/en/'],
-        ],
-        tasks: [
-          ['Complete the official React Interactive Tutorial', 'read'],
-          ['Build: a responsive interactive web UI connected to mock API data', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('In React, useEffect with an empty dependency array [] runs…', ['On every render', 'Only once when the component mounts', 'Never', 'On state changes'], 1, 'An empty dependency array ensures the effect runs only once after the initial render.')],
-        ],
-      },
-      {
-        slug: 'fs-backend', name: 'Backend & APIs', subtitle: 'Node.js & Express',
-        description: 'Design RESTful APIs, authentication, request validation, and middleware pipelines.',
-        icon: 'dns', estHours: 14, xp: 200,
-        skills: ['Node.js & Express', 'REST APIs', 'Auth & JWT'], prereqs: ['fs-frontend'],
-        resources: [
-          ['The Odin Project: NodeJS Course', 'course', 'The Odin Project', 'https://www.theodinproject.com/paths/full-stack-javascript/courses/nodejs'],
-          ['Node.js Official Docs', 'documentation', 'NodeJS Foundation', 'https://nodejs.org/en/docs/'],
-        ],
-        tasks: [
-          ['Study Node.js REST API architecture and authentication patterns', 'read'],
-          ['Build: a REST API with CRUD endpoints, validation, and JWT auth', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Express middleware functions execute…', ['In parallel', 'Sequentially in the order registered', 'After the response is sent', 'Only on errors'], 1, 'Middleware functions run in sequential order as declared until res.send() or next() is invoked.')],
-        ],
-      },
-      {
-        slug: 'fs-db', name: 'Database Integration', subtitle: 'PostgreSQL & ORMs',
-        description: 'Relational schema design, SQL migrations, query optimization, and ORM abstractions.',
-        icon: 'database', estHours: 12, xp: 250,
-        skills: ['PostgreSQL', 'Prisma / Drizzle ORM', 'Database migrations'], prereqs: ['fs-backend'],
-        resources: [
-          ['PostgreSQL Official Tutorial', 'documentation', 'PostgreSQL', 'https://www.postgresql.org/docs/online-resources/'],
-          ['Prisma ORM Guide', 'documentation', 'Prisma', 'https://www.prisma.io/docs'],
-        ],
-        tasks: [
-          ['Study relational data modeling and ORM migration workflows', 'read'],
-          ['Build: connect your backend service to PostgreSQL using an ORM with seed data', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Foreign keys in relational databases enforce…', ['Faster index queries', 'Referential integrity', 'Automatic encryption', 'Compression'], 1, 'Foreign keys ensure referential integrity between matching columns across related tables.')],
-        ],
-      },
-      {
-        slug: 'fs-devops', name: 'DevOps & Deployment', subtitle: 'From localhost to prod',
-        description: 'Containerization, environment management, continuous deployment, and performance monitoring.',
-        icon: 'cloud_upload', estHours: 12, xp: 250,
-        skills: ['Docker containers', 'Vercel / Render', 'Environment security'], prereqs: ['fs-db'],
-        resources: [
-          ['Vercel Deployment Docs', 'documentation', 'Vercel', 'https://vercel.com/docs'],
-          ['Docker for Web Developers', 'course', 'Docker', 'https://docs.docker.com/language/nodejs/'],
-        ],
-        tasks: [
-          ['Study deployment pipelines and environment variable security', 'read'],
-          ['Build: deploy your full-stack app with production database hosting and SSL', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Sensitive keys (DB passwords, secret tokens) should be stored in…', ['Git repository source code', 'Environment variables', 'Public HTML files', 'Browser LocalStorage'], 1, 'Environment variables keep secret credentials out of source repositories and client browsers.')],
-        ],
-      },
-      {
-        slug: 'fs-capstone', name: 'Full Stack Capstone', subtitle: 'Production Application',
-        description: 'Build and ship a production-grade full-stack web application with authentication, database, and CI/CD.',
-        icon: 'rocket_launch', estHours: 20, xp: 300,
-        skills: ['End-to-end architecture', 'Security & auth', 'Production delivery'], prereqs: ['fs-devops'],
-        resources: [
-          ['Full Stack Open Capstone Guidelines', 'course', 'University of Helsinki', 'https://fullstackopen.com/en/part9'],
-          ['System Design Primer', 'documentation', 'GitHub (donnemartin)', 'https://github.com/donnemartin/system-design-primer'],
-        ],
-        tasks: [
-          ['Design full-stack system architecture and schema', 'read'],
-          ['Build: ship a live full-stack app with public URL, repository, and automated tests', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Before launching to real users, a full stack app must verify…', ['Color palette only', 'Auth security, database backups, and error logging', 'Localhost speed', 'Number of files'], 1, 'Production readiness requires security, backups, logging, and performance validation.')],
+          ['Checkpoint quiz', 'quiz', quiz('Per the MLOps Zoomcamp capstone material, a model registry provides…', ['Faster training', 'Versioned, stage-managed models with lineage', 'Data labeling', 'Feature computation'], 1, 'Registries track model versions, stages (staging/prod), and lineage — the backbone of controlled deployment.')],
         ],
       },
     ],
