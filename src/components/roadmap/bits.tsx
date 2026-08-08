@@ -127,15 +127,15 @@ export function StatusChip({ status }: { status: NodeStatus }) {
 }
 
 const TASK_TYPE_STYLE: Record<TaskType, string> = {
-  read: 'border-cyan/35 text-cyan',
-  watch: 'border-cyan/35 text-cyan',
-  build: 'border-primary/40 text-primary-neon',
-  quiz: 'border-secondary/40 text-secondary',
+  read: 'text-cyan',
+  watch: 'text-cyan',
+  build: 'text-primary-neon',
+  quiz: 'text-secondary',
 };
 
 export function TaskTypeBadge({ type }: { type: TaskType }) {
   return (
-    <span className={cn('inline-flex w-14 shrink-0 items-center justify-center border bg-transparent px-1 py-0.5 font-code text-[9px] font-semibold uppercase tracking-[0.14em]', TASK_TYPE_STYLE[type])}>
+    <span className={cn('shrink-0 font-code text-[9px] font-semibold uppercase tracking-[0.14em]', TASK_TYPE_STYLE[type])}>
       {type}
     </span>
   );

@@ -322,10 +322,7 @@ export default function NodeSheet({ data }: { data: UserData }) {
           {/* Resources */}
           {!needsAuth && resources.length > 0 && status !== 'locked' && (
             <section>
-              <div className="flex items-center justify-between">
-                <p className="micro-label text-outline">curated free resources</p>
-                <span className="font-code text-[10px] font-semibold text-secondary">{'// 100% free & open'}</span>
-              </div>
+              <p className="micro-label text-outline">resources</p>
               <ul className="mt-3 space-y-3">
                 {resources.map((resource) => {
                   const myRating = data.progress.ratings[resource.id] ?? 0;
@@ -338,14 +335,9 @@ export default function NodeSheet({ data }: { data: UserData }) {
                     <li key={resource.id} className="group relative border border-outline-variant bg-surface/80 p-4 transition-all hover:border-cyan/40 hover:shadow-md">
                       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0 flex-1 space-y-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="inline-flex items-center border border-cyan/30 bg-cyan/10 px-2 py-0.5 font-code text-[9px] font-bold uppercase tracking-[0.1em] text-cyan">
-                              {resource.platform}
-                            </span>
-                            <span className="border border-outline-variant bg-surface-container-low px-2 py-0.5 font-code text-[9px] lowercase text-on-surface-variant">
-                              {resource.type}
-                            </span>
-                          </div>
+                          <span className="inline-flex items-center border border-cyan/30 bg-cyan/10 px-2 py-0.5 font-code text-[9px] font-bold uppercase tracking-[0.1em] text-cyan">
+                            {resource.platform} · {resource.type}
+                          </span>
                           <h4 className="font-display text-sm font-bold text-on-surface group-hover:text-cyan transition-colors">
                             {resource.name}
                           </h4>

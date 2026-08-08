@@ -202,15 +202,12 @@ export default function LandingPage() {
       {/* ── Technology Strip ── */}
       <section className="border-b border-outline-variant bg-surface-container-low/60 py-4">
         <div className="mx-auto max-w-7xl px-5 md:px-8">
-          <p className="text-center font-code text-[10px] font-semibold text-outline uppercase tracking-[0.16em] mb-3">Core Tech Stack Covered</p>
-          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4">
-            {techStack.map((tech) => (
-              <span
-                key={tech}
-                className="inline-flex items-center gap-1.5 border border-outline-variant/70 bg-surface px-3 py-1 font-code text-xs text-on-surface font-semibold"
-              >
-                <Code2 className="h-3.5 w-3.5 text-cyan" />
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1.5 font-code text-xs text-on-surface-variant">
+            <Code2 className="h-3.5 w-3.5 shrink-0 text-cyan" />
+            {techStack.map((tech, i) => (
+              <span key={tech}>
                 {tech}
+                {i < techStack.length - 1 && <span className="text-outline"> ·</span>}
               </span>
             ))}
           </div>
@@ -235,30 +232,22 @@ export default function LandingPage() {
                 icon: Route,
                 title: 'Structured Skill Tree DAG',
                 desc: 'Prerequisites unlock step-by-step as you complete modules, giving you a clear, unambiguous learning sequence.',
-                tag: 'Prerequisite DAG',
               },
               {
                 icon: Rocket,
                 title: 'Proof-Driven Portfolio',
                 desc: 'Tasks require submitting real GitHub repositories, deployed web apps, and system writeups to verify your skills.',
-                tag: 'Real Deliverables',
               },
               {
                 icon: Compass,
                 title: 'Zero-Fluff Curriculum',
                 desc: 'One canonical visual map connecting official documentation, battle-tested tutorials, and core architectural concepts.',
-                tag: 'Curated Content',
               },
             ].map((feat) => (
               <div key={feat.title} className="group relative flex flex-col justify-between border border-outline-variant bg-surface p-6 transition-all hover:-translate-y-1 hover:border-cyan/40 hover:shadow-xl">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex h-11 w-11 items-center justify-center border border-cyan/40 bg-cyan/10 text-cyan">
-                      <feat.icon className="h-5 w-5" />
-                    </div>
-                    <Badge variant="outline" className="border-cyan/30 bg-cyan/10 font-code text-[10px] uppercase text-cyan">
-                      {feat.tag}
-                    </Badge>
+                  <div className="flex h-11 w-11 items-center justify-center border border-cyan/40 bg-cyan/10 text-cyan">
+                    <feat.icon className="h-5 w-5" />
                   </div>
 
                   <h3 className="font-display text-lg font-bold text-on-surface group-hover:text-cyan transition-colors">{feat.title}</h3>
@@ -406,7 +395,6 @@ export default function LandingPage() {
               <h4 className="text-xs font-semibold text-outline uppercase tracking-wider mb-3">Platform</h4>
               <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
                 <li><span>{isSupabaseConnected ? 'Cloud Auth Enabled' : 'Local Demo Mode'}</span></li>
-                <li><span className="text-cyan">100% Free & Open Access</span></li>
               </ul>
             </div>
           </div>

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useUserData } from '@/hooks/useUserData';
-import { ChartNoAxesCombined, Compass, LogOut, PanelLeftClose, PanelLeftOpen, Route, Settings, ShieldCheck, UserRound } from 'lucide-react';
+import { ChartNoAxesCombined, Compass, LogOut, PanelLeftClose, PanelLeftOpen, Route, ShieldCheck } from 'lucide-react';
 import { StaccMark } from '@/components/brand/StaccMark';
 import { useUiStore } from '@/store/useUiStore';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -16,15 +16,13 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const userData = useUserData();
-  const { signOut, hasSelectedPath, isAdmin, user } = userData;
+  const { signOut, hasSelectedPath, isAdmin } = userData;
   const { sidebarCollapsed, toggleSidebar } = useUiStore();
 
   const navItems = [
     { name: 'Roadmap', href: '/roadmap', icon: Route },
     { name: 'Progress', href: '/dashboard', icon: ChartNoAxesCombined },
     { name: 'Explore paths', href: '/paths', icon: Compass },
-    { name: 'Member settings', href: '/settings', icon: Settings },
-    { name: 'Public portfolio', href: `/u/${encodeURIComponent(user.username)}`, icon: UserRound },
     ...(isAdmin ? [{ name: 'Admin', href: '/admin', icon: ShieldCheck }] : []),
   ];
 
