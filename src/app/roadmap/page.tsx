@@ -52,65 +52,61 @@ export default function RoadmapPage() {
   }
 
   return (
-    <div className="w-full pb-24 pt-6 md:pb-12">
-      {/* Command header */}
-      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+    <div className="w-full pb-16 pt-3 md:pb-6">
+      {/* Streamlined Command Header Sub-bar */}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <motion.header
-          initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="border border-outline-variant bg-surface/80 backdrop-blur"
+          transition={{ duration: 0.3 }}
+          className="border border-outline-variant/80 bg-surface/90 shadow-md backdrop-blur-md"
         >
-          <div className="flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
-            <div>
-              <h1 className="mt-1 font-display text-2xl font-bold tracking-[-0.02em] text-on-surface sm:text-3xl">
-                Your skill tree
+          <div className="flex flex-col gap-3 p-3 sm:p-4 md:flex-row md:items-center md:justify-between">
+            {/* Left: Section title & overall progress */}
+            <div className="flex items-center gap-4">
+              <h1 className="font-display text-lg font-bold tracking-tight text-on-surface sm:text-xl">
+                Skill Tree
               </h1>
+              <div className="h-4 w-px bg-outline-variant/60" />
+              <div className="flex items-center gap-2">
+                <Progress
+                  value={overallPct}
+                  className="h-1.5 w-24 rounded-none bg-surface-container-high [&>div]:rounded-none [&>div]:bg-cyan"
+                />
+                <span className="font-code text-xs font-bold text-cyan">{overallPct}%</span>
+              </div>
+              <div className="h-4 w-px bg-outline-variant/60" />
+              <div className="flex items-center gap-1 font-code text-xs font-bold text-tertiary">
+                <Flame className="h-3.5 w-3.5 fill-tertiary" />
+                <span>{data.streak}d streak</span>
+              </div>
             </div>
-            <div className="flex items-center gap-5">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-outline">Overall</p>
-                <div className="mt-1 flex items-center gap-2">
-                  {/* Progress primitive — rounded-none + cyan fill */}
-                  <Progress
-                    value={overallPct}
-                    className="h-1.5 w-28 rounded-none bg-surface-container-high [&>div]:rounded-none [&>div]:bg-cyan"
-                  />
-                  <span className="font-code text-sm font-bold text-cyan">{overallPct}%</span>
-                </div>
-              </div>
-              <div className="border-l border-outline-variant pl-5">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-outline">Streak</p>
-                <p className="mt-1 flex items-center gap-1 font-code text-sm font-bold text-tertiary">
-                  <Flame className="h-3.5 w-3.5" />{data.streak}d
-                </p>
-              </div>
-              {/* View toggle (desktop only; mobile always gets the rail) */}
-              <div className="hidden border-l border-outline-variant pl-5 md:block">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-outline">View</p>
-                <div className="mt-1 flex border border-outline-variant">
-                  {TREE_VIEWS.map(({ id, label, icon: Icon }) => (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setTreeView(id)}
-                      aria-pressed={treeView === id}
-                      className={cn(
-                        'flex items-center gap-1.5 px-2.5 py-1 font-code text-[10px] font-semibold uppercase tracking-[0.1em] transition-colors',
-                        treeView === id ? 'bg-cyan/10 text-cyan' : 'text-on-surface-variant hover:text-on-surface',
-                      )}
-                    >
-                      <Icon className="h-3 w-3" />
-                      {label}
-                    </button>
-                  ))}
-                </div>
+
+            {/* Right: View switcher */}
+            <div className="hidden items-center gap-2 md:flex">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-outline">View:</span>
+              <div className="flex border border-outline-variant/70 bg-surface-container-low">
+                {TREE_VIEWS.map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setTreeView(id)}
+                    aria-pressed={treeView === id}
+                    className={cn(
+                      'flex items-center gap-1.5 px-3 py-1 font-code text-[10px] font-semibold uppercase tracking-[0.1em] transition-colors',
+                      treeView === id ? 'bg-cyan/15 text-cyan' : 'text-on-surface-variant hover:text-on-surface',
+                    )}
+                  >
+                    <Icon className="h-3 w-3" />
+                    {label}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Path switcher */}
-          <div className="flex gap-1 overflow-x-auto border-t border-outline-variant p-2 no-scrollbar">
+          {/* Path switcher segmented tab bar */}
+          <div className="flex gap-1.5 overflow-x-auto border-t border-outline-variant/60 p-2 no-scrollbar bg-surface-container-low/40">
             {specializations.map((path) => {
               const pathNodes = nodesByPath[path.id] ?? [];
               const done = pathNodes.filter((n) => progress.completedNodes[n.id]).length;
@@ -122,10 +118,10 @@ export default function RoadmapPage() {
                   type="button"
                   onClick={() => data.selectPath(path.id)}
                   className={cn(
-                    'flex shrink-0 items-center gap-2 border px-3 py-2 font-code text-[10px] font-semibold uppercase tracking-[0.1em] transition-colors',
+                    'flex shrink-0 items-center gap-2 border px-3 py-1.5 font-code text-[10px] font-semibold uppercase tracking-[0.1em] transition-all',
                     active
-                      ? 'border-cyan/50 bg-cyan/10 text-cyan'
-                      : 'border-transparent text-on-surface-variant hover:border-outline-variant hover:text-on-surface',
+                      ? 'border-cyan bg-cyan/10 text-cyan shadow-sm'
+                      : 'border-outline-variant/40 bg-surface/50 text-on-surface-variant hover:border-cyan/40 hover:text-on-surface',
                   )}
                 >
                   {locked ? <Lock className="h-3 w-3 text-outline" /> : <AppIcon name={path.icon} className="h-3.5 w-3.5" />}
@@ -140,8 +136,8 @@ export default function RoadmapPage() {
         </motion.header>
       </div>
 
-      {/* Tree — full-bleed canvas; list views stay in the readable column */}
-      <div ref={treeRef} className="relative mt-8">
+      {/* Tree Container — Spacious & Full-Bleed Canvas */}
+      <div ref={treeRef} className="relative mt-4">
         <div aria-hidden className="pointer-events-none absolute inset-0 blueprint-grid opacity-50" />
         <div className="relative">
           {isLoading ? (
@@ -160,7 +156,7 @@ export default function RoadmapPage() {
                   {treeView === 'canvas' ? (
                     <SkillTreeCanvas data={data} pathId={pathId} />
                   ) : (
-                    <div className="mx-auto max-w-5xl px-4 sm:px-6">
+                    <div className="mx-auto max-w-5xl px-4 sm:px-6 py-6">
                       <SkillTree data={data} pathId={pathId} variant="spine" />
                     </div>
                   )}
@@ -176,3 +172,4 @@ export default function RoadmapPage() {
     </div>
   );
 }
+

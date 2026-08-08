@@ -1,101 +1,23 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useUserData } from '@/hooks/useUserData';
-import { ChartNoAxesCombined, Check, ChevronLeft, Compass, Flame, LogOut, Pencil, Route, Settings, ShieldCheck, UserRound, X } from 'lucide-react';
+import { ChartNoAxesCombined, Compass, LogOut, PanelLeftClose, PanelLeftOpen, Route, Settings, ShieldCheck, UserRound } from 'lucide-react';
 import { StaccMark } from '@/components/brand/StaccMark';
 import { useUiStore } from '@/store/useUiStore';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { SIDEBAR_W, SIDEBAR_W_COLLAPSED } from '@/lib/layout';
 import { cn } from '@/lib/utils';
-
-function UserRenameButton({ renameUsername, currentName }: { renameUsername: (name: string) => Promise<string>; currentName: string }) {
-  const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(currentName);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
-  const handleSave = async () => {
-    if (name.trim() === currentName) {
-      setEditing(false);
-      return;
-    }
-    setBusy(true);
-    setErr(null);
-    try {
-      await renameUsername(name.trim());
-      setEditing(false);
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Rename failed');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  if (!editing) {
-    return (
-      <button
-        type="button"
-        onClick={() => {
-          setName(currentName);
-          setErr(null);
-          setEditing(true);
-        }}
-        title="Edit username"
-        className="flex h-5 w-5 items-center justify-center border border-outline-variant/60 text-outline hover:border-cyan/50 hover:text-cyan"
-      >
-        <Pencil className="h-2.5 w-2.5" />
-      </button>
-    );
-  }
-
-  return (
-    <div className="space-y-1">
-      <div className="flex items-center gap-1">
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          disabled={busy}
-          className="h-6 w-24 border border-cyan/40 bg-surface px-1.5 font-code text-[10px] text-on-surface focus:outline-none"
-        />
-        <button
-          type="button"
-          disabled={busy}
-          onClick={handleSave}
-          title="Save username"
-          className="flex h-6 w-6 items-center justify-center border border-cyan bg-cyan/10 text-cyan hover:bg-cyan/20"
-        >
-          <Check className="h-3 w-3" />
-        </button>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => setEditing(false)}
-          title="Cancel"
-          className="flex h-6 w-6 items-center justify-center border border-outline-variant text-outline hover:text-on-surface"
-        >
-          <X className="h-3 w-3" />
-        </button>
-      </div>
-      {err && <p className="font-code text-[9px] text-error">{err}</p>}
-    </div>
-  );
-}
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const userData = useUserData();
-  const { signOut, hasSelectedPath, isAdmin, user, streak, progress } = userData;
+  const { signOut, hasSelectedPath, isAdmin, user } = userData;
   const { sidebarCollapsed, toggleSidebar } = useUiStore();
-
-  const completedCount = Object.keys(progress.completedNodes).length;
 
   const navItems = [
     { name: 'Roadmap', href: '/roadmap', icon: Route },
@@ -124,71 +46,40 @@ export default function Sidebar() {
     <TooltipProvider delayDuration={150}>
       <aside
         style={{ width: sidebarCollapsed ? SIDEBAR_W_COLLAPSED : SIDEBAR_W }}
-        className="fixed left-0 top-0 z-40 hidden h-full flex-col border-r border-cyan/15 bg-navy py-5 text-on-surface transition-[width] duration-200 md:flex"
+        className="fixed left-0 top-0 z-40 hidden h-full flex-col border-r border-cyan/15 bg-navy py-4 text-on-surface transition-[width] duration-200 md:flex"
       >
-        {/* Brand Header */}
-        <div className={cn('mb-4 flex items-center gap-3', sidebarCollapsed ? 'justify-center px-0' : 'px-4')}>
-          <StaccMark className="h-9 w-9 shrink-0" />
-          {!sidebarCollapsed && (
-            <div className="min-w-0">
-              <h2 className="font-display text-lg font-bold uppercase tracking-wider text-on-surface">Stacc</h2>
-              <p className="truncate text-[11px] text-on-surface-variant font-medium">
-                {hasSelectedPath ? 'Roadmap Tracker' : 'Career Tracker'}
-              </p>
-            </div>
-          )}
+        {/* Brand Header with Integrated Collapse Toggle */}
+        <div className={cn('mb-4 flex items-center justify-between px-4', sidebarCollapsed && 'flex-col gap-3 px-2')}>
+          <div className="flex items-center gap-3 min-w-0">
+            <StaccMark className="h-8 w-8 shrink-0" />
+            {!sidebarCollapsed && (
+              <div className="min-w-0">
+                <h2 className="font-display text-base font-bold uppercase tracking-wider text-on-surface">Stacc</h2>
+                <p className="truncate text-[10px] text-on-surface-variant font-medium">
+                  {hasSelectedPath ? 'Roadmap Tracker' : 'Career Tracker'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={toggleSidebar}
+                aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                className="h-8 w-8 rounded-none border border-outline-variant/60 text-on-surface-variant hover:border-cyan/50 hover:bg-cyan/10 hover:text-cyan transition-colors"
+              >
+                {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="bg-surface-container-high font-code text-[11px] text-on-surface">
+              {sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            </TooltipContent>
+          </Tooltip>
         </div>
-
-        {/* DataCamp-Style Top Identity & Progress Card */}
-        {!sidebarCollapsed ? (
-          <div className="mx-3 mb-5 border border-cyan/25 bg-surface-container-low/60 p-3 shadow-sm">
-            <div className="flex items-center justify-between gap-2">
-              <Link href="/settings" className="flex items-center gap-2.5 min-w-0 flex-1 group">
-                <Avatar className="h-8 w-8 rounded-none border border-cyan/40 shrink-0 group-hover:border-cyan">
-                  <AvatarImage src={user.avatar_url ?? undefined} alt={user.username} className="object-cover" />
-                  <AvatarFallback className="rounded-none bg-surface-container-high text-[10px] font-bold uppercase text-cyan">
-                    {user.username.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="truncate text-xs font-semibold text-on-surface group-hover:text-cyan transition-colors">
-                    {user.username}
-                  </p>
-                  <p className="text-[10px] text-outline font-medium">Member</p>
-                </div>
-              </Link>
-              <UserRenameButton renameUsername={userData.renameUsername} currentName={user.username} />
-            </div>
-
-            {/* Streak & XP Signal Badges */}
-            <div className="mt-2.5 flex items-center justify-between border-t border-outline-variant/50 pt-2 font-code text-[10px]">
-              <span className="inline-flex items-center gap-1 font-semibold text-tertiary">
-                <Flame className="h-3.5 w-3.5 fill-tertiary text-tertiary" /> {streak}d streak
-              </span>
-              <span className="inline-flex items-center gap-1 font-semibold text-cyan">
-                {completedCount} shipped
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div className="mb-4 flex justify-center px-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link href="/settings">
-                  <Avatar className="h-8 w-8 rounded-none border border-cyan/40">
-                    <AvatarImage src={user.avatar_url ?? undefined} alt={user.username} className="object-cover" />
-                    <AvatarFallback className="rounded-none bg-surface-container-high font-code text-[10px] font-bold uppercase text-cyan">
-                      {user.username.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="bg-surface-container-high font-code text-[11px] text-on-surface">
-                {user.username} ({streak}d streak)
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
 
         <Separator className="bg-outline-variant/40 mb-3" />
 
@@ -248,20 +139,9 @@ export default function Sidebar() {
             </Button>
           )}
         </div>
-
-        {/* Sidebar Toggle Button */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="absolute -right-3 top-9 h-6 w-6 rounded-none border border-outline-variant bg-surface-container-high text-on-surface-variant hover:border-cyan/40 hover:text-cyan hover:bg-transparent"
-        >
-          <ChevronLeft className={cn('h-3.5 w-3.5 transition-transform duration-200', sidebarCollapsed && 'rotate-180')} />
-        </Button>
       </aside>
     </TooltipProvider>
   );
 }
+
 

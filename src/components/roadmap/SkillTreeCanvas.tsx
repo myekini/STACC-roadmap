@@ -53,7 +53,10 @@ type ChipData = { label: string; status: NodeStatus };
 type LabelData = { index: string; title: string };
 type JunctionData = { open: boolean };
 
-const ghostHandle = 'pointer-events-none !h-1.5 !w-1.5 !min-h-0 !min-w-0 !border-0 !bg-transparent';
+const ghostHandleTop = 'pointer-events-none !h-1 !w-1 !min-h-0 !min-w-0 !border-0 !bg-transparent !top-0 !left-1/2 !-translate-x-1/2';
+const ghostHandleBottom = 'pointer-events-none !h-1 !w-1 !min-h-0 !min-w-0 !border-0 !bg-transparent !bottom-0 !left-1/2 !-translate-x-1/2';
+const ghostHandleLeft = 'pointer-events-none !h-1 !w-1 !min-h-0 !min-w-0 !border-0 !bg-transparent !left-0 !top-1/2 !-translate-y-1/2';
+const ghostHandleRight = 'pointer-events-none !h-1 !w-1 !min-h-0 !min-w-0 !border-0 !bg-transparent !right-0 !top-1/2 !-translate-y-1/2';
 
 function ModuleNode({ data }: NodeProps<Node<ModuleData>>) {
   const { setActiveNodeId, setFocusedNodeId } = useUiStore();
@@ -61,8 +64,8 @@ function ModuleNode({ data }: NodeProps<Node<ModuleData>>) {
   const locked = status === 'locked';
 
   return (
-    <div style={{ width: MODULE_W }}>
-      <Handle type="target" position={Position.Top} id="in" className={ghostHandle} />
+    <div className="relative" style={{ width: MODULE_W }}>
+      <Handle type="target" position={Position.Top} id="in" className={ghostHandleTop} />
       <button
         type="button"
         onClick={() => setActiveNodeId(node.id)}
@@ -123,9 +126,9 @@ function ModuleNode({ data }: NodeProps<Node<ModuleData>>) {
           </span>
         )}
       </button>
-      <Handle type="source" position={Position.Bottom} id="out" className={ghostHandle} />
-      <Handle type="source" position={Position.Left} id="skills-l" className={ghostHandle} />
-      <Handle type="source" position={Position.Right} id="skills-r" className={ghostHandle} />
+      <Handle type="source" position={Position.Bottom} id="out" className={ghostHandleBottom} />
+      <Handle type="source" position={Position.Left} id="skills-l" className={ghostHandleLeft} />
+      <Handle type="source" position={Position.Right} id="skills-r" className={ghostHandleRight} />
     </div>
   );
 }
@@ -136,7 +139,7 @@ function FoundationNode({ data }: NodeProps<Node<FoundationData>>) {
   const locked = status === 'locked';
 
   return (
-    <div style={{ width: FOUND_W }}>
+    <div className="relative" style={{ width: FOUND_W }}>
       <button
         type="button"
         onClick={() => setActiveNodeId(node.id)}
@@ -161,7 +164,7 @@ function FoundationNode({ data }: NodeProps<Node<FoundationData>>) {
         </div>
         <StatusMarker status={status} size="sm" />
       </button>
-      <Handle type="source" position={Position.Bottom} id="out" className={ghostHandle} />
+      <Handle type="source" position={Position.Bottom} id="out" className={ghostHandleBottom} />
     </div>
   );
 }
@@ -172,7 +175,7 @@ function ChipNode({ data }: NodeProps<Node<ChipData>>) {
     <div
       style={{ width: CHIP_W }}
       className={cn(
-        'border bg-surface-container-low px-2.5 py-2 font-code text-[10px] leading-tight',
+        'relative border bg-surface-container-low px-2.5 py-2 font-code text-[10px] leading-tight',
         status === 'complete'
           ? 'border-secondary/30 text-on-surface-variant'
           : status === 'locked'
@@ -180,8 +183,8 @@ function ChipNode({ data }: NodeProps<Node<ChipData>>) {
             : 'border-outline-variant text-on-surface-variant',
       )}
     >
-      <Handle type="target" position={Position.Left} id="in-l" className={ghostHandle} />
-      <Handle type="target" position={Position.Right} id="in-r" className={ghostHandle} />
+      <Handle type="target" position={Position.Left} id="in-l" className={ghostHandleLeft} />
+      <Handle type="target" position={Position.Right} id="in-r" className={ghostHandleRight} />
       <span className={cn('mr-1.5', status === 'complete' ? 'text-secondary' : 'text-outline')}>
         {status === 'complete' ? '▪' : '▫'}
       </span>
@@ -203,12 +206,12 @@ function JunctionNode({ data }: NodeProps<Node<JunctionData>>) {
   return (
     <div
       className={cn(
-        'h-3 w-3 rotate-45 border transition-colors',
+        'relative h-3 w-3 rotate-45 border transition-colors',
         data.open ? 'border-cyan bg-cyan/20 shadow-[0_0_12px_rgba(0,217,255,0.6)]' : 'border-outline-variant bg-surface-container-low',
       )}
     >
-      <Handle type="target" position={Position.Top} id="in" className={ghostHandle} />
-      <Handle type="source" position={Position.Bottom} id="out" className={ghostHandle} />
+      <Handle type="target" position={Position.Top} id="in" className={ghostHandleTop} />
+      <Handle type="source" position={Position.Bottom} id="out" className={ghostHandleBottom} />
     </div>
   );
 }
@@ -228,9 +231,9 @@ const edgeNext = { stroke: 'var(--cyan-dim)', strokeWidth: 2, strokeDasharray: '
 
 function chipEdgeStyle(status: NodeStatus) {
   return {
-    stroke: status === 'complete' ? 'var(--cyan-dim)' : status === 'locked' ? 'var(--border-subtle)' : 'var(--border)',
-    strokeWidth: 1.4,
-    strokeDasharray: '3 3',
+    stroke: status === 'complete' ? 'var(--cyan)' : status === 'locked' ? 'var(--border-subtle)' : 'var(--border)',
+    strokeWidth: status === 'complete' ? 1.8 : 1.4,
+    strokeDasharray: status === 'complete' ? undefined : '3 3',
   };
 }
 
@@ -241,7 +244,7 @@ function CanvasControls() {
     'flex h-8 w-8 items-center justify-center text-on-surface-variant transition-colors hover:bg-cyan/10 hover:text-cyan';
   return (
     <Panel position="bottom-right" className="!m-3">
-      <div className="flex items-center border border-outline-variant bg-surface/95 backdrop-blur">
+      <div className="flex items-center border border-outline-variant bg-surface/95 backdrop-blur shadow-lg">
         <button type="button" className={btn} onClick={() => zoomOut()} aria-label="Zoom out"><Minus className="h-3.5 w-3.5" /></button>
         <span className="w-12 border-x border-outline-variant text-center font-code text-[10px] font-semibold text-on-surface-variant">
           {Math.round(zoom * 100)}%
@@ -250,7 +253,7 @@ function CanvasControls() {
         <button
           type="button"
           className={cn(btn, 'border-l border-outline-variant')}
-          onClick={() => fitView({ padding: 0.1, duration: 300 })}
+          onClick={() => fitView({ padding: 0.15, duration: 300 })}
           aria-label="Fit tree in view"
         >
           <Maximize className="h-3.5 w-3.5" />
@@ -270,9 +273,7 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
   const path = data.paths.find((p) => p.id === pathId);
   const statusOf = (n: NodeRow) => data.nodeStatus(n.id);
   const current = [...foundations, ...pathNodes].find((n) => ['available', 'in_progress'].includes(statusOf(n)));
-  // Nodes the initial fitView should frame: current + its immediate neighbors,
-  // so the opening view is zoomed in enough to actually read (not the whole tree).
-  let focusIds: string[] = [];
+  const focusIds: string[] = [];
   const taskCount = (nodeId: string) => {
     const tasks = data.tasks.filter((t) => t.node_id === nodeId);
     return { total: tasks.length, done: tasks.filter((t) => data.progress.completedTasks.includes(t.id)).length };
@@ -291,9 +292,6 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
       data: { node: n, status: statusOf(n), isCurrent: current?.id === n.id },
       draggable: false,
     });
-    if (current?.id === n.id) {
-      focusIds = [n.id, foundations[i - 1]?.id, foundations[i + 1]?.id].filter((x): x is string => Boolean(x));
-    }
   });
 
   const foundRows = Math.ceil(foundations.length / 2);
@@ -315,7 +313,6 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
   }
 
   if (pathNodes.length === 0 || !path) {
-    if (focusIds.length === 0) focusIds = foundations.slice(-2).map((n) => n.id);
     return { nodes, edges, focusIds };
   }
 
@@ -335,9 +332,6 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
       data: { node: n, status, done, total, isCurrent: current?.id === n.id, index: i + 1 },
       draggable: false,
     });
-    if (current?.id === n.id) {
-      focusIds = ['junction', n.id, pathNodes[i - 1]?.id, pathNodes[i + 1]?.id].filter((x): x is string => Boolean(x));
-    }
 
     // Skill chips fan out on alternating sides
     const side: 'l' | 'r' = i % 2 === 0 ? 'r' : 'l';
@@ -399,27 +393,22 @@ function buildGraph(data: UserData, pathId: string, reduceMotion: boolean) {
     }
   }
 
-  if (focusIds.length === 0) focusIds = [...foundations, ...pathNodes].slice(-2).map((n) => n.id);
   return { nodes, edges, focusIds };
 }
 
 // ── Canvas ───────────────────────────────────────────────────
 function Canvas({ data, pathId }: { data: UserData; pathId: string }) {
   const reduceMotion = useReducedMotion() ?? false;
-  const { nodes, edges, focusIds } = useMemo(() => buildGraph(data, pathId, reduceMotion), [data, pathId, reduceMotion]);
+  const { nodes, edges } = useMemo(() => buildGraph(data, pathId, reduceMotion), [data, pathId, reduceMotion]);
 
   return (
-    <div className="relative h-[calc(100dvh-220px)] min-h-[540px] w-full">
+    <div className="relative h-[calc(100vh-140px)] min-h-[600px] w-full">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         fitView
-        // Open framed on where the user actually is (current node + neighbors), zoomed
-        // in enough to read — not the whole tree. The ⛶ button fits everything.
-        fitViewOptions={
-          focusIds.length ? { nodes: focusIds.map((id) => ({ id })), padding: 0.45, maxZoom: 0.85 } : { padding: 0.15, maxZoom: 0.9 }
-        }
+        fitViewOptions={{ padding: 0.15, maxZoom: 0.95 }}
         minZoom={0.2}
         maxZoom={1.5}
         nodesDraggable={false}
@@ -433,7 +422,7 @@ function Canvas({ data, pathId }: { data: UserData; pathId: string }) {
         <Background variant={BackgroundVariant.Lines} gap={48} lineWidth={1} color="rgba(0, 217, 255, 0.07)" />
         <CanvasControls />
         <Panel position="top-left" className="!m-3">
-          <p className="border border-outline-variant bg-surface/95 px-2 py-1 font-code text-[9px] uppercase tracking-[0.14em] text-on-surface-variant backdrop-blur">
+          <p className="border border-outline-variant bg-surface/95 px-2.5 py-1 font-code text-[9px] uppercase tracking-[0.14em] text-on-surface-variant backdrop-blur">
             drag to pan · scroll to zoom
           </p>
         </Panel>
@@ -449,3 +438,4 @@ export default function SkillTreeCanvas({ data, pathId }: { data: UserData; path
     </ReactFlowProvider>
   );
 }
+
