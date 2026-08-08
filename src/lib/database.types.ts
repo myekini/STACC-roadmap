@@ -5,7 +5,7 @@
 export type NodeStatus = 'locked' | 'available' | 'in_progress' | 'complete';
 export type StoredNodeStatus = 'in_progress' | 'complete';
 export type ResourceType = 'article' | 'video' | 'course' | 'project' | 'documentation';
-export type TaskType = 'read' | 'watch' | 'build' | 'quiz';
+export type TaskType = 'read' | 'watch' | 'build' | 'quiz' | 'challenge';
 export type Role = 'member' | 'admin';
 export type Rank = 'Bronze' | 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
 
@@ -14,6 +14,18 @@ export interface QuizPayload {
   options: string[];
   correctIndex: number;
   explanation: string;
+}
+
+/**
+ * In-browser Python kata: starterCode loads into the editor, testCode runs
+ * after it in the same Pyodide interpreter and must complete without raising
+ * (plain `assert` statements) for the task to pass. No network/package
+ * installs — stdlib only, so it stays a client-only, zero-infra runtime.
+ */
+export interface ChallengePayload {
+  prompt: string;
+  starterCode: string;
+  testCode: string;
 }
 
 export interface ProfileRow {
@@ -78,6 +90,7 @@ export interface TaskRow {
   type: TaskType;
   order: number;
   quiz: QuizPayload | null;
+  challenge: ChallengePayload | null;
 }
 
 export interface UserPathRow {

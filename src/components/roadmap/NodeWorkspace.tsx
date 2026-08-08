@@ -16,6 +16,7 @@ import type { QuizPayload, TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
 import { getYouTubeRef, StatusChip, TaskTypeBadge, YouTubeEmbed } from './bits';
+import { ChallengeBlock } from './ChallengeBlock';
 import { cn } from '@/lib/utils';
 
 function QuizBlock({ quiz, onPass, disabled }: { quiz: QuizPayload; onPass: () => void; disabled: boolean }) {
@@ -200,11 +201,13 @@ function TaskRowItem({
 }) {
   const done = data.progress.completedTasks.includes(task.id);
   const [quizOpen, setQuizOpen] = useState(false);
+  const [challengeOpen, setChallengeOpen] = useState(false);
   const isQuiz = task.type === 'quiz' && task.quiz;
+  const isChallenge = task.type === 'challenge' && task.challenge;
   const isBuild = task.type === 'build';
   const isWatch = task.type === 'watch';
   const watchLocked = isWatch && !watchGateOpen;
-  const blocked = Boolean(isQuiz) || isBuild || watchLocked;
+  const blocked = Boolean(isQuiz) || Boolean(isChallenge) || isBuild || watchLocked;
   const evidence = data.progress.evidence[task.id];
   const projectUrl = data.projects[pathId];
 
@@ -232,6 +235,11 @@ function TaskRowItem({
             {quizOpen ? 'hide' : 'take quiz'}
           </Button>
         )}
+        {isChallenge && !done && (
+          <Button size="sm" variant="outline" disabled={!canWork} onClick={() => setChallengeOpen((v) => !v)}>
+            {challengeOpen ? 'hide' : 'open challenge'}
+          </Button>
+        )}
       </div>
       {watchLocked && !done && canWork && (
         <p className="px-3 pb-3 font-code text-[10px] text-outline">{'// watch a video resource below to unlock this'}</p>
@@ -239,6 +247,11 @@ function TaskRowItem({
       {isQuiz && quizOpen && !done && task.quiz && (
         <div className="px-3 pb-3">
           <QuizBlock quiz={task.quiz} disabled={!canWork} onPass={() => onComplete(task)} />
+        </div>
+      )}
+      {isChallenge && challengeOpen && !done && task.challenge && (
+        <div className="px-3 pb-3">
+          <ChallengeBlock challenge={task.challenge} disabled={!canWork} onPass={() => onComplete(task)} />
         </div>
       )}
       {isBuild && !done && canWork && (

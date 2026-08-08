@@ -134,6 +134,7 @@ const TASK_TYPE_STYLE: Record<TaskType, string> = {
   watch: 'text-cyan',
   build: 'text-primary-neon',
   quiz: 'text-secondary',
+  challenge: 'text-tertiary',
 };
 
 export function TaskTypeBadge({ type }: { type: TaskType }) {

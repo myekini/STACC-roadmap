@@ -110,6 +110,7 @@ Module Analytics: starts/completions/completion-rate per node
 | **Evidence shipping** | ✅ Shipped | Build tasks require a public URL (repo / live app / writeup) instead of a checkbox — enforced server-side in `complete_task`. Not in the original spec; added because "ship, don't just watch" is the actual product thesis. |
 | **Projects (per-path)** | ✅ Shipped | Migration `0004`: one repo per `(user, path)`, set once via `set_project`. Once set, every later build-task evidence on that path must link inside it (prefix match) — a specialization's build tasks accumulate into one running project instead of disconnected links. |
 | **Public portfolio** | ✅ Shipped | `/u/[handle]` — each path renders as a build-log timeline (oldest → newest) under its project repo link, not a flat recency feed. Powered by an anon-callable `get_public_profile` RPC that exposes only username/avatar/shipped work/project repos, never XP/rank/role. |
+| **Code challenges** | 🧪 Pilot | New `challenge` task type: Monaco editor + Pyodide (real CPython in WASM, loaded from CDN on first use — no server execution, no per-run cost). Passing requires the hidden `testCode` asserts to run clean against the member's code. One pilot challenge live on Python Basics (`clean_scores`); SQL Basics (sql.js) and wider rollout are follow-ups, not yet built. |
 | XP system | ⚙️ Backend only | Accrues server-side, never shown (see §2). |
 | AI Study Assistant | ❌ Removed | See §2. |
 
@@ -231,7 +232,9 @@ micro-labels, `// comment`-style captions.
   ship evidence into the path's project repo — the first build task on a path prompts for a
   repo URL once (`set_project`), every later build task on that path ships a commit/PR/file
   link inside it instead of an unrelated one-off link. Watch tasks are gated behind actually
-  opening a video resource on the node, tracked client-side per page visit.
+  opening a video resource on the node, tracked client-side per page visit. Challenge tasks
+  open a Monaco editor and run entirely client-side against a Pyodide (WASM CPython)
+  interpreter loaded lazily from CDN — no server execution.
   A floating **field notes** pill (bottom-right, desktop, `❯ stacc explain "<module>"`
   terminal framing) shows the curriculum description of the hovered/keyboard-focused node —
   content comes straight from the roadmap config; it is *not* an AI feature. It only renders
@@ -332,7 +335,8 @@ on both sides.
   file (3 skills/node, 2 resources/node) before adding content.
 - `src/components/roadmap/` — `SkillTreeCanvas` (desktop pan/zoom tree), `SkillTree` (mobile
   rail), `NodeWorkspace` (full-page task/resource workspace + evidence shipping, rendered at
-  `/roadmap/[slug]`), `bits.tsx` (shared status chips/badges).
+  `/roadmap/[slug]`), `ChallengeBlock` (Monaco + `usePyodide`, dynamically imported so Monaco
+  never ships in a bundle that doesn't need it), `bits.tsx` (shared status chips/badges).
 - `src/components/layout/` — `AppLayout`, `Sidebar` (collapsible), `TopBar`, `BottomBar`
   (mobile nav).
 - `src/components/admin/` — `AdminShell`, `MembersTable`, `ModuleChart`, `StatCards`.

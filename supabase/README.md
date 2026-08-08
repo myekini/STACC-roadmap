@@ -9,7 +9,8 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
    `migrations/0001_init.sql`, `migrations/0002_evidence.sql` (evidence-shipping columns on
    `task_completions`, the updated `complete_task` signature, and the public `get_public_profile` RPC),
    `migrations/0003_username_uniqueness_and_discord.sql` (username uniqueness + `rename_username` RPC),
-   `migrations/0004_projects.sql` (per-path `projects` table + `set_project` RPC — see below).
+   `migrations/0004_projects.sql` (per-path `projects` table + `set_project` RPC — see below),
+   `migrations/0005_challenges.sql` (`challenge` task type + `tasks.challenge` jsonb column — see below).
 3. Run `seed.sql` (idempotency note: it assumes empty content tables — re-running duplicates rows, so reset first).
 4. Enable the **Discord** OAuth provider (Authentication → Providers) and add the app's callback URL
    (`http://localhost:3000/auth/callback` in dev, `https://app.getstacc.org/auth/callback` in prod).
@@ -40,6 +41,11 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
   inside it, not equality) — the point is a specialization's build tasks accumulate into one running
   project instead of N disconnected links. `get_public_profile` exposes `projects` (path_id → repo_url)
   so `/u/[handle]` can render each path as a build-log timeline.
+- **Challenge tasks (migration `0005`):** `tasks.type` gains `'challenge'`; `tasks.challenge` jsonb
+  holds `{prompt, starterCode, testCode}`. Entirely client-executed — a Pyodide (WASM CPython)
+  interpreter loaded from CDN on first use runs the member's code then `testCode`'s `assert`
+  statements in the same interpreter; passing (no exception) completes the task. No new RPC —
+  the pass/fail decision never touches the server, only the resulting `complete_task` call does.
 - **Admin:** promote a user with `update public.profiles set role = 'admin' where id = '<uuid>';`
   (must run as service role / SQL editor — the protection trigger blocks clients).
 

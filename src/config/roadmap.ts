@@ -9,6 +9,7 @@
 //    reference doc to come back to. Every URL below is a stable, well-known
 //    official domain (project docs, a maintained course, or a canonical repo).
 import type {
+  ChallengePayload,
   NodeRow,
   PathRow,
   QuizPayload,
@@ -19,7 +20,7 @@ import type {
 } from '@/lib/database.types';
 
 type ResourceDef = [name: string, type: ResourceType, platform: string, url: string];
-type TaskDef = [description: string, type: TaskType, quiz?: QuizPayload];
+type TaskDef = [description: string, type: TaskType, payload?: QuizPayload | ChallengePayload];
 
 interface NodeDef {
   slug: string;
@@ -54,6 +55,12 @@ const quiz = (question: string, options: string[], correctIndex: number, explana
   explanation,
 });
 
+const challenge = (prompt: string, starterCode: string, testCode: string): ChallengePayload => ({
+  prompt,
+  starterCode,
+  testCode,
+});
+
 const PATH_DEFS: PathDef[] = [
   {
     id: 'foundations',
@@ -74,6 +81,15 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Work through the core Python course modules', 'watch'],
+          ['Challenge: clean_scores(values)', 'challenge', challenge(
+            'Write clean_scores(values): drop every None entry and duplicate value, then return what remains sorted ascending. This exact shape — strip the junk, dedupe, sort — is what you do to real data constantly.',
+            'def clean_scores(values):\n    """Remove None entries and duplicates, then return the list sorted ascending."""\n    # your code here\n    pass\n',
+            'assert clean_scores([3, 1, None, 2, 3, None, 1]) == [1, 2, 3]\n'
+              + 'assert clean_scores([]) == []\n'
+              + 'assert clean_scores([5, 5, 5]) == [5]\n'
+              + 'assert clean_scores([None, None]) == []\n'
+              + 'assert clean_scores([-1, 0, None, -1, 2]) == [-1, 0, 2]\n',
+          )],
           ['Build: clean a messy CSV with pandas and export a tidy dataset', 'build'],
           ['Checkpoint quiz', 'quiz', quiz('Per the Pandas Getting Started Guide, which method returns the first 5 rows of a DataFrame?', ['df.first()', 'df.head()', 'df.top()', 'df.preview()'], 1, 'df.head() returns the first n rows (default 5). There is no first()/top()/preview() in pandas.')],
         ],
@@ -739,13 +755,14 @@ export const RESOURCES: ResourceRow[] = PATH_DEFS.flatMap((p) =>
 
 export const TASKS: TaskRow[] = PATH_DEFS.flatMap((p) =>
   p.nodes.flatMap((n) =>
-    n.tasks.map(([description, type, quizPayload], i) => ({
+    n.tasks.map(([description, type, payload], i) => ({
       id: `${n.slug}::t${i}`,
       node_id: n.slug,
       description,
       type,
       order: i + 1,
-      quiz: quizPayload ?? null,
+      quiz: type === 'quiz' ? (payload as QuizPayload) ?? null : null,
+      challenge: type === 'challenge' ? (payload as ChallengePayload) ?? null : null,
     })),
   ),
 );
