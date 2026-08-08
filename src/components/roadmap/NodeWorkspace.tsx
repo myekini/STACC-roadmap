@@ -1,19 +1,20 @@
 'use client';
 
 /**
- * Node learning workspace: slide-in sheet with tasks (incl. inline checkpoint
- * quiz) and curated resources with community ratings. Completing the last
- * task fires the celebration and unlocks the next module.
+ * Node workspace: full-bleed page (not a sheet) for reading/watching resources
+ * and working tasks — this is where members spend real time, not a quick peek.
+ * Content is the primary column; tasks live in a sticky rail alongside it.
+ * Watch tasks are gated behind actually opening a video resource on the node.
  */
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowUpRight, Check, CircleHelp, Hourglass, LogIn, Maximize2, Minimize2, Play, Rocket } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, Check, CircleHelp, Hourglass, LogIn, Play, Rocket } from 'lucide-react';
 import type { QuizPayload, TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
-import { useUiStore } from '@/store/useUiStore';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { getYouTubeRef, Stars, StatusChip, TaskTypeBadge, YouTubeEmbed } from './bits';
 import { cn } from '@/lib/utils';
 
@@ -122,11 +123,26 @@ function ShipForm({ onShip, disabled }: { onShip: (url: string) => Promise<void>
   );
 }
 
-function TaskRowItem({ task, data, canWork, onComplete }: { task: TaskRow; data: UserData; canWork: boolean; onComplete: (task: TaskRow, evidenceUrl?: string) => Promise<void> }) {
+function TaskRowItem({
+  task,
+  data,
+  canWork,
+  watchGateOpen,
+  onComplete,
+}: {
+  task: TaskRow;
+  data: UserData;
+  canWork: boolean;
+  watchGateOpen: boolean;
+  onComplete: (task: TaskRow, evidenceUrl?: string) => Promise<void>;
+}) {
   const done = data.progress.completedTasks.includes(task.id);
   const [quizOpen, setQuizOpen] = useState(false);
   const isQuiz = task.type === 'quiz' && task.quiz;
   const isBuild = task.type === 'build';
+  const isWatch = task.type === 'watch';
+  const watchLocked = isWatch && !watchGateOpen;
+  const blocked = Boolean(isQuiz) || isBuild || watchLocked;
   const evidence = data.progress.evidence[task.id];
 
   return (
@@ -134,12 +150,12 @@ function TaskRowItem({ task, data, canWork, onComplete }: { task: TaskRow; data:
       <div className="flex items-center gap-3 p-3">
         <button
           type="button"
-          disabled={done || !canWork || Boolean(isQuiz) || isBuild}
-          onClick={() => (isQuiz || isBuild ? undefined : onComplete(task))}
+          disabled={done || !canWork || blocked}
+          onClick={() => (blocked ? undefined : onComplete(task))}
           aria-label={done ? 'Task complete' : `Mark "${task.description}" complete`}
           className={cn(
             'flex h-6 w-6 shrink-0 items-center justify-center border transition-colors',
-            done ? 'border-secondary bg-secondary text-on-secondary' : canWork && !isQuiz && !isBuild ? 'border-outline hover:border-cyan hover:bg-cyan/10' : 'border-outline-variant',
+            done ? 'border-secondary bg-secondary text-on-secondary' : canWork && !blocked ? 'border-outline hover:border-cyan hover:bg-cyan/10' : 'border-outline-variant',
           )}
         >
           {done && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
@@ -154,6 +170,9 @@ function TaskRowItem({ task, data, canWork, onComplete }: { task: TaskRow; data:
           </Button>
         )}
       </div>
+      {watchLocked && !done && canWork && (
+        <p className="px-3 pb-3 font-code text-[10px] text-outline">{'// watch a video resource below to unlock this'}</p>
+      )}
       {isQuiz && quizOpen && !done && task.quiz && (
         <div className="px-3 pb-3">
           <QuizBlock quiz={task.quiz} disabled={!canWork} onPass={() => onComplete(task)} />
@@ -182,12 +201,13 @@ function TaskRowItem({ task, data, canWork, onComplete }: { task: TaskRow; data:
   );
 }
 
-export default function NodeSheet({ data }: { data: UserData }) {
-  const { activeNodeId, setActiveNodeId, nodeSheetExpanded, toggleNodeSheetExpanded } = useUiStore();
+export default function NodeWorkspace({ data, slug }: { data: UserData; slug: string }) {
+  const router = useRouter();
   const reduceMotion = useReducedMotion();
   const [justCompleted, setJustCompleted] = useState(false);
+  const [watchedAny, setWatchedAny] = useState(false);
 
-  const node = data.nodes.find((n) => n.id === activeNodeId) ?? null;
+  const node = data.nodes.find((n) => n.slug === slug) ?? null;
   const status = node ? data.nodeStatus(node.id) : 'locked';
   const path = node ? data.paths.find((p) => p.id === node.path_id) : null;
   const tasks = useMemo(() => data.tasks.filter((t) => t.node_id === node?.id), [data.tasks, node?.id]);
@@ -195,8 +215,13 @@ export default function NodeSheet({ data }: { data: UserData }) {
   const doneCount = tasks.filter((t) => data.progress.completedTasks.includes(t.id)).length;
   const needsAuth = data.isSupabaseConnected && !data.isAuthenticated;
   const canWork = !needsAuth && (status === 'in_progress' || status === 'available');
+  const hasVideoResource = useMemo(() => resources.some((r) => getYouTubeRef(r.url)), [resources]);
+  const watchGateOpen = !hasVideoResource || watchedAny;
 
-  useEffect(() => setJustCompleted(false), [activeNodeId]);
+  useEffect(() => {
+    setJustCompleted(false);
+    setWatchedAny(false);
+  }, [slug]);
 
   const handleComplete = async (task: TaskRow, evidenceUrl?: string) => {
     try {
@@ -213,42 +238,55 @@ export default function NodeSheet({ data }: { data: UserData }) {
     }
   };
 
+  if (!data.isLoading && !node) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-20 text-center sm:px-6">
+        <p className="micro-label text-outline">{'// not found'}</p>
+        <h1 className="mt-2 font-display text-2xl font-bold text-on-surface">This module doesn&apos;t exist</h1>
+        <p className="mt-2 text-sm leading-6 text-on-surface-variant">It may have moved, or the link is off.</p>
+        <Button asChild className="mt-6"><Link href="/roadmap">Back to roadmap</Link></Button>
+      </div>
+    );
+  }
+
   if (!node) return null;
 
   return (
-    <Sheet open={!!activeNodeId} onOpenChange={(open) => !open && setActiveNodeId(null)}>
-      <SheetContent
-        className={cn(
-          'overflow-y-auto no-scrollbar transition-[max-width] duration-200',
-          nodeSheetExpanded && 'sm:max-w-[760px]',
-        )}
-      >
-        <button
-          type="button"
-          onClick={toggleNodeSheetExpanded}
-          aria-label={nodeSheetExpanded ? 'Collapse panel' : 'Expand panel'}
-          className="absolute right-14 top-4 hidden h-10 w-10 items-center justify-center border border-transparent text-on-surface-variant transition-colors hover:border-outline-variant hover:bg-surface-container hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan sm:flex"
-        >
-          {nodeSheetExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+    <div className="mx-auto max-w-6xl px-4 pb-20 pt-6 sm:px-6 md:pt-8">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 font-code text-xs text-on-surface-variant">
+        <button type="button" onClick={() => router.push('/roadmap')} className="inline-flex items-center gap-1.5 transition-colors hover:text-cyan">
+          <ArrowLeft className="h-3.5 w-3.5" /> roadmap
         </button>
+        {path && (
+          <>
+            <span className="text-outline">/</span>
+            <span>{path.title}</span>
+          </>
+        )}
+      </div>
 
-        {/* Header */}
-        <div className="border-b border-outline-variant bg-navy/60 p-6 pb-5">
-          <p className="micro-label text-cyan">{`// module ${String(node.order).padStart(2, '0')} · ${path?.title ?? ''}`}</p>
-          <div className="mt-2 flex items-start justify-between gap-3 pr-10">
-            <SheetTitle className="font-display text-2xl font-bold leading-tight">{node.name}</SheetTitle>
-          </div>
-          <p className="mt-1 font-code text-[11px] lowercase text-on-surface-variant">{`// ${node.subtitle}`}</p>
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <StatusChip status={status} />
-            <span className="inline-flex items-center gap-1.5 border border-outline-variant px-2 py-0.5 font-code text-[10px] uppercase tracking-[0.1em] text-on-surface-variant">
-              <Hourglass className="h-3 w-3" />{node.est_hours}h est
-            </span>
-          </div>
+      {/* Header */}
+      <motion.header
+        initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="mt-4 border-b border-outline-variant pb-6"
+      >
+        <p className="micro-label text-cyan">{`// module ${String(node.order).padStart(2, '0')} · ${path?.title ?? ''}`}</p>
+        <h1 className="mt-2 font-display text-3xl font-bold leading-tight text-on-surface sm:text-4xl">{node.name}</h1>
+        <p className="mt-1 font-code text-[11px] lowercase text-on-surface-variant">{`// ${node.subtitle}`}</p>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <StatusChip status={status} />
+          <span className="inline-flex items-center gap-1.5 border border-outline-variant px-2 py-0.5 font-code text-[10px] uppercase tracking-[0.1em] text-on-surface-variant">
+            <Hourglass className="h-3 w-3" />{node.est_hours}h est
+          </span>
         </div>
+      </motion.header>
 
-        <div className="space-y-7 p-6">
-          {/* Completion banner */}
+      <div className="mt-7 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
+        {/* Main content column */}
+        <div className="space-y-7">
           {(justCompleted || status === 'complete') && (
             <motion.div
               initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
@@ -294,32 +332,6 @@ export default function NodeSheet({ data }: { data: UserData }) {
             </div>
           )}
 
-          {/* Start CTA */}
-          {status === 'available' && !needsAuth && (
-            <Button className="w-full" size="lg" onClick={() => node && data.startNode(node)}>
-              <Play /> start module
-            </Button>
-          )}
-
-          {/* Tasks */}
-          {!needsAuth && tasks.length > 0 && status !== 'locked' && (
-            <section>
-              <div className="flex items-center justify-between">
-                <p className="micro-label text-outline">tasks</p>
-                <span className="font-code text-[10px] font-semibold text-on-surface-variant">{doneCount}/{tasks.length}</span>
-              </div>
-              <div className="mt-1 h-1 w-full bg-surface-container-high">
-                <div className="h-full bg-cyan transition-all duration-500" style={{ width: `${tasks.length ? (doneCount / tasks.length) * 100 : 0}%` }} />
-              </div>
-              <ul className="mt-3 space-y-2">
-                {tasks.map((task) => (
-                  <TaskRowItem key={task.id} task={task} data={data} canWork={canWork} onComplete={handleComplete} />
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {/* Resources */}
           {!needsAuth && resources.length > 0 && status !== 'locked' && (
             <section>
               <p className="micro-label text-outline">resources</p>
@@ -355,7 +367,7 @@ export default function NodeSheet({ data }: { data: UserData }) {
                         </a>
                       </div>
 
-                      {youtubeRef && <YouTubeEmbed source={youtubeRef} title={resource.name} />}
+                      {youtubeRef && <YouTubeEmbed source={youtubeRef} title={resource.name} onPlay={() => setWatchedAny(true)} />}
 
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant/60 pt-2.5">
                         <div className="flex items-center gap-2 font-code text-[10px]">
@@ -383,7 +395,42 @@ export default function NodeSheet({ data }: { data: UserData }) {
             </section>
           )}
         </div>
-      </SheetContent>
-    </Sheet>
+
+        {/* Task rail */}
+        {!needsAuth && status !== 'locked' && (
+          <aside className="space-y-4 lg:sticky lg:top-20 lg:h-fit">
+            {status === 'available' && (
+              <Button className="w-full" size="lg" onClick={() => node && data.startNode(node)}>
+                <Play /> start module
+              </Button>
+            )}
+
+            {tasks.length > 0 && (
+              <section className="border border-outline-variant bg-surface/60 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="micro-label text-outline">tasks</p>
+                  <span className="font-code text-[10px] font-semibold text-on-surface-variant">{doneCount}/{tasks.length}</span>
+                </div>
+                <div className="mt-2 h-1 w-full bg-surface-container-high">
+                  <div className="h-full bg-cyan transition-all duration-500" style={{ width: `${tasks.length ? (doneCount / tasks.length) * 100 : 0}%` }} />
+                </div>
+                <ul className="mt-3 space-y-2">
+                  {tasks.map((task) => (
+                    <TaskRowItem
+                      key={task.id}
+                      task={task}
+                      data={data}
+                      canWork={canWork}
+                      watchGateOpen={watchGateOpen}
+                      onComplete={handleComplete}
+                    />
+                  ))}
+                </ul>
+              </section>
+            )}
+          </aside>
+        )}
+      </div>
+    </div>
   );
 }

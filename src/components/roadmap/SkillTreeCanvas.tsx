@@ -8,6 +8,7 @@
  * order — hand-tuned constants, no auto-layout library.
  */
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Background,
   BackgroundVariant,
@@ -59,7 +60,8 @@ const ghostHandleLeft = 'pointer-events-none !h-1 !w-1 !min-h-0 !min-w-0 !border
 const ghostHandleRight = 'pointer-events-none !h-1 !w-1 !min-h-0 !min-w-0 !border-0 !bg-transparent !right-0 !top-1/2 !-translate-y-1/2';
 
 function ModuleNode({ data }: NodeProps<Node<ModuleData>>) {
-  const { setActiveNodeId, setFocusedNodeId } = useUiStore();
+  const router = useRouter();
+  const { setFocusedNodeId } = useUiStore();
   const { node, status, done, total, isCurrent, index } = data;
   const locked = status === 'locked';
 
@@ -68,7 +70,7 @@ function ModuleNode({ data }: NodeProps<Node<ModuleData>>) {
       <Handle type="target" position={Position.Top} id="in" className={ghostHandleTop} />
       <button
         type="button"
-        onClick={() => setActiveNodeId(node.id)}
+        onClick={() => router.push(`/roadmap/${node.slug}`)}
         onMouseEnter={() => setFocusedNodeId(node.id)}
         onFocus={() => setFocusedNodeId(node.id)}
         className={cn(
@@ -134,7 +136,8 @@ function ModuleNode({ data }: NodeProps<Node<ModuleData>>) {
 }
 
 function FoundationNode({ data }: NodeProps<Node<FoundationData>>) {
-  const { setActiveNodeId, setFocusedNodeId } = useUiStore();
+  const router = useRouter();
+  const { setFocusedNodeId } = useUiStore();
   const { node, status, isCurrent } = data;
   const locked = status === 'locked';
 
@@ -142,7 +145,7 @@ function FoundationNode({ data }: NodeProps<Node<FoundationData>>) {
     <div className="relative" style={{ width: FOUND_W }}>
       <button
         type="button"
-        onClick={() => setActiveNodeId(node.id)}
+        onClick={() => router.push(`/roadmap/${node.slug}`)}
         onMouseEnter={() => setFocusedNodeId(node.id)}
         onFocus={() => setFocusedNodeId(node.id)}
         className={cn(

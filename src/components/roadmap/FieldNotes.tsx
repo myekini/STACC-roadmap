@@ -10,6 +10,7 @@
  * bar in that corner and the sheet covers the same need).
  */
 import { useEffect, useMemo, useState, type RefObject } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowUpRight, Hourglass, X } from 'lucide-react';
 import type { UserData } from '@/hooks/useUserData';
 import { useUiStore } from '@/store/useUiStore';
@@ -17,7 +18,8 @@ import { StatusChip } from './bits';
 import { cn } from '@/lib/utils';
 
 export default function FieldNotes({ data, watchRef }: { data: UserData; watchRef: RefObject<HTMLElement | null> }) {
-  const { focusedNodeId, activeNodeId, setActiveNodeId } = useUiStore();
+  const router = useRouter();
+  const { focusedNodeId } = useUiStore();
   const [open, setOpen] = useState(false);
   const [inView, setInView] = useState(false);
 
@@ -54,8 +56,7 @@ export default function FieldNotes({ data, watchRef }: { data: UserData; watchRe
     ordered.find((n) => ['available', 'in_progress'].includes(data.nodeStatus(n.id))) ??
     ordered[0];
 
-  // The node sheet supersedes this panel while it's open.
-  if (!node || activeNodeId) return null;
+  if (!node) return null;
 
   const status = data.nodeStatus(node.id);
   const tasks = data.tasks.filter((t) => t.node_id === node.id);
@@ -110,7 +111,7 @@ export default function FieldNotes({ data, watchRef }: { data: UserData; watchRe
           type="button"
           onClick={() => {
             setOpen(false);
-            setActiveNodeId(node.id);
+            router.push(`/roadmap/${node.slug}`);
           }}
           className="mt-4 flex w-full items-center justify-between border border-cyan/30 bg-cyan/5 px-3 py-2 font-code text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan transition-colors hover:border-cyan/60 hover:bg-cyan/10"
         >

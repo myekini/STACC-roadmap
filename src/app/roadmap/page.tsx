@@ -8,7 +8,6 @@ import { useUserData } from '@/hooks/useUserData';
 import { useUiStore, type TreeView } from '@/store/useUiStore';
 import SkillTree from '@/components/roadmap/SkillTree';
 import SkillTreeCanvas from '@/components/roadmap/SkillTreeCanvas';
-import NodeSheet from '@/components/roadmap/NodeSheet';
 import FieldNotes from '@/components/roadmap/FieldNotes';
 import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
@@ -168,7 +167,6 @@ export default function RoadmapPage() {
       </div>
 
       <FieldNotes data={data} watchRef={treeRef} />
-      <NodeSheet data={data} />
     </div>
   );
 }

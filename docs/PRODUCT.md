@@ -66,7 +66,7 @@ Sign in (Discord OAuth, or admin email/password) → Choose a path (/paths)
     ↓
 /roadmap — pan/zoom skill-tree canvas (or list view on mobile)
     ↓
-Click a node → side sheet: description, skills, resources, tasks
+Click a node → full-page workspace (`/roadmap/[slug]`): description, skills, resources, tasks
     ↓
 Read/watch tasks: mark complete · Build tasks: ship a public evidence URL · Quiz tasks: pass the checkpoint
     ↓
@@ -222,14 +222,19 @@ micro-labels, `// comment`-style captions.
   module cards alternating sides, and skill chips fanning out on curved dashed connectors
   opposite each card. Connector geometry is row-local (fixed chip heights), so it holds for
   any node count. Mobile keeps the single-column left rail.
-  Clicking a node opens a slide-in sheet with description, skills, resources (rateable), and
-  tasks — build tasks show a "ship it" URL form instead of a checkbox.
+  Clicking a node navigates to `/roadmap/[slug]` — a full-bleed workspace page, not a
+  slide-in sheet: description/skills/resources (rateable, with click-to-load YouTube embeds)
+  in the primary column, a sticky task rail alongside it (build tasks show a "ship it" URL
+  form instead of a checkbox; watch tasks are gated behind actually opening a video resource
+  on the node, tracked client-side per page visit).
   A floating **field notes** pill (bottom-right, desktop, `❯ stacc explain "<module>"`
   terminal framing) shows the curriculum description of the hovered/keyboard-focused node —
   content comes straight from the roadmap config; it is *not* an AI feature. It only renders
-  while the tree is in view and yields to the node sheet.
+  on `/roadmap` while the tree is in view.
 - **Sidebar** — collapsible to a 76px icon rail (persisted), one continuous navy/cyan-border
-  shell with the TopBar (no duplicate branding, no mismatched tokens).
+  shell with the TopBar (no duplicate branding, no mismatched tokens). Carries only
+  workspace navigation (Roadmap, Progress, Explore paths, Admin) — account-level links
+  (settings, public portfolio) live only in the TopBar avatar dropdown, not duplicated here.
 - **`/dashboard`** — completion %, streak, hours invested, skills practiced, activity heatmap,
   "next move" card, milestones.
 - **`/admin`** — its own shell (shadcn dashboard block, restyled), independent of the member
@@ -312,23 +317,24 @@ on both sides.
 
 ### Architecture map
 
-- `src/app/` — routes: `/` (landing), `/paths` (path selection), `/roadmap` (skill tree + node
-  sheet), `/dashboard` (progress), `/admin` (admin panel), `/u/[handle]` (public portfolio),
-  `/tree` (public SEO tree), `/auth/callback` (Supabase OAuth — server Route Handler, see §6).
-  Root `middleware.ts` refreshes the session cookie on every request.
+- `src/app/` — routes: `/` (landing), `/paths` (path selection), `/roadmap` (skill tree),
+  `/roadmap/[slug]` (full-page node workspace), `/dashboard` (progress), `/admin` (admin panel),
+  `/u/[handle]` (public portfolio), `/tree` (public SEO tree), `/auth/callback` (Supabase
+  OAuth — server Route Handler, see §6). Root `middleware.ts` refreshes the session cookie on
+  every request.
 - `src/config/roadmap.ts` — static path/node/resource/task/quiz content, source of truth for
   demo mode; mirrors `supabase/seed.sql` exactly. See the editorial rules at the top of that
   file (3 skills/node, 2 resources/node) before adding content.
 - `src/components/roadmap/` — `SkillTreeCanvas` (desktop pan/zoom tree), `SkillTree` (mobile
-  rail), `NodeSheet` (task/resource workspace + evidence shipping), `bits.tsx` (shared status
-  chips/badges).
+  rail), `NodeWorkspace` (full-page task/resource workspace + evidence shipping, rendered at
+  `/roadmap/[slug]`), `bits.tsx` (shared status chips/badges).
 - `src/components/layout/` — `AppLayout`, `Sidebar` (collapsible), `TopBar`, `BottomBar`
   (mobile nav).
 - `src/components/admin/` — `AdminShell`, `MembersTable`, `ModuleChart`, `StatCards`.
 - `src/hooks/useUserData.ts` — all member state, dual-mode. `src/hooks/useAdminData.ts` — admin
   rollups + stuck detection + CSV export.
-- `src/store/useUiStore.ts` — UI-only state (Zustand): active node sheet, tree view mode,
-  sidebar collapse — persisted where it should survive a refresh.
+- `src/store/useUiStore.ts` — UI-only state (Zustand): focused (hovered) node, tree view mode,
+  theme, sidebar collapse — persisted where it should survive a refresh.
 - `src/lib/database.types.ts` — hand-authored Supabase types; keep in sync with migrations.
 
 ### Conventions & gotchas

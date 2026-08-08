@@ -12,7 +12,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isLoading } = useUserData();
   const { sidebarCollapsed } = useUiStore();
-  const isRoadmap = pathname === '/roadmap';
+  const isRoadmap = pathname === '/roadmap' || pathname?.startsWith('/roadmap/');
 
   // Landing, the public SEO tree, public portfolios, and admin (its own dedicated shell) render
   // without the member app shell. /auth/callback is a server Route Handler (no React render

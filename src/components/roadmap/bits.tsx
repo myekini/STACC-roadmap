@@ -34,7 +34,7 @@ export function getYouTubeRef(url: string): YouTubeRef | null {
 /** Click-to-load inline player — shows a thumbnail (or a playlist marker) until the user
  * opts in, so the node sheet doesn't fire YouTube's embed scripts/cookies for every
  * resource up front. */
-export function YouTubeEmbed({ source, title }: { source: YouTubeRef; title: string }) {
+export function YouTubeEmbed({ source, title, onPlay }: { source: YouTubeRef; title: string; onPlay?: () => void }) {
   const [loaded, setLoaded] = useState(false);
   const embedSrc =
     source.kind === 'video'
@@ -58,7 +58,10 @@ export function YouTubeEmbed({ source, title }: { source: YouTubeRef; title: str
   return (
     <button
       type="button"
-      onClick={() => setLoaded(true)}
+      onClick={() => {
+        setLoaded(true);
+        onPlay?.();
+      }}
       className="group/embed relative mt-3 block aspect-video w-full overflow-hidden border border-outline-variant bg-surface-container-low"
     >
       {source.kind === 'video' ? (

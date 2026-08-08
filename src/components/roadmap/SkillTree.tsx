@@ -10,6 +10,7 @@
  *    index math) so it holds up for any phase/node count.
  * Hovering or keyboard-focusing any card feeds the floating Field Notes popover.
  */
+import { useRouter } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Hourglass } from 'lucide-react';
 import type { NodeRow, NodeStatus } from '@/lib/database.types';
@@ -87,14 +88,15 @@ function SpinePill({ index, title, done, total }: { index: string; title: string
 }
 
 function FoundationCard({ data, node, status, isCurrent }: { data: UserData; node: NodeRow; status: NodeStatus; isCurrent: boolean }) {
-  const { setActiveNodeId, setFocusedNodeId } = useUiStore();
+  const router = useRouter();
+  const { setFocusedNodeId } = useUiStore();
   const { done, total } = taskProgress(data, node.id);
   const locked = status === 'locked';
 
   return (
     <button
       type="button"
-      onClick={() => setActiveNodeId(node.id)}
+      onClick={() => router.push(`/roadmap/${node.slug}`)}
       onMouseEnter={() => setFocusedNodeId(node.id)}
       onFocus={() => setFocusedNodeId(node.id)}
       aria-haspopup="dialog"
@@ -133,7 +135,8 @@ function FoundationCard({ data, node, status, isCurrent }: { data: UserData; nod
 /** The module card itself — shared between the rail rows and the zigzag rows.
  *  `showMarker` renders the status square inline (spine rows have no side rail to carry it). */
 function ModuleCard({ data, node, index, status, isCurrent, showMarker }: { data: UserData; node: NodeRow; index: number; status: NodeStatus; isCurrent: boolean; showMarker?: boolean }) {
-  const { setActiveNodeId, setFocusedNodeId } = useUiStore();
+  const router = useRouter();
+  const { setFocusedNodeId } = useUiStore();
   const { done, total } = taskProgress(data, node.id);
   const locked = status === 'locked';
   const missing = locked ? prereqNames(data, node) : [];
@@ -141,7 +144,7 @@ function ModuleCard({ data, node, index, status, isCurrent, showMarker }: { data
   return (
     <button
       type="button"
-      onClick={() => setActiveNodeId(node.id)}
+      onClick={() => router.push(`/roadmap/${node.slug}`)}
       onMouseEnter={() => setFocusedNodeId(node.id)}
       onFocus={() => setFocusedNodeId(node.id)}
       aria-haspopup="dialog"
