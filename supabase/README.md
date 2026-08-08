@@ -6,8 +6,10 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
 
 1. Create a project at [database.new](https://database.new) (or `supabase init && supabase start` locally with the CLI).
 2. Run the migrations **in order** — SQL Editor, or `supabase db push` / `supabase db reset` with the CLI:
-   `migrations/0001_init.sql` then `migrations/0002_evidence.sql` (evidence-shipping columns on
-   `task_completions`, the updated `complete_task` signature, and the public `get_public_profile` RPC).
+   `migrations/0001_init.sql`, `migrations/0002_evidence.sql` (evidence-shipping columns on
+   `task_completions`, the updated `complete_task` signature, and the public `get_public_profile` RPC),
+   `migrations/0003_username_uniqueness_and_discord.sql` (username uniqueness + `rename_username` RPC),
+   `migrations/0004_projects.sql` (per-path `projects` table + `set_project` RPC — see below).
 3. Run `seed.sql` (idempotency note: it assumes empty content tables — re-running duplicates rows, so reset first).
 4. Enable the **Discord** OAuth provider (Authentication → Providers) and add the app's callback URL
    (`http://localhost:3000/auth/callback` in dev, `https://app.getstacc.org/auth/callback` in prod).
@@ -32,6 +34,12 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
   require every DE and DS node complete). `node_is_unlocked()` checks both; `locked`/`available` are
   derived, only `in_progress`/`complete` are stored.
 - **Ranks:** Bronze <500 ≤ Silver <1500 ≤ Gold <3000 ≤ Platinum <6000 ≤ Diamond (`calc_rank`).
+- **Projects (migration `0004`):** each `(user, path)` can have one `projects.repo_url`, set once via
+  `set_project(path_id, repo_url)` and immutable afterwards. Once set, `complete_task` requires every
+  `build`-task evidence URL on that path to be a prefix-match under the repo (a commit/PR/tree link
+  inside it, not equality) — the point is a specialization's build tasks accumulate into one running
+  project instead of N disconnected links. `get_public_profile` exposes `projects` (path_id → repo_url)
+  so `/u/[handle]` can render each path as a build-log timeline.
 - **Admin:** promote a user with `update public.profiles set role = 'admin' where id = '<uuid>';`
   (must run as service role / SQL editor — the protection trigger blocks clients).
 

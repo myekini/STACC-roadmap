@@ -38,6 +38,7 @@ const LS = {
   ratings: 'stacc.v2.ratings', // Record<resourceId, rating>
   profile: 'stacc.v2.profile', // { username }
   evidence: 'stacc.v2.evidence', // Record<taskId, url>
+  projects: 'stacc.v2.projects', // Record<pathId, repoUrl>
 };
 
 function readLS<T>(key: string, fallback: T): T {
@@ -217,8 +218,23 @@ export function useUserData() {
     },
   });
 
+  // ── Projects (one repo per path — build tasks accumulate into it) ──
+  const projectsQuery = useQuery<Record<string, string>>({
+    queryKey: ['projects', userId],
+    queryFn: async () => {
+      if (connected && userId) {
+        const { data: rows, error } = await supabase.from('projects').select('path_id,repo_url').eq('user_id', userId);
+        if (error) throw error;
+        return Object.fromEntries(rows.map((r) => [r.path_id as string, r.repo_url as string]));
+      }
+      if (!connected) return readLS<Record<string, string>>(LS.projects, {});
+      return {};
+    },
+  });
+
   const data = content.data;
   const prog = progress.data ?? EMPTY_PROGRESS;
+  const projects = projectsQuery.data ?? {};
 
   // ── Derived: node status (locked/available/in_progress/complete) ──
   const nodesByPath = useMemo(() => {
@@ -323,13 +339,41 @@ export function useUserData() {
   }).mutateAsync;
 
   /**
+   * Sets a path's project repo once — immutable afterwards, since every later
+   * build-task evidence on that path gets validated against it.
+   */
+  const setProject = useMutation({
+    mutationFn: async ({ pathId, repoUrl }: { pathId: string; repoUrl: string }) => {
+      if (projects[pathId]) throw new Error('This path already has a project repo set.');
+      const clean = repoUrl.trim().replace(/\/+$/, '');
+      if (!/^https?:\/\//i.test(clean)) throw new Error('Project repo must be a URL (https://…)');
+      if (connected && userId) {
+        const { error } = await supabase.rpc('set_project', { p_path: pathId, p_repo_url: clean });
+        if (error) throw error;
+      } else {
+        writeLS(LS.projects, { ...readLS<Record<string, string>>(LS.projects, {}), [pathId]: clean });
+      }
+      return clean;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['projects'] }),
+  }).mutateAsync;
+
+  /**
    * Completes a task; returns 'complete' when it was the node's last task.
-   * Build tasks must ship evidence: a public URL (repo / live app / writeup).
+   * Build tasks must ship evidence: a public URL (repo / live app / writeup) —
+   * once the path has a project repo, evidence must link into it (docs/PRODUCT.md §4).
    */
   const completeTask = useMutation({
     mutationFn: async ({ task, evidenceUrl }: { task: TaskRow; evidenceUrl?: string }): Promise<'in_progress' | 'complete'> => {
       if (task.type === 'build' && !/^https?:\/\//i.test(evidenceUrl ?? '')) {
         throw new Error('Build tasks require an evidence URL (https://…)');
+      }
+      if (task.type === 'build') {
+        const pathId = nodesById.get(task.node_id)?.path_id;
+        const projectUrl = pathId ? projects[pathId] : undefined;
+        if (projectUrl && !evidenceUrl?.startsWith(projectUrl)) {
+          throw new Error(`Evidence must link into this path's project repo (${projectUrl}).`);
+        }
       }
       if (connected && userId) {
         const { data: status, error } = await supabase.rpc('complete_task', { p_task: task.id, p_evidence: evidenceUrl ?? null });
@@ -424,7 +468,7 @@ export function useUserData() {
     // mode
     isSupabaseConnected: connected,
     isAuthenticated: connected ? !!session : true,
-    isLoading: content.isLoading || progress.isLoading || profile.isLoading,
+    isLoading: content.isLoading || progress.isLoading || profile.isLoading || projectsQuery.isLoading,
     // identity
     user: profile.data ?? GUEST,
     // Demo mode is admin (offline preview); connected mode requires a real admin profile.
@@ -438,6 +482,7 @@ export function useUserData() {
     prereqs: data?.prereqs ?? {},
     // progress
     progress: prog,
+    projects,
     activity,
     streak,
     nodeStatus,
@@ -448,6 +493,7 @@ export function useUserData() {
     // actions
     selectPath,
     startNode,
+    setProject,
     completeTask,
     rateResource,
     renameUsername,

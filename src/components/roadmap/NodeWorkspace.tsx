@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowLeft, ArrowUpRight, Check, CircleHelp, Hourglass, LogIn, Play, Rocket } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, Check, CircleHelp, FolderGit2, Hourglass, LogIn, Play, Rocket } from 'lucide-react';
 import type { QuizPayload, TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
@@ -73,12 +73,65 @@ function QuizBlock({ quiz, onPass, disabled }: { quiz: QuizPayload; onPass: () =
   );
 }
 
-/** Build tasks ship evidence: a public URL that becomes part of the member's portfolio. */
-function ShipForm({ onShip, disabled }: { onShip: (url: string) => Promise<void>; disabled: boolean }) {
+/** One-time per path: the repo every later build task on this path ships evidence into. */
+function ProjectSetupForm({ data, pathId, pathTitle }: { data: UserData; pathId: string; pathTitle: string }) {
   const [url, setUrl] = useState('');
   const [busy, setBusy] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const valid = /^https?:\/\/\S+\.\S+/i.test(url.trim());
+
+  return (
+    <div className="mt-1 border border-cyan/25 bg-cyan/[0.04] p-3">
+      <p className="flex items-center gap-2 font-code text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan">
+        <FolderGit2 className="h-3.5 w-3.5" /> set up your {pathTitle} project
+      </p>
+      <p className="mt-1 text-[11px] leading-5 text-on-surface-variant">
+        Paste the repo you&apos;ll build this path&apos;s project in. Every build task from here on ships a
+        commit, PR, or file link inside it — one project, built piece by piece, not disconnected links.
+      </p>
+      <div className="mt-2 flex gap-2">
+        <input
+          type="url"
+          value={url}
+          onChange={(e) => {
+            setUrl(e.target.value);
+            if (errorMsg) setErrorMsg(null);
+          }}
+          disabled={busy}
+          placeholder="https://github.com/you/de-project"
+          className="h-9 min-w-0 flex-1 border border-outline-variant bg-surface px-2.5 font-code text-[11px] text-on-surface placeholder:text-outline focus:border-cyan/50 focus:outline-none"
+        />
+        <Button
+          size="sm"
+          disabled={busy || !valid}
+          onClick={async () => {
+            setBusy(true);
+            setErrorMsg(null);
+            try {
+              await data.setProject({ pathId, repoUrl: url.trim() });
+            } catch (err) {
+              setErrorMsg(err instanceof Error ? err.message : 'Failed to save project');
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {busy ? 'saving…' : 'save ▸'}
+        </Button>
+      </div>
+      {errorMsg && <p className="mt-1.5 font-code text-[10px] text-error">{errorMsg}</p>}
+    </div>
+  );
+}
+
+/** Build tasks ship evidence: a link into the path's project repo that becomes part of the member's portfolio. */
+function ShipForm({ onShip, disabled, projectUrl }: { onShip: (url: string) => Promise<void>; disabled: boolean; projectUrl?: string }) {
+  const [url, setUrl] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const wellFormed = /^https?:\/\/\S+\.\S+/i.test(url.trim());
+  const inProject = !projectUrl || url.trim().startsWith(projectUrl);
+  const valid = wellFormed && inProject;
 
   return (
     <div className="mt-1 border border-primary/25 bg-primary/[0.04] p-3">
@@ -86,7 +139,9 @@ function ShipForm({ onShip, disabled }: { onShip: (url: string) => Promise<void>
         <Rocket className="h-3.5 w-3.5" /> ship it
       </p>
       <p className="mt-1 text-[11px] leading-5 text-on-surface-variant">
-        Paste a public link to what you built — GitHub repo, live app, or writeup. It goes on your public profile.
+        {projectUrl
+          ? `Paste a commit, PR, or file link inside your project — ${projectUrl}`
+          : 'Paste a public link to what you built — GitHub repo, live app, or writeup. It goes on your public profile.'}
       </p>
       <div className="mt-2 flex gap-2">
         <input
@@ -97,7 +152,7 @@ function ShipForm({ onShip, disabled }: { onShip: (url: string) => Promise<void>
             if (errorMsg) setErrorMsg(null);
           }}
           disabled={disabled || busy}
-          placeholder="https://github.com/you/project"
+          placeholder={projectUrl ? `${projectUrl}/commit/…` : 'https://github.com/you/project'}
           className="h-9 min-w-0 flex-1 border border-outline-variant bg-surface px-2.5 font-code text-[11px] text-on-surface placeholder:text-outline focus:border-cyan/50 focus:outline-none"
         />
         <Button
@@ -118,6 +173,9 @@ function ShipForm({ onShip, disabled }: { onShip: (url: string) => Promise<void>
           {busy ? 'shipping…' : 'ship ▸'}
         </Button>
       </div>
+      {wellFormed && !inProject && (
+        <p className="mt-1.5 font-code text-[10px] text-error">Must link inside {projectUrl}</p>
+      )}
       {errorMsg && <p className="mt-1.5 font-code text-[10px] text-error">{errorMsg}</p>}
     </div>
   );
@@ -128,12 +186,16 @@ function TaskRowItem({
   data,
   canWork,
   watchGateOpen,
+  pathId,
+  pathTitle,
   onComplete,
 }: {
   task: TaskRow;
   data: UserData;
   canWork: boolean;
   watchGateOpen: boolean;
+  pathId: string;
+  pathTitle: string;
   onComplete: (task: TaskRow, evidenceUrl?: string) => Promise<void>;
 }) {
   const done = data.progress.completedTasks.includes(task.id);
@@ -144,6 +206,7 @@ function TaskRowItem({
   const watchLocked = isWatch && !watchGateOpen;
   const blocked = Boolean(isQuiz) || isBuild || watchLocked;
   const evidence = data.progress.evidence[task.id];
+  const projectUrl = data.projects[pathId];
 
   return (
     <li className={cn('border border-outline-variant/70 bg-surface/60 transition-colors', done && 'border-secondary/30')}>
@@ -180,7 +243,11 @@ function TaskRowItem({
       )}
       {isBuild && !done && canWork && (
         <div className="px-3 pb-3">
-          <ShipForm disabled={!canWork} onShip={(url) => onComplete(task, url)} />
+          {!projectUrl ? (
+            <ProjectSetupForm data={data} pathId={pathId} pathTitle={pathTitle} />
+          ) : (
+            <ShipForm disabled={!canWork} onShip={(url) => onComplete(task, url)} projectUrl={projectUrl} />
+          )}
         </div>
       )}
       {isBuild && done && evidence && (
@@ -398,6 +465,8 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                       data={data}
                       canWork={canWork}
                       watchGateOpen={watchGateOpen}
+                      pathId={node.path_id}
+                      pathTitle={path?.title ?? ''}
                       onComplete={handleComplete}
                     />
                   ))}

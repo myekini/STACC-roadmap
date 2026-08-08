@@ -117,6 +117,8 @@ export interface PublicProfilePayload {
     completed_at: string | null;
     evidence: { description: string; url: string }[];
   }[];
+  /** path_id -> project repo url (migration 0004), for rendering shipped work as a build log */
+  projects: Record<string, string>;
   activity: Record<string, number>;
 }
 
@@ -125,6 +127,15 @@ export interface ResourceRatingRow {
   user_id: string;
   resource_id: string;
   rating: number;
+  created_at: string;
+}
+
+/** One project repo per (user, path) — build-task evidence on that path accumulates into it. */
+export interface ProjectRow {
+  id: string;
+  user_id: string;
+  path_id: string;
+  repo_url: string;
   created_at: string;
 }
 
@@ -141,12 +152,14 @@ export interface Database {
       user_progress: { Row: UserProgressRow; Insert: Partial<UserProgressRow>; Update: Partial<UserProgressRow> };
       task_completions: { Row: TaskCompletionRow; Insert: Partial<TaskCompletionRow>; Update: Partial<TaskCompletionRow> };
       resource_ratings: { Row: ResourceRatingRow; Insert: Partial<ResourceRatingRow>; Update: Partial<ResourceRatingRow> };
+      projects: { Row: ProjectRow; Insert: Partial<ProjectRow>; Update: Partial<ProjectRow> };
     };
     Functions: {
       start_node: { Args: { p_node_slug: string }; Returns: undefined };
       complete_task: { Args: { p_task: string; p_evidence?: string | null }; Returns: StoredNodeStatus };
       get_public_profile: { Args: { p_handle: string }; Returns: PublicProfilePayload | null };
       rate_resource: { Args: { p_resource: string; p_rating: number }; Returns: undefined };
+      set_project: { Args: { p_path: string; p_repo_url: string }; Returns: undefined };
       node_is_unlocked: { Args: { p_user: string; p_node: string }; Returns: boolean };
       is_admin: { Args: Record<string, never>; Returns: boolean };
       calc_rank: { Args: { xp: number }; Returns: Rank };

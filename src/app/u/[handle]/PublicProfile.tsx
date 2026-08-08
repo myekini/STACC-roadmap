@@ -7,7 +7,7 @@
  */
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, ArrowUpRight, CalendarDays, Hourglass, Package, Rocket } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, CalendarDays, FolderGit2, Hourglass, Package, Rocket } from 'lucide-react';
 import { hasSupabaseEnv, supabase } from '@/utils/supabase/client';
 import { useUserData } from '@/hooks/useUserData';
 import type { PublicProfilePayload } from '@/lib/database.types';
@@ -60,6 +60,7 @@ function useProfilePayload(handle: string) {
   const payload: PublicProfilePayload = {
     profile: { username: local.user.username, avatar_url: local.user.avatar_url, joined_at: '' },
     shipped,
+    projects: local.projects,
     activity: local.activity,
   };
   return { payload, isLoading: local.isLoading, demo: true };
@@ -72,12 +73,17 @@ export default function PublicProfile({ handle }: { handle: string }) {
   const { payload, isLoading } = useProfilePayload(handle);
 
   const shipped = payload?.shipped ?? [];
+  const projects = payload?.projects ?? {};
   const artifacts = shipped.reduce((sum, s) => sum + s.evidence.length, 0);
   const hours = shipped.reduce((sum, s) => sum + s.est_hours, 0);
-  const byPath = shipped.reduce<Record<string, typeof shipped>>((acc, s) => {
-    (acc[s.path_title] ??= []).push(s);
+  const byPath = shipped.reduce<Record<string, { title: string; items: typeof shipped }>>((acc, s) => {
+    (acc[s.path_id] ??= { title: s.path_title, items: [] }).items.push(s);
     return acc;
   }, {});
+  // Build-log order: oldest first — this is meant to read as a project growing, not a recency feed.
+  for (const group of Object.values(byPath)) {
+    group.items.sort((a, b) => (a.completed_at ?? '').localeCompare(b.completed_at ?? ''));
+  }
 
   return (
     <main className="relative min-h-screen bg-background text-on-background">
@@ -151,12 +157,24 @@ export default function PublicProfile({ handle }: { handle: string }) {
               </div>
             ) : (
               <div className="mt-8 space-y-8">
-                {Object.entries(byPath).map(([pathTitle, items]) => (
-                  <section key={pathTitle}>
+                {Object.entries(byPath).map(([pathId, { title, items }]) => (
+                  <section key={pathId}>
                     <div className="flex items-baseline justify-between border-b border-outline-variant pb-2">
-                      <h2 className="font-display text-base font-bold uppercase tracking-wide text-on-surface">{pathTitle}</h2>
+                      <h2 className="font-display text-base font-bold uppercase tracking-wide text-on-surface">{title}</h2>
                       <span className="font-code text-[10px] text-outline">{items.length} shipped</span>
                     </div>
+                    {projects[pathId] && (
+                      <a
+                        href={projects[pathId]}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group mt-3 inline-flex max-w-full items-center gap-1.5 border border-cyan/25 bg-cyan/[0.05] px-2.5 py-1.5 font-code text-[10px] text-cyan transition-colors hover:border-cyan/50"
+                      >
+                        <FolderGit2 className="h-3 w-3 shrink-0" />
+                        <span className="max-w-[320px] truncate">{projects[pathId].replace(/^https?:\/\//i, '')}</span>
+                        <ArrowUpRight className="h-3 w-3 shrink-0 opacity-60 group-hover:opacity-100" />
+                      </a>
+                    )}
                     <ul className="mt-3 space-y-2">
                       {items.map((item) => (
                         <li key={item.slug} className="border border-outline-variant/70 bg-surface/70 p-4">

@@ -106,9 +106,10 @@ Module Analytics: starts/completions/completion-rate per node
 | Node detail | ✅ Shipped | Description, skills, curated resources (2 per node, community-rated), tasks, estimated hours. |
 | Progress tracking | ✅ Shipped | Per-node and per-path completion; derived status `locked \| available \| in_progress \| complete`. |
 | Prerequisite gates | ✅ Shipped | Node-level (fan-in supported — a node can require several prerequisites) + path-level gates. |
-| Resource ratings | ✅ Shipped | 1–5 stars, aggregated server-side. |
+| Resource ratings | ⚙️ Backend only | 1–5 stars, aggregated server-side (`rate_resource`, `resources.avg_rating`) — pulled from the node workspace UI for now, re-implementing later. |
 | **Evidence shipping** | ✅ Shipped | Build tasks require a public URL (repo / live app / writeup) instead of a checkbox — enforced server-side in `complete_task`. Not in the original spec; added because "ship, don't just watch" is the actual product thesis. |
-| **Public portfolio** | ✅ Shipped | `/u/[handle]` — shipped modules + evidence links, public, no auth. Powered by an anon-callable `get_public_profile` RPC that exposes only username/avatar/shipped work, never XP/rank/role. |
+| **Projects (per-path)** | ✅ Shipped | Migration `0004`: one repo per `(user, path)`, set once via `set_project`. Once set, every later build-task evidence on that path must link inside it (prefix match) — a specialization's build tasks accumulate into one running project instead of disconnected links. |
+| **Public portfolio** | ✅ Shipped | `/u/[handle]` — each path renders as a build-log timeline (oldest → newest) under its project repo link, not a flat recency feed. Powered by an anon-callable `get_public_profile` RPC that exposes only username/avatar/shipped work/project repos, never XP/rank/role. |
 | XP system | ⚙️ Backend only | Accrues server-side, never shown (see §2). |
 | AI Study Assistant | ❌ Removed | See §2. |
 
@@ -182,10 +183,12 @@ below. Two deliberate deviations from the earliest spec sketch:
   six Foundations nodes).
 - **No custom REST API layer.** There is no `/api/roadmap`, `/api/progress`, etc. The frontend
   talks to Supabase directly (via `@supabase/ssr`'s cookie-based `createBrowserClient`, see
-  `src/utils/supabase/client.ts`) for reads, and to four security-definer RPCs for every write:
-  `start_node`, `complete_task` (now takes an optional evidence URL — migration
-  `0002_evidence.sql`), `rate_resource`, and the anon-callable `get_public_profile` for
-  portfolio pages. See `supabase/README.md` for the full RLS/RPC design notes and setup steps.
+  `src/utils/supabase/client.ts`) for reads, and to security-definer RPCs for every write:
+  `start_node`, `complete_task` (evidence URL — migration `0002_evidence.sql` — validated
+  against the path's project repo once one is set, migration `0004_projects.sql`),
+  `rate_resource`, `set_project` (one repo per user+path, immutable once set), and the
+  anon-callable `get_public_profile` for portfolio pages. See `supabase/README.md` for the
+  full RLS/RPC design notes and setup steps.
 - **Session storage is cookie-based, not localStorage.** `src/utils/supabase/client.ts` uses
   `createBrowserClient`, `src/utils/supabase/server.ts` uses `createServerClient` (Route
   Handlers), and root `middleware.ts` + `src/utils/supabase/middleware.ts` refresh the session
@@ -223,10 +226,12 @@ micro-labels, `// comment`-style captions.
   opposite each card. Connector geometry is row-local (fixed chip heights), so it holds for
   any node count. Mobile keeps the single-column left rail.
   Clicking a node navigates to `/roadmap/[slug]` — a full-bleed workspace page, not a
-  slide-in sheet: description/skills/resources (rateable, with click-to-load YouTube embeds)
-  in the primary column, a sticky task rail alongside it (build tasks show a "ship it" URL
-  form instead of a checkbox; watch tasks are gated behind actually opening a video resource
-  on the node, tracked client-side per page visit).
+  slide-in sheet: description/skills/resources (click-to-load YouTube embeds; ratings UI
+  pulled for now, see §4) in the primary column, a sticky task rail alongside it. Build tasks
+  ship evidence into the path's project repo — the first build task on a path prompts for a
+  repo URL once (`set_project`), every later build task on that path ships a commit/PR/file
+  link inside it instead of an unrelated one-off link. Watch tasks are gated behind actually
+  opening a video resource on the node, tracked client-side per page visit.
   A floating **field notes** pill (bottom-right, desktop, `❯ stacc explain "<module>"`
   terminal framing) shows the curriculum description of the hovered/keyboard-focused node —
   content comes straight from the roadmap config; it is *not* an AI feature. It only renders
