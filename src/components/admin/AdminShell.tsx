@@ -7,7 +7,7 @@
  * instead of the block's placeholder nav.
  */
 import Link from 'next/link';
-import { AlertTriangle, LayoutGrid, LogOut, Route, ShieldCheck, Users } from 'lucide-react';
+import { AlertTriangle, BookOpen, LayoutDashboard, LogOut, Route, ShieldCheck, Users } from 'lucide-react';
 import { StaccMark } from '@/components/brand/StaccMark';
 import {
   Sidebar,
@@ -28,8 +28,8 @@ import { cn } from '@/lib/utils';
 
 export type AdminSection = 'overview' | 'members' | 'stuck' | 'modules';
 
-const NAV: { id: AdminSection; label: string; icon: typeof LayoutGrid }[] = [
-  { id: 'overview', label: 'Overview', icon: LayoutGrid },
+const NAV: { id: AdminSection; label: string; icon: typeof LayoutDashboard }[] = [
+  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'members', label: 'Members', icon: Users },
   { id: 'stuck', label: 'Stuck Alerts', icon: AlertTriangle },
   { id: 'modules', label: 'Module Analytics', icon: ShieldCheck },
@@ -54,13 +54,13 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
           <div className="flex items-center gap-2.5">
             <StaccMark className="h-7 w-7 shrink-0" />
             <span className="font-code text-sm font-bold uppercase tracking-[0.14em] text-on-surface">Stacc</span>
-            <span className="font-code text-[10px] uppercase tracking-[0.1em] text-outline">/ admin</span>
+            <span className="border-l border-outline-variant pl-2 font-code text-[10px] uppercase tracking-[0.1em] text-outline">Admin</span>
           </div>
         </SidebarHeader>
 
         <SidebarContent className="px-2 py-3">
           <SidebarGroup>
-            <SidebarGroupLabel className="micro-label px-2 text-outline">console</SidebarGroupLabel>
+            <SidebarGroupLabel className="micro-label px-2 text-outline">Workspace</SidebarGroupLabel>
             <SidebarMenu>
               {NAV.map((item) => (
                 <SidebarMenuItem key={item.id}>
@@ -89,7 +89,12 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
           <SidebarMenu className="p-2">
             <SidebarMenuItem>
               <SidebarMenuButton asChild className="rounded-none font-code text-xs uppercase tracking-[0.06em] text-on-surface-variant">
-                <Link href="/roadmap"><Route className="h-4 w-4" /><span>Back to app</span></Link>
+                <Link href="/roadmap"><BookOpen className="h-4 w-4" /><span>View all courses</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild className="rounded-none font-code text-xs uppercase tracking-[0.06em] text-on-surface-variant">
+                <Link href="/dashboard"><Route className="h-4 w-4" /><span>Member dashboard</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -114,9 +119,10 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
         <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-outline-variant bg-background/95 px-4 backdrop-blur md:px-6">
           <SidebarTrigger className="md:hidden" />
           <Separator orientation="vertical" className="mr-1 h-4 md:hidden" />
-          <p className="font-code text-[11px] uppercase tracking-[0.1em] text-outline">
-            admin <span className="mx-1.5 text-outline-variant">/</span> <span className="text-on-surface">{activeLabel}</span>
-          </p>
+          <div>
+            <h1 className="text-sm font-semibold text-on-surface">{activeLabel}</h1>
+            <p className="font-code text-[10px] text-outline">Stacc administration</p>
+          </div>
         </header>
         <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">{children}</div>
       </SidebarInset>

@@ -6,7 +6,8 @@
  * restyled to Stacc and wired to real roadmap data via useAdminData.
  */
 import { useMemo, useState } from 'react';
-import { Download, LogIn, MessageSquare } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight, Download, LogIn, MessageSquare } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 import { exportMembersCsv, useAdminData, type MemberRow } from '@/hooks/useAdminData';
 import { AdminShell, type AdminSection } from '@/components/admin/AdminShell';
@@ -39,6 +40,7 @@ function AdminLogin({ signIn }: { signIn: (email: string, password: string) => P
         <StaccMark className="h-9 w-9" />
         <p className="micro-label mt-4 text-primary-neon">{'// restricted'}</p>
         <h1 className="mt-2 font-display text-2xl font-bold text-on-surface">Admin sign-in</h1>
+        <p className="mt-2 text-sm leading-6 text-on-surface-variant">Use the email and password assigned to your admin account.</p>
         <label className="mt-6 block">
           <span className="micro-label text-outline">email</span>
           <Input
@@ -213,7 +215,18 @@ export default function AdminPage() {
           {section === 'overview' && (
             <div className="space-y-6">
               <StatCards members={admin.data?.members ?? []} />
-              <ModuleChart analytics={admin.data?.nodeAnalytics ?? []} nodeById={nodeById} />
+              <div className="grid gap-px overflow-hidden border border-outline-variant bg-outline-variant md:grid-cols-2">
+                <button type="button" onClick={() => setSection('members')} className="group bg-surface p-5 text-left transition-colors hover:bg-surface-container-low">
+                  <span className="text-sm font-semibold text-on-surface">Manage members</span>
+                  <span className="mt-1 block text-xs text-on-surface-variant">Review progress, cohorts, and individual module activity.</span>
+                  <span className="mt-5 flex items-center gap-1 font-code text-[10px] font-semibold uppercase text-cyan">Open members <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" /></span>
+                </button>
+                <Link href="/roadmap" className="group bg-surface p-5 transition-colors hover:bg-surface-container-low">
+                  <span className="text-sm font-semibold text-on-surface">View as a member</span>
+                  <span className="mt-1 block text-xs text-on-surface-variant">Open every course and module without prerequisite locks.</span>
+                  <span className="mt-5 flex items-center gap-1 font-code text-[10px] font-semibold uppercase text-cyan">Browse all courses <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" /></span>
+                </Link>
+              </div>
             </div>
           )}
 

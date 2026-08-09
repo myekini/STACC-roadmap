@@ -235,6 +235,7 @@ export function useUserData() {
   const data = content.data;
   const prog = progress.data ?? EMPTY_PROGRESS;
   const projects = projectsQuery.data ?? {};
+  const isAdmin = connected ? profile.data?.role === 'admin' : true;
 
   // ── Derived: node status (locked/available/in_progress/complete) ──
   const nodesByPath = useMemo(() => {
@@ -264,10 +265,12 @@ export function useUserData() {
 
   const pathUnlocked = useCallback(
     (pathId: string) => {
+      // Admins can audit the complete curriculum from the member experience.
+      if (isAdmin) return true;
       const path = pathsById.get(pathId);
       return (path?.requires_paths ?? []).every(pathFullyComplete);
     },
-    [pathsById, pathFullyComplete],
+    [isAdmin, pathsById, pathFullyComplete],
   );
 
   const nodeStatus = useCallback(
@@ -276,10 +279,10 @@ export function useUserData() {
       const node = nodesById.get(nodeId);
       if (node && !pathUnlocked(node.path_id)) return 'locked';
       const prereqList = data?.prereqs[nodeId];
-      if (prereqList && prereqList.some((p) => !prog.completedNodes[p])) return 'locked';
+      if (!isAdmin && prereqList && prereqList.some((p) => !prog.completedNodes[p])) return 'locked';
       return startedNodesSet.has(nodeId) ? 'in_progress' : 'available';
     },
-    [data?.prereqs, nodesById, pathUnlocked, prog.completedNodes, startedNodesSet],
+    [data?.prereqs, isAdmin, nodesById, pathUnlocked, prog.completedNodes, startedNodesSet],
   );
 
   // Activity by date: modules completed per day (drives heatmap + streak).
@@ -472,7 +475,7 @@ export function useUserData() {
     // identity
     user: profile.data ?? GUEST,
     // Demo mode is admin (offline preview); connected mode requires a real admin profile.
-    isAdmin: connected ? profile.data?.role === 'admin' : true,
+    isAdmin,
     // content
     paths: data?.paths ?? [],
     nodes: data?.nodes ?? [],

@@ -32,7 +32,7 @@ export default function RoadmapPage() {
   const completedCount = Object.keys(progress.completedNodes).length;
   const overallPct = nodes.length ? Math.round((completedCount / nodes.length) * 100) : 0;
 
-  if (!isLoading && !hasSelectedPath) {
+  if (!isLoading && !hasSelectedPath && !data.isAdmin) {
     return (
       <div className="flex min-h-[calc(100dvh-64px)] items-center justify-center px-5">
         <div className="max-w-md border border-outline-variant bg-surface/70 p-8 text-center">
@@ -170,4 +170,3 @@ export default function RoadmapPage() {
     </div>
   );
 }
-
