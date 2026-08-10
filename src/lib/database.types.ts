@@ -22,11 +22,27 @@ export interface QuizPayload {
  * (plain `assert` statements) for the task to pass. No network/package
  * installs — stdlib only, so it stays a client-only, zero-infra runtime.
  */
-export interface ChallengePayload {
+export interface PythonChallengePayload {
+  language: 'python';
   prompt: string;
   starterCode: string;
   testCode: string;
 }
+
+/**
+ * In-browser SQL kata: setupSql seeds a fresh in-memory SQLite db (sql.js,
+ * WASM), starterCode loads into the editor as the query to write, and
+ * passing means the query's result rows exactly match expectedRows in order.
+ */
+export interface SqlChallengePayload {
+  language: 'sql';
+  prompt: string;
+  starterCode: string;
+  setupSql: string;
+  expectedRows: Record<string, unknown>[];
+}
+
+export type ChallengePayload = PythonChallengePayload | SqlChallengePayload;
 
 export interface ProfileRow {
   id: string;

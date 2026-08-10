@@ -82,15 +82,13 @@ Shipped work appears on a public portfolio at /u/[handle] — shareable with any
 ```
 Sign in with an admin account (email/password) → /admin
     ↓
-Overview: stat cards + module completion chart
+Overview: four health metrics + members needing attention
     ↓
-Members: full list, filter by cohort label, export CSV
+Members: full list, filter by cohort or attention state, export CSV
     ↓
 Click a member → node-level progress drilldown (per path)
     ↓
-Stuck Alerts: members with no roadmap activity in 14+ days (logins don't count)
-    ↓
-Module Analytics: starts/completions/completion-rate per node
+Curriculum: starts/completions/completion-rate per node
 ```
 
 ---
@@ -110,7 +108,7 @@ Module Analytics: starts/completions/completion-rate per node
 | **Evidence shipping** | ✅ Shipped | Build tasks require a public URL (repo / live app / writeup) instead of a checkbox — enforced server-side in `complete_task`. Not in the original spec; added because "ship, don't just watch" is the actual product thesis. |
 | **Projects (per-path)** | ✅ Shipped | Migration `0004`: one repo per `(user, path)`, set once via `set_project`. Once set, every later build-task evidence on that path must link inside it (prefix match) — a specialization's build tasks accumulate into one running project instead of disconnected links. |
 | **Public portfolio** | ✅ Shipped | `/u/[handle]` — each path renders as a build-log timeline (oldest → newest) under its project repo link, not a flat recency feed. Powered by an anon-callable `get_public_profile` RPC that exposes only username/avatar/shipped work/project repos, never XP/rank/role. |
-| **Code challenges** | 🧪 Pilot | New `challenge` task type: Monaco editor + Pyodide (real CPython in WASM, loaded from CDN on first use — no server execution, no per-run cost). Passing requires the hidden `testCode` asserts to run clean against the member's code. One pilot challenge live on Python Basics (`clean_scores`); SQL Basics (sql.js) and wider rollout are follow-ups, not yet built. |
+| **Code challenges** | ✅ Shipped (Foundations) | `challenge` task type, Monaco editor + a client-only runtime — Pyodide (CPython/WASM) for Python, sql.js (SQLite/WASM) for SQL — both loaded lazily from CDN, no server execution. These **replace**, not supplement, the checkpoint quiz on the three Foundations topics that are genuinely code-testable: Python Basics (`clean_scores`), Statistics Basics (`describe`), SQL Basics (aggregate query, min. 3 assertions each). Git & GitHub, Command Line, and AI Literacy stay multiple-choice — none of them reduce to a clean in-browser pass/fail check without a much bigger build (a simulated git/shell environment). Every other node's checkpoint is still a quiz — this hasn't rolled out past Foundations. |
 | XP system | ⚙️ Backend only | Accrues server-side, never shown (see §2). |
 | AI Study Assistant | ❌ Removed | See §2. |
 
@@ -119,7 +117,7 @@ Module Analytics: starts/completions/completion-rate per node
 | Feature | Status | Notes |
 |---|---|---|
 | Member list | ✅ Shipped | Overall %, cohort, last active. |
-| Cohort filter | ✅ Shipped | Filter Members / Stuck Alerts by cohort label. |
+| Member filters | ✅ Shipped | Filter Members by cohort or attention state. |
 | Individual progress view | ✅ Shipped | Node-level breakdown per member, per path. |
 | Progress export | ✅ Shipped (CSV only) | No PDF export. |
 | Stuck alerts | ✅ Shipped | 14+ days with no roadmap activity (logins excluded). |
@@ -233,8 +231,8 @@ micro-labels, `// comment`-style captions.
   repo URL once (`set_project`), every later build task on that path ships a commit/PR/file
   link inside it instead of an unrelated one-off link. Watch tasks are gated behind actually
   opening a video resource on the node, tracked client-side per page visit. Challenge tasks
-  open a Monaco editor and run entirely client-side against a Pyodide (WASM CPython)
-  interpreter loaded lazily from CDN — no server execution.
+  open a Monaco editor and run entirely client-side — Pyodide (WASM CPython) for Python,
+  sql.js (WASM SQLite) for SQL — both loaded lazily from CDN, no server execution.
   A floating **field notes** pill (bottom-right, desktop, `❯ stacc explain "<module>"`
   terminal framing) shows the curriculum description of the hovered/keyboard-focused node —
   content comes straight from the roadmap config; it is *not* an AI feature. It only renders
@@ -336,8 +334,8 @@ on both sides.
   file (3 skills/node, 2 resources/node) before adding content.
 - `src/components/roadmap/` — `SkillTreeCanvas` (desktop pan/zoom tree), `SkillTree` (mobile
   rail), `NodeWorkspace` (full-page task/resource workspace + evidence shipping, rendered at
-  `/roadmap/[slug]`), `ChallengeBlock` (Monaco + `usePyodide`, dynamically imported so Monaco
-  never ships in a bundle that doesn't need it), `bits.tsx` (shared status chips/badges).
+  `/roadmap/[slug]`), `ChallengeBlock` (Monaco + `usePyodide`/`useSqlJs`, dynamically imported so
+  Monaco never ships in a bundle that doesn't need it), `bits.tsx` (shared status chips/badges).
 - `src/components/layout/` — `AppLayout`, `Sidebar` (collapsible), `TopBar`, `BottomBar`
   (mobile nav).
 - `src/components/admin/` — `AdminShell`, `MembersTable`, `ModuleChart`, `StatCards`.
@@ -390,5 +388,12 @@ each one**; this list stays a one-line summary on purpose, don't let the two dri
 3. **Discord nudge button** (§4) and **resource-level analytics** (§4) — spec'd, not built.
 4. **§9 success metrics** — not instrumented.
 5. No CI — `npm run check` is a local/manual gate, not enforced on push.
+6. **Migrations `0004_projects.sql` and `0005_challenges.sql` may not be applied to the
+   production Supabase project yet.** Same category of risk as gap 1 — verify before relying on
+   per-path projects or challenge tasks in production.
+7. **`supabase/seed.sql`'s checkpoint-quiz text has drifted from `src/config/roadmap.ts`** on
+   the ~32 nodes outside this round's changes — the resource-grounded question rewrites only
+   landed in `roadmap.ts` (demo mode), never backported to the seed file. Cosmetic (wrong
+   wording, not wrong behavior) but worth a sync pass before it's forgotten.
 
 See `git log` for what's shipped when; this section will drift, keep it honest.

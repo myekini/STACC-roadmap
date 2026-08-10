@@ -19,6 +19,8 @@ import type {
   TaskType,
 } from '@/lib/database.types';
 
+type SqlRow = Record<string, unknown>;
+
 type ResourceDef = [name: string, type: ResourceType, platform: string, url: string];
 type TaskDef = [description: string, type: TaskType, payload?: QuizPayload | ChallengePayload];
 
@@ -56,9 +58,18 @@ const quiz = (question: string, options: string[], correctIndex: number, explana
 });
 
 const challenge = (prompt: string, starterCode: string, testCode: string): ChallengePayload => ({
+  language: 'python',
   prompt,
   starterCode,
   testCode,
+});
+
+const sqlChallenge = (prompt: string, starterCode: string, setupSql: string, expectedRows: SqlRow[]): ChallengePayload => ({
+  language: 'sql',
+  prompt,
+  starterCode,
+  setupSql,
+  expectedRows,
 });
 
 const PATH_DEFS: PathDef[] = [
@@ -81,7 +92,8 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Work through the core Python course modules', 'watch'],
-          ['Challenge: clean_scores(values)', 'challenge', challenge(
+          ['Build: clean a messy CSV with pandas and export a tidy dataset', 'build'],
+          ['Checkpoint challenge: clean_scores(values)', 'challenge', challenge(
             'Write clean_scores(values): drop every None entry and duplicate value, then return what remains sorted ascending. This exact shape — strip the junk, dedupe, sort — is what you do to real data constantly.',
             'def clean_scores(values):\n    """Remove None entries and duplicates, then return the list sorted ascending."""\n    # your code here\n    pass\n',
             'assert clean_scores([3, 1, None, 2, 3, None, 1]) == [1, 2, 3]\n'
@@ -90,8 +102,6 @@ const PATH_DEFS: PathDef[] = [
               + 'assert clean_scores([None, None]) == []\n'
               + 'assert clean_scores([-1, 0, None, -1, 2]) == [-1, 0, 2]\n',
           )],
-          ['Build: clean a messy CSV with pandas and export a tidy dataset', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Per the Pandas Getting Started Guide, which method returns the first 5 rows of a DataFrame?', ['df.first()', 'df.head()', 'df.top()', 'df.preview()'], 1, 'df.head() returns the first n rows (default 5). There is no first()/top()/preview() in pandas.')],
         ],
       },
       {
@@ -106,7 +116,23 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Complete the interactive SQL lessons', 'read'],
           ['Build: answer 5 business questions against a sample database', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('In the Kaggle Intro to SQL course, which clause filters results after aggregation?', ['WHERE', 'HAVING', 'GROUP BY', 'ORDER BY'], 1, 'HAVING filters after GROUP BY has aggregated rows; WHERE filters rows before aggregation.')],
+          ['Checkpoint challenge: paying customers over $50', 'challenge', sqlChallenge(
+            "Table orders(id, customer, amount, status). Write a query that returns each customer's total spend from status = 'paid' orders only, as columns customer and total — only customers with total > 50, ordered by total descending.",
+            '-- orders(id, customer, amount, status)\n-- customer, total (sum of paid amounts) where total > 50, ordered by total desc\nSELECT\n',
+            "CREATE TABLE orders (id INTEGER, customer TEXT, amount REAL, status TEXT);\n"
+              + "INSERT INTO orders VALUES\n"
+              + "  (1, 'Ada', 120.0, 'paid'),\n"
+              + "  (2, 'Grace', 45.5, 'paid'),\n"
+              + "  (3, 'Ada', 60.0, 'refunded'),\n"
+              + "  (4, 'Linus', 200.0, 'paid'),\n"
+              + "  (5, 'Grace', 15.0, 'paid'),\n"
+              + "  (6, 'Zoe', 10.0, 'paid');",
+            [
+              { customer: 'Linus', total: 200 },
+              { customer: 'Ada', total: 120 },
+              { customer: 'Grace', total: 60.5 },
+            ],
+          )],
         ],
       },
       {
@@ -151,7 +177,15 @@ const PATH_DEFS: PathDef[] = [
         tasks: [
           ['Explore distributions and inference on Seeing Theory', 'read'],
           ['Build: analyze a dataset and report mean/median skew with plots', 'build'],
-          ['Checkpoint quiz', 'quiz', quiz('Per Seeing Theory, correlation between X and Y means…', ['X causes Y', 'Y causes X', 'X and Y move together', 'X and Y are independent'], 2, 'Correlation measures co-movement only; causation needs experimental or quasi-experimental evidence.')],
+          ['Checkpoint challenge: describe(values)', 'challenge', challenge(
+            'Write describe(values): return a (mean, median, population-stdev) tuple. These three numbers are the first thing you compute on any new dataset — mean and median tell you if it is skewed, stdev tells you how spread out it is.',
+            'from statistics import mean, median, pstdev\n\ndef describe(values):\n    """Return (mean, median, population-stdev) as a tuple of floats."""\n    # your code here\n    pass\n',
+            'assert describe([2, 4, 4, 4, 5, 5, 7, 9]) == (5.0, 4.5, 2.0)\n'
+              + 'assert describe([10, 10, 10]) == (10.0, 10.0, 0.0)\n'
+              + 'import math\n'
+              + 'm, md, sd = describe([1, 2, 3, 4])\n'
+              + 'assert m == 2.5 and md == 2.5 and math.isclose(sd, 1.1180339887498949, rel_tol=1e-9)\n',
+          )],
         ],
       },
       {

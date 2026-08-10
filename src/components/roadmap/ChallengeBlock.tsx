@@ -1,11 +1,12 @@
 'use client';
 
-/** In-browser Python kata: Monaco editor + Pyodide, run against hidden asserts. */
+/** In-browser kata: Monaco editor + Pyodide (Python) or sql.js (SQL), run against hidden checks. */
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Check, Loader2, Play, TerminalSquare, X } from 'lucide-react';
 import type { ChallengePayload } from '@/lib/database.types';
 import { usePyodide } from '@/hooks/usePyodide';
+import { useSqlJs } from '@/hooks/useSqlJs';
 import { Button } from '@/components/ui/button';
 
 const Editor = dynamic(() => import('@monaco-editor/react'), {
@@ -17,16 +18,22 @@ const Editor = dynamic(() => import('@monaco-editor/react'), {
   ),
 });
 
+const RUNTIME_LABEL: Record<ChallengePayload['language'], string> = {
+  python: '// runs a real Python interpreter in your browser — first run loads it (~10-15s), reruns are instant',
+  sql: '// runs a real SQLite engine in your browser — first run loads it (~2-5s), reruns are instant',
+};
+
 export function ChallengeBlock({ challenge, onPass, disabled }: { challenge: ChallengePayload; onPass: () => void; disabled: boolean }) {
   const [code, setCode] = useState(challenge.starterCode);
   const [result, setResult] = useState<{ passed: boolean; error?: string } | null>(null);
   const [busy, setBusy] = useState(false);
-  const { run } = usePyodide();
+  const { run: runPython } = usePyodide();
+  const { run: runSql } = useSqlJs();
 
   const handleRun = async () => {
     setBusy(true);
     setResult(null);
-    const outcome = await run(code, challenge.testCode);
+    const outcome = challenge.language === 'sql' ? await runSql(challenge, code) : await runPython(code, challenge.testCode);
     setBusy(false);
     if (outcome.passed) {
       setResult({ passed: true });
@@ -46,7 +53,7 @@ export function ChallengeBlock({ challenge, onPass, disabled }: { challenge: Cha
       <div className="mt-3 overflow-hidden border border-outline-variant">
         <Editor
           height="220px"
-          defaultLanguage="python"
+          defaultLanguage={challenge.language}
           value={code}
           onChange={(value) => setCode(value ?? '')}
           theme="vs-dark"
@@ -56,7 +63,7 @@ export function ChallengeBlock({ challenge, onPass, disabled }: { challenge: Cha
             fontFamily: 'var(--font-geist-mono), monospace',
             scrollBeyondLastLine: false,
             readOnly: disabled || busy,
-            tabSize: 4,
+            tabSize: challenge.language === 'python' ? 4 : 2,
           }}
         />
       </div>
@@ -82,9 +89,7 @@ export function ChallengeBlock({ challenge, onPass, disabled }: { challenge: Cha
         </div>
       )}
 
-      <p className="mt-3 font-code text-[9px] text-outline">
-        {'// runs a real Python interpreter in your browser — first run loads it (~10-15s), reruns are instant'}
-      </p>
+      <p className="mt-3 font-code text-[9px] text-outline">{RUNTIME_LABEL[challenge.language]}</p>
     </div>
   );
 }

@@ -5,7 +5,7 @@
  * restyled to Stacc's Modern Technical Brutalism and wired to real sections.
  */
 import Link from 'next/link';
-import { AlertTriangle, BookOpen, LayoutDashboard, LogOut, Moon, Route, ShieldCheck, Sun, Users } from 'lucide-react';
+import { BookOpen, LayoutDashboard, LogOut, Moon, Route, ShieldCheck, Sun, Users } from 'lucide-react';
 import { StaccMark } from '@/components/brand/StaccMark';
 import {
   Sidebar,
@@ -26,13 +26,12 @@ import { Button } from '@/components/ui/button';
 import { useUiStore } from '@/store/useUiStore';
 import { cn } from '@/lib/utils';
 
-export type AdminSection = 'overview' | 'members' | 'stuck' | 'modules';
+export type AdminSection = 'overview' | 'members' | 'curriculum';
 
 const NAV: { id: AdminSection; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'members', label: 'Members', icon: Users },
-  { id: 'stuck', label: 'Stuck Alerts', icon: AlertTriangle },
-  { id: 'modules', label: 'Module Analytics', icon: ShieldCheck },
+  { id: 'curriculum', label: 'Curriculum', icon: ShieldCheck },
 ];
 
 interface AdminShellProps {
@@ -74,7 +73,7 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.label}</span>
-                    {item.id === 'stuck' && stuckCount > 0 && (
+                    {item.id === 'members' && stuckCount > 0 && (
                       <span className="ml-auto flex h-4 min-w-4 items-center justify-center border border-error/40 bg-error/10 px-1 font-code text-[9px] font-bold text-error">
                         {stuckCount}
                       </span>

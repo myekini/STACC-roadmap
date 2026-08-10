@@ -42,10 +42,15 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
   project instead of N disconnected links. `get_public_profile` exposes `projects` (path_id → repo_url)
   so `/u/[handle]` can render each path as a build-log timeline.
 - **Challenge tasks (migration `0005`):** `tasks.type` gains `'challenge'`; `tasks.challenge` jsonb
-  holds `{prompt, starterCode, testCode}`. Entirely client-executed — a Pyodide (WASM CPython)
-  interpreter loaded from CDN on first use runs the member's code then `testCode`'s `assert`
-  statements in the same interpreter; passing (no exception) completes the task. No new RPC —
-  the pass/fail decision never touches the server, only the resulting `complete_task` call does.
+  is a discriminated union on `language`. `{language:'python', prompt, starterCode, testCode}` runs
+  in a Pyodide (WASM CPython) interpreter loaded from CDN — member's code then `testCode`'s
+  `assert` statements in the same interpreter, no exception = pass.
+  `{language:'sql', prompt, starterCode, setupSql, expectedRows}` runs in sql.js (WASM SQLite,
+  also CDN-loaded) — `setupSql` seeds a fresh in-memory db, the member's query runs against it,
+  and the result rows must exactly match `expectedRows` in order. Both are entirely
+  client-executed — no new RPC, the pass/fail decision never touches the server, only the
+  resulting `complete_task` call does. Live on the three Foundations topics that are genuinely
+  code-testable (Python Basics, Statistics Basics, SQL Basics) — Git/CLI/AI Literacy stay quizzes.
 - **Admin:** promote a user with `update public.profiles set role = 'admin' where id = '<uuid>';`
   (must run as service role / SQL editor — the protection trigger blocks clients).
 

@@ -141,6 +141,7 @@ export default function AdminPage() {
   const admin = useAdminData(userData);
   const [cohort, setCohort] = useState<string | null>(null);
   const [section, setSection] = useState<AdminSection>('overview');
+  const [memberFilter, setMemberFilter] = useState<'all' | 'attention'>('all');
   const [selected, setSelected] = useState<MemberRow | null>(null);
 
   const { paths, nodes, isAdmin, isLoading, isAuthenticated, isSupabaseConnected, user, signOut } = userData;
@@ -149,6 +150,11 @@ export default function AdminPage() {
     const all = admin.data?.members ?? [];
     return cohort ? all.filter((m) => m.cohort === cohort) : all;
   }, [admin.data?.members, cohort]);
+
+  const visibleMembers = useMemo(
+    () => memberFilter === 'attention' ? members.filter((member) => member.isStuck) : members,
+    [memberFilter, members],
+  );
 
   if (isSupabaseConnected && !isAuthenticated) {
     return <AdminLogin signIn={userData.signInWithPassword} />;
@@ -215,10 +221,14 @@ export default function AdminPage() {
             <div className="space-y-6">
               <StatCards members={admin.data?.members ?? []} />
               <div className="grid gap-px overflow-hidden border border-outline-variant bg-outline-variant md:grid-cols-2">
-                <button type="button" onClick={() => setSection('members')} className="group bg-surface p-5 text-left transition-colors hover:bg-surface-container-low">
-                  <span className="text-sm font-semibold text-on-surface">Manage members</span>
-                  <span className="mt-1 block text-xs text-on-surface-variant">Review progress, cohorts, and individual module activity.</span>
-                  <span className="mt-5 flex items-center gap-1 font-code text-[10px] font-semibold uppercase text-cyan">Open members <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" /></span>
+                <button
+                  type="button"
+                  onClick={() => { setCohort(null); setMemberFilter(stuckCount > 0 ? 'attention' : 'all'); setSection('members'); }}
+                  className="group bg-surface p-5 text-left transition-colors hover:bg-surface-container-low"
+                >
+                  <span className="text-sm font-semibold text-on-surface">{stuckCount > 0 ? `${stuckCount} ${stuckCount === 1 ? 'member needs' : 'members need'} attention` : 'Everyone is on track'}</span>
+                  <span className="mt-1 block text-xs text-on-surface-variant">{stuckCount > 0 ? 'Review members with no roadmap activity in 14 days.' : 'No members are currently flagged as inactive.'}</span>
+                  <span className="mt-5 flex items-center gap-1 font-code text-[10px] font-semibold uppercase text-cyan">View members <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" /></span>
                 </button>
                 <Link href="/roadmap" className="group bg-surface p-5 transition-colors hover:bg-surface-container-low">
                   <span className="text-sm font-semibold text-on-surface">View as a member</span>
@@ -232,32 +242,22 @@ export default function AdminPage() {
           {section === 'members' && (
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                {CohortFilter}
-                <Button variant="outline" onClick={() => exportMembersCsv(members, pathTitles, nodePathById)} className="ml-auto">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1" aria-label="Member status filter">
+                    <button type="button" onClick={() => setMemberFilter('all')} className={cn('border px-2.5 py-1.5 font-code text-[10px] font-semibold uppercase', memberFilter === 'all' ? 'border-primary/50 bg-primary/10 text-primary-neon' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}>all members</button>
+                    <button type="button" onClick={() => setMemberFilter('attention')} className={cn('border px-2.5 py-1.5 font-code text-[10px] font-semibold uppercase', memberFilter === 'attention' ? 'border-error/50 bg-error/10 text-error' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}>needs attention</button>
+                  </div>
+                  {CohortFilter}
+                </div>
+                <Button variant="outline" onClick={() => exportMembersCsv(visibleMembers, pathTitles, nodePathById)} className="ml-auto">
                   <Download /> export csv
                 </Button>
               </div>
-              <MembersTable members={members} emptyLabel="no members yet" onSelect={setSelected} />
+              <MembersTable members={visibleMembers} emptyLabel={memberFilter === 'attention' ? 'nobody needs attention' : 'no members yet'} onSelect={setSelected} />
             </div>
           )}
 
-          {section === 'stuck' && (
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                {CohortFilter}
-                <Button
-                  variant="outline"
-                  onClick={() => exportMembersCsv(members.filter((m) => m.isStuck), pathTitles, nodePathById)}
-                  className="ml-auto"
-                >
-                  <Download /> export csv
-                </Button>
-              </div>
-              <MembersTable members={members.filter((m) => m.isStuck)} emptyLabel="nobody is stuck — good sign" onSelect={setSelected} />
-            </div>
-          )}
-
-          {section === 'modules' && (
+          {section === 'curriculum' && (
             <div className="space-y-4">
               <ModuleChart analytics={admin.data?.nodeAnalytics ?? []} nodeById={nodeById} />
               <div className="overflow-x-auto border border-outline-variant bg-surface">
