@@ -7,8 +7,8 @@ import type { NodeAnalytics } from '@/hooks/useAdminData';
 import type { NodeRow } from '@/lib/database.types';
 
 const chartConfig: ChartConfig = {
-  starts: { label: 'Started', color: '#00d9ff' },
-  completions: { label: 'Completed', color: '#10b981' },
+  starts: { label: 'Started', color: 'var(--chart-1)' },
+  completions: { label: 'Completed', color: 'var(--chart-3)' },
 };
 
 export function ModuleChart({ analytics, nodeById }: { analytics: NodeAnalytics[]; nodeById: Record<string, NodeRow> }) {
@@ -33,7 +33,7 @@ export function ModuleChart({ analytics, nodeById }: { analytics: NodeAnalytics[
         ) : (
           <ChartContainer config={chartConfig} className="h-64 w-full">
             <BarChart data={data} margin={{ left: -20 }}>
-              <CartesianGrid vertical={false} stroke="#2a3547" strokeDasharray="4 4" />
+              <CartesianGrid vertical={false} stroke="var(--border-subtle)" strokeDasharray="4 4" />
               <XAxis
                 dataKey="name"
                 tickLine={false}
@@ -42,7 +42,7 @@ export function ModuleChart({ analytics, nodeById }: { analytics: NodeAnalytics[
                 angle={-25}
                 textAnchor="end"
                 height={56}
-                tick={{ fill: '#8395ac', fontSize: 10, fontFamily: 'var(--font-geist-mono)' }}
+                tick={{ fill: 'var(--fg-muted)', fontSize: 10, fontFamily: 'var(--font-geist-mono)' }}
               />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Bar dataKey="starts" fill="var(--color-starts)" radius={0} />

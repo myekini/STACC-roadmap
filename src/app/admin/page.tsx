@@ -1,8 +1,7 @@
 'use client';
 
 /**
- * Admin panel (spec §1.3/§1.11). Shell adapted from the shadcn
- * @efferd/dashboard-1 block (sidebar + stat cards + chart composition),
+ * Admin panel (spec §1.3/§1.11). Built from free shadcn dashboard primitives,
  * restyled to Stacc and wired to real roadmap data via useAdminData.
  */
 import { useMemo, useState } from 'react';

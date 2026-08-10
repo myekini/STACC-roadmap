@@ -250,7 +250,8 @@ micro-labels, `// comment`-style captions.
 - **`/u/[handle]`** — public, unauthenticated, no app shell — shipped modules grouped by path
   with evidence links.
 
-Dark-only by design (no light/dark toggle) — see CLAUDE.md for the exact token values.
+Light and dark modes share the same Stacc token system and the user's persisted preference.
+The member app and independent admin shell must expose the same theme control.
 
 ---
 

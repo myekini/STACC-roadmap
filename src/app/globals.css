@@ -231,7 +231,7 @@ body {
   }
 }
 
-/* shadcn block support: sidebar + chart vars in the Stacc palette (dark-only app) */
+/* shadcn dashboard tokens. Admin inherits the same persisted light/dark mode as the member app. */
 @layer base {
   :root {
     --sidebar-background: 215 60% 10%;      /* --navy */
@@ -248,5 +248,20 @@ body {
     --chart-4: #f59e0b;
     --chart-5: #8395ac;
   }
-}
 
+  html.light {
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 199 89% 48%;
+    --chart-1: #0284c7;
+    --chart-2: #ea580c;
+    --chart-3: #059669;
+    --chart-4: #d97706;
+    --chart-5: #475569;
+  }
+}

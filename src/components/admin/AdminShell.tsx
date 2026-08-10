@@ -1,13 +1,11 @@
 'use client';
 
 /**
- * Admin app shell — adapted from the shadcn @efferd/dashboard-1 block's
- * Sidebar/Header composition, restyled to Stacc's Modern Technical Brutalism
- * (rounded-none, mono micro-labels, navy/cyan) and wired to real sections
- * instead of the block's placeholder nav.
+ * Admin app shell composed from the free shadcn Sidebar and Button primitives,
+ * restyled to Stacc's Modern Technical Brutalism and wired to real sections.
  */
 import Link from 'next/link';
-import { AlertTriangle, BookOpen, LayoutDashboard, LogOut, Route, ShieldCheck, Users } from 'lucide-react';
+import { AlertTriangle, BookOpen, LayoutDashboard, LogOut, Moon, Route, ShieldCheck, Sun, Users } from 'lucide-react';
 import { StaccMark } from '@/components/brand/StaccMark';
 import {
   Sidebar,
@@ -24,6 +22,8 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { useUiStore } from '@/store/useUiStore';
 import { cn } from '@/lib/utils';
 
 export type AdminSection = 'overview' | 'members' | 'stuck' | 'modules';
@@ -46,6 +46,7 @@ interface AdminShellProps {
 
 export function AdminShell({ section, onSectionChange, stuckCount, username, onSignOut, children }: AdminShellProps) {
   const activeLabel = NAV.find((n) => n.id === section)?.label ?? 'Overview';
+  const { theme, toggleTheme } = useUiStore();
 
   return (
     <SidebarProvider className="min-h-screen bg-background text-on-background">
@@ -116,13 +117,24 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
       </Sidebar>
 
       <SidebarInset className="bg-background">
-        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-outline-variant bg-background/95 px-4 backdrop-blur md:px-6">
-          <SidebarTrigger className="md:hidden" />
-          <Separator orientation="vertical" className="mr-1 h-4 md:hidden" />
-          <div>
+        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-outline-variant bg-background/95 px-4 backdrop-blur md:px-6">
+          <SidebarTrigger />
+          <Separator orientation="vertical" className="h-4" />
+          <div className="min-w-0 flex-1">
             <h1 className="text-sm font-semibold text-on-surface">{activeLabel}</h1>
             <p className="font-code text-[10px] text-outline">Stacc administration</p>
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={toggleTheme}
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            className="h-9 w-9 rounded-none border-outline-variant bg-surface text-on-surface-variant hover:text-cyan"
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-cyan" />}
+          </Button>
         </header>
         <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">{children}</div>
       </SidebarInset>
