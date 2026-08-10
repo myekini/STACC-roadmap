@@ -9,9 +9,9 @@ import {
   ArrowRight,
   Code2,
   Compass,
+  GitBranch,
   Hourglass,
   Layers,
-  LogIn,
   Moon,
   Rocket,
   Route,
@@ -41,7 +41,7 @@ function AuthErrorBanner() {
 }
 
 export default function LandingPage() {
-  const { isAuthenticated, signInWithDiscord, isSupabaseConnected, hasSelectedPath, paths, nodes } = useUserData();
+  const { isAuthenticated, signInWithGithub, isSupabaseConnected, hasSelectedPath, paths, nodes } = useUserData();
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const { theme, toggleTheme } = useUiStore();
@@ -81,7 +81,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-on-background">
       {/* ── Header Navbar ── */}
-      <header className="sticky top-0 z-40 border-b border-cyan/15 bg-navy/90 px-4 py-3.5 backdrop-blur-xl md:px-8">
+      <header className="sticky top-0 z-40 border-b border-cyan/15 bg-navy/90 px-4 pb-3.5 pt-[calc(0.875rem+env(safe-area-inset-top))] backdrop-blur-xl md:px-8 md:py-3.5">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link href="/" className="flex items-center gap-3 text-lg font-bold uppercase tracking-wider text-on-surface">
             <StaccMark className="h-7 w-7" />
@@ -173,8 +173,8 @@ export default function LandingPage() {
             </Button>
 
             {isSupabaseConnected && (
-              <Button size="lg" variant="ghost" onClick={signInWithDiscord} className="gap-2 font-code text-xs text-on-surface-variant hover:text-cyan">
-                <LogIn className="h-4 w-4 text-cyan" /> Sign in with Discord
+              <Button size="lg" variant="ghost" onClick={signInWithGithub} className="gap-2 font-code text-xs text-on-surface-variant hover:text-cyan">
+                <GitBranch className="h-4 w-4 text-cyan" /> Sign in with GitHub
               </Button>
             )}
           </motion.div>
@@ -419,4 +419,3 @@ export default function LandingPage() {
     </div>
   );
 }
-

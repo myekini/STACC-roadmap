@@ -62,7 +62,7 @@ export default function RoadmapPage() {
         >
           <div className="flex flex-col gap-3 p-3 sm:p-4 md:flex-row md:items-center md:justify-between">
             {/* Left: Section title & overall progress */}
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:gap-4">
               <h1 className="font-display text-lg font-bold tracking-tight text-on-surface sm:text-xl">
                 Skill Tree
               </h1>
@@ -70,7 +70,7 @@ export default function RoadmapPage() {
               <div className="flex items-center gap-2">
                 <Progress
                   value={overallPct}
-                  className="h-1.5 w-24 rounded-none bg-surface-container-high [&>div]:rounded-none [&>div]:bg-cyan"
+                  className="h-1.5 w-16 rounded-none bg-surface-container-high sm:w-24 [&>div]:rounded-none [&>div]:bg-cyan"
                 />
                 <span className="font-code text-xs font-bold text-cyan">{overallPct}%</span>
               </div>

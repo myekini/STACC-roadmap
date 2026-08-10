@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useUiStore } from '@/store/useUiStore';
+import PwaRegistrar from './PwaRegistrar';
 
 function ThemeSync() {
   const theme = useUiStore((s) => s.theme);
@@ -16,6 +17,8 @@ function ThemeSync() {
       root.classList.add('dark');
       root.classList.remove('light');
     }
+    const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    themeMeta?.setAttribute('content', theme === 'light' ? '#f8fafc' : '#0a1628');
   }, [theme]);
 
   return null;
@@ -37,6 +40,7 @@ export default function AppProviders({ children }: { children: React.ReactNode }
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeSync />
+      <PwaRegistrar />
       {children}
     </QueryClientProvider>
   );

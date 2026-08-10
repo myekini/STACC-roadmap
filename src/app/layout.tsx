@@ -26,6 +26,13 @@ export const metadata: Metadata = {
   description:
     "Stacc's visual skill tree for data careers — guided paths, curated free resources, real tasks, and progress tracking. Not learning. Just shipping.",
   applicationName: "Stacc Roadmap",
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    title: 'Stacc',
+    statusBarStyle: 'black-translucent',
+  },
+  formatDetection: { telephone: false },
   keywords: [
     "learning roadmap",
     "data engineering",
@@ -54,8 +61,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  colorScheme: "dark",
-  themeColor: "#0d1117",
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
+  colorScheme: 'dark light',
+  themeColor: '#0a1628',
 };
 
 export default function RootLayout({
@@ -64,7 +75,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-primary selection:text-on-primary`}>
         <AppProviders>
           <AppLayout>{children}</AppLayout>

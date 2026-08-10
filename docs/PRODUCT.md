@@ -62,7 +62,7 @@ These are deliberate product cuts, not gaps to fill in. Don't reintroduce withou
 ### Member flow
 
 ```
-Sign in (Discord OAuth, or admin email/password) → Choose a path (/paths)
+Sign in (GitHub OAuth, or admin email/password) → Choose a path (/paths)
     ↓
 /roadmap — pan/zoom skill-tree canvas (or list view on mobile)
     ↓
@@ -123,7 +123,7 @@ Curriculum: starts/completions/completion-rate per node
 | Stuck alerts | ✅ Shipped | 14+ days with no roadmap activity (logins excluded). |
 | Module analytics | ✅ Shipped | Starts/completions/completion-rate **per node**. |
 | Resource-level analytics | ❌ Not built | Spec asked for completion-vs-abandonment **per resource link**; only node-level exists today. |
-| Discord nudge button | ❌ Not built | Stuck members are flagged in the UI; there's no one-click Discord DM trigger yet (needs a bot/webhook integration). |
+| GitHub profile link | ✅ Shipped | Stuck members are flagged in the UI with a one-click link to their GitHub profile (migration `0007`'s `github_username`). No automated outreach — GitHub has no DM mechanism to build against, unlike the Discord bot approach this replaced. |
 
 ---
 
@@ -193,7 +193,7 @@ below. Two deliberate deviations from the earliest spec sketch:
   Handlers), and root `middleware.ts` + `src/utils/supabase/middleware.ts` refresh the session
   cookie on every request. This is required for the OAuth PKCE code exchange in
   `src/app/auth/callback/route.ts` to reliably find the code verifier server-side — localStorage
-  doesn't survive the full-page redirect to Discord and back in all browsers/privacy modes.
+  doesn't survive the full-page redirect to GitHub and back in all browsers/privacy modes.
 
 **Access control:**
 
@@ -257,9 +257,9 @@ The member app and independent admin shell must expose the same theme control.
 
 A member is flagged stuck in `/admin` when there has been **no roadmap activity for 14+
 consecutive days** — a node started with no task completions in that window, or nothing
-completed at all in that window. Logging in alone does not reset the clock. There is currently
-no automatic member-facing notification and no one-click Discord nudge — both are manual/future
-work (§4).
+completed at all in that window. Logging in alone does not reset the clock. There is a one-click
+link to the member's GitHub profile (§4), but no automatic member-facing notification — GitHub
+has no DM mechanism to automate outreach through, unlike the Discord bot approach this replaced.
 
 ---
 
@@ -304,8 +304,17 @@ built, rather than re-deriving it.
 ### Stack
 
 Next.js 14 (App Router) · React 18 · TypeScript strict · Tailwind 3 · Radix primitives ·
-Framer Motion · Zustand · TanStack Query · Supabase (Postgres + Discord OAuth) · React Flow
+Framer Motion · Zustand · TanStack Query · Supabase (Postgres + GitHub OAuth) · React Flow
 (`@xyflow/react`) for the skill tree canvas.
+
+### Mobile and PWA
+
+The app is installable as a mobile-first PWA with branded icons, standalone display,
+safe-area-aware navigation, a branded route/data loader, and a minimal offline recovery page.
+The service worker caches only the offline shell and brand icon; authenticated roadmap data is
+never cached, preventing private member data from leaking through shared browser caches.
+Core surfaces reflow from single-column phone layouts to tablet and desktop compositions;
+mobile admin member data renders as cards instead of requiring horizontal table scrolling.
 
 ### Commands
 
@@ -385,15 +394,23 @@ each one**; this list stays a one-line summary on purpose, don't let the two dri
    no DB constraint; `get_public_profile` resolves collisions by "oldest profile wins," which
    silently breaks a second member with the same name. There's also no settings page to change
    a username at all.
-3. **Discord nudge button** (§4) and **resource-level analytics** (§4) — spec'd, not built.
+3. **Resource-level analytics** (§4) — spec'd, not built.
 4. **§9 success metrics** — not instrumented.
 5. No CI — `npm run check` is a local/manual gate, not enforced on push.
-6. **Migrations `0004_projects.sql` and `0005_challenges.sql` may not be applied to the
+6. **Migrations `0004_projects.sql` through `0007_github_auth.sql` may not be applied to the
    production Supabase project yet.** Same category of risk as gap 1 — verify before relying on
-   per-path projects or challenge tasks in production.
+   per-path projects, challenge tasks, or GitHub sign-in in production. `0007` additionally
+   requires a manual step outside any migration: registering a GitHub OAuth App and enabling the
+   GitHub provider in the Supabase dashboard (Discord's provider config doesn't carry over).
 7. **`supabase/seed.sql`'s checkpoint-quiz text has drifted from `src/config/roadmap.ts`** on
-   the ~32 nodes outside this round's changes — the resource-grounded question rewrites only
-   landed in `roadmap.ts` (demo mode), never backported to the seed file. Cosmetic (wrong
-   wording, not wrong behavior) but worth a sync pass before it's forgotten.
+   the ~29 nodes outside the challenge-conversion rounds — the resource-grounded question
+   rewrites only landed in `roadmap.ts` (demo mode), never backported to the seed file. Cosmetic
+   (wrong wording, not wrong behavior) but worth a sync pass before it's forgotten.
+8. **Members who signed up via the old Discord flow can't sign back in.** GitHub fully replaced
+   Discord as the sign-in provider (migration `0007`) rather than being added alongside it — any
+   existing Discord-authenticated `auth.users` row is now sign-in-orphaned. Re-authing via GitHub
+   creates a new profile rather than recovering the old one. If there are real members on the
+   production project from before this change, this needs a conscious decision (manual account
+   linking, a one-time export, or accepting the loss) — it isn't handled automatically.
 
 See `git log` for what's shipped when; this section will drift, keep it honest.

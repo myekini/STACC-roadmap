@@ -7,6 +7,7 @@ import BottomBar from './BottomBar';
 import { useUserData } from '@/hooks/useUserData';
 import { useUiStore } from '@/store/useUiStore';
 import { cn } from '@/lib/utils';
+import AppLoader from './AppLoader';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -22,12 +23,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background text-on-background flex flex-col items-center justify-center">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 font-code text-xs uppercase tracking-[0.14em] text-on-surface-variant">{'// loading your roadmap'}</p>
-      </div>
-    );
+    return <AppLoader />;
   }
 
   return (
@@ -43,7 +39,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       >
         <TopBar />
 
-        <main className={`flex-1 pt-16 pb-24 md:pb-lg w-full transition-all ${
+        <main className={`flex-1 pt-[calc(4rem+env(safe-area-inset-top))] pb-[calc(5rem+env(safe-area-inset-bottom))] md:pt-16 md:pb-lg w-full transition-all ${
           isRoadmap ? 'max-w-none px-0 md:pb-0' : 'max-w-container-max mx-auto px-md md:px-xl'
         }`}>
           {children}

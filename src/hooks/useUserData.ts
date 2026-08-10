@@ -445,11 +445,11 @@ export function useUserData() {
   }).mutateAsync;
 
   // ── Auth ────────────────────────────────────────────────
-  const signInWithDiscord = async () => {
+  const signInWithGithub = async () => {
     if (!connected) return;
     const next = pathname && pathname !== '/' ? `?next=${encodeURIComponent(pathname)}` : '';
     await supabase.auth.signInWithOAuth({
-      provider: 'discord',
+      provider: 'github',
       options: { redirectTo: `${window.location.origin}/auth/callback${next}` },
     });
   };
@@ -500,7 +500,7 @@ export function useUserData() {
     completeTask,
     rateResource,
     renameUsername,
-    signInWithDiscord,
+    signInWithGithub,
     signInWithPassword,
     signOut,
   };

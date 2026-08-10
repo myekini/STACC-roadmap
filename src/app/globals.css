@@ -84,7 +84,36 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   overflow-x: hidden;
   transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
 }
+
+html {
+  min-height: 100%;
+  background: var(--background);
+}
+
+main, section, article, aside { min-width: 0; }
+img, video, iframe, canvas, svg { max-width: 100%; }
+p, li, dd { overflow-wrap: anywhere; }
+
+@media (pointer: coarse) {
+  :where(button, a, input, select, textarea) { min-height: 44px; }
+  :where(input, select, textarea) { font-size: 16px; }
+}
+
+@keyframes pwa-loader-scan {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(220%); }
+}
+
+@keyframes pwa-loader-breathe {
+  0%, 100% { opacity: 0.35; transform: scale(0.96); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.pwa-loader-bar { animation: pwa-loader-scan 1.2s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+.pwa-loader-frame { animation: pwa-loader-breathe 1.8s ease-in-out infinite; }
 
 /* ── Terminal micro-label: uppercase mono chip, pair with `// caption` copy ── */
 .micro-label {

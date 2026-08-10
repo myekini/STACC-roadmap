@@ -17,7 +17,7 @@ export interface MemberRow {
   id: string;
   username: string;
   avatar_url: string;
-  discordId?: string | null;
+  githubUsername?: string | null;
   cohort: string | null;
   joinedAt: string | null;
   /** last roadmap activity (module completion / start) — logins don't count */
@@ -63,7 +63,7 @@ export function useAdminData(userData: UserData) {
           id: 'guest',
           username: 'Guest Dev (you)',
           avatar_url: '',
-          discordId: null,
+          githubUsername: null,
           cohort: 'S1',
           joinedAt: null,
           lastActiveAt,
@@ -85,7 +85,7 @@ export function useAdminData(userData: UserData) {
       }
 
       const [profiles, allProgress] = await Promise.all([
-        supabase.from('profiles').select('id,username,avatar_url,discord_id,cohort_label,created_at'),
+        supabase.from('profiles').select('id,username,avatar_url,github_username,cohort_label,created_at'),
         supabase.from('user_progress').select('user_id,node_id,status,started_at,completed_at'),
       ]);
       if (profiles.error) throw profiles.error;
@@ -115,7 +115,7 @@ export function useAdminData(userData: UserData) {
           id: p.id,
           username: p.username,
           avatar_url: p.avatar_url ?? '',
-          discordId: (p as { discord_id?: string | null }).discord_id ?? null,
+          githubUsername: (p as { github_username?: string | null }).github_username ?? null,
           cohort: p.cohort_label ?? null,
           joinedAt: p.created_at ?? null,
           lastActiveAt: bucket.last,

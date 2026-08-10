@@ -116,7 +116,7 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
       </Sidebar>
 
       <SidebarInset className="bg-background">
-        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-outline-variant bg-background/95 px-4 backdrop-blur md:px-6">
+        <header className="sticky top-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-top))] shrink-0 items-center gap-3 border-b border-outline-variant bg-background/95 px-4 pt-[env(safe-area-inset-top)] backdrop-blur md:h-14 md:px-6 md:pt-0">
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-4" />
           <div className="min-w-0 flex-1">
@@ -135,7 +135,7 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
             {theme === 'dark' ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-cyan" />}
           </Button>
         </header>
-        <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">{children}</div>
+        <div className="flex flex-1 flex-col gap-5 p-3 sm:p-4 md:gap-6 md:p-6">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

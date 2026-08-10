@@ -65,8 +65,8 @@ export default function ActivityHeatmap({ activity }: { activity: Record<string,
   const monthLabels = getMonthLabels();
 
   return (
-    <div className="border border-outline-variant bg-surface p-5">
-      <div className="flex items-center justify-between mb-4">
+    <div className="border border-outline-variant bg-surface p-4 sm:p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-headline-md text-base font-bold text-on-surface flex items-center gap-2">
           <CalendarDays className="h-5 w-5 text-cyan" />
           Study Consistency

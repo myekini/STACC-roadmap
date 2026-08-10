@@ -138,13 +138,13 @@ export default function MemberSettingsPage() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <input
                         type="text"
                         value={newUsername}
                         onChange={(e) => setNewUsername(e.target.value)}
                         disabled={busy}
-                        className="h-9 w-48 border border-cyan bg-surface px-2.5 font-code text-sm text-on-surface focus:outline-none"
+                        className="h-11 min-w-0 flex-1 border border-cyan bg-surface px-2.5 font-code text-base text-on-surface focus:outline-none sm:h-9 sm:max-w-64 sm:text-sm"
                         placeholder="new-handle"
                       />
                       <Button
@@ -186,15 +186,15 @@ export default function MemberSettingsPage() {
 
             <div className="space-y-2">
               <label className="micro-label text-outline">Public Portfolio Link</label>
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="flex-1 min-w-[220px] border border-outline-variant bg-surface-container-low px-3 py-2 font-code text-xs text-on-surface truncate">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                <div className="min-w-0 flex-1 border border-outline-variant bg-surface-container-low px-3 py-2 font-code text-xs text-on-surface truncate">
                   {publicUrl}
                 </div>
-                <Button type="button" variant="outline" onClick={handleCopyLink} className="gap-1.5 text-xs">
+                <Button type="button" variant="outline" onClick={handleCopyLink} className="w-full gap-1.5 text-xs sm:w-auto">
                   {copied ? <Check className="h-3.5 w-3.5 text-secondary" /> : <Copy className="h-3.5 w-3.5" />}
                   {copied ? 'Copied' : 'Copy'}
                 </Button>
-                <Button asChild variant="default" className="gap-1.5 text-xs">
+                <Button asChild variant="default" className="w-full gap-1.5 text-xs sm:w-auto">
                   <Link href={`/u/${encodeURIComponent(user.username)}`} target="_blank">
                     View <ArrowUpRight className="h-3.5 w-3.5" />
                   </Link>
@@ -210,7 +210,7 @@ export default function MemberSettingsPage() {
               Learning Activity Signals
             </h2>
 
-            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="border border-tertiary/30 bg-tertiary/[0.05] p-4 text-center">
                 <div className="flex justify-center">
                   <Flame className="h-6 w-6 text-tertiary fill-tertiary" />
@@ -227,7 +227,7 @@ export default function MemberSettingsPage() {
                 <p className="micro-label mt-1 text-outline">Modules Shipped</p>
               </div>
 
-              <div className="border border-cyan/30 bg-cyan/[0.05] p-4 text-center col-span-2 sm:col-span-1">
+              <div className="border border-cyan/30 bg-cyan/[0.05] p-4 text-center">
                 <div className="flex justify-center">
                   <Hourglass className="h-6 w-6 text-cyan" />
                 </div>

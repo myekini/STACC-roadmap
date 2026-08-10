@@ -8,12 +8,22 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
 2. Run the migrations **in order** — SQL Editor, or `supabase db push` / `supabase db reset` with the CLI:
    `migrations/0001_init.sql`, `migrations/0002_evidence.sql` (evidence-shipping columns on
    `task_completions`, the updated `complete_task` signature, and the public `get_public_profile` RPC),
-   `migrations/0003_username_uniqueness_and_discord.sql` (username uniqueness + `rename_username` RPC),
+   `migrations/0003_username_uniqueness_and_discord.sql` (username uniqueness + `rename_username` RPC —
+   filename predates the GitHub switch, still just the uniqueness logic),
    `migrations/0004_projects.sql` (per-path `projects` table + `set_project` RPC — see below),
-   `migrations/0005_challenges.sql` (`challenge` task type + `tasks.challenge` jsonb column — see below).
-3. Run `seed.sql` (idempotency note: it assumes empty content tables — re-running duplicates rows, so reset first).
-4. Enable the **Discord** OAuth provider (Authentication → Providers) and add the app's callback URL
-   (`http://localhost:3000/auth/callback` in dev, `https://app.getstacc.org/auth/callback` in prod).
+   `migrations/0005_challenges.sql` (`challenge` task type + `tasks.challenge` jsonb column — see below),
+   `migrations/0006_sync_foundations_challenges.sql` (content-only: converts the 3 Foundations
+   checkpoint quizzes that became challenges — safe to run against a live DB with real members),
+   `migrations/0007_github_auth.sql` (Discord → GitHub sign-in — see below).
+3. Run `seed.sql` on a **fresh** project only (idempotency note: it assumes empty content tables —
+   re-running duplicates rows). On an existing project with real member data, apply `0006` instead
+   of re-running `seed.sql`.
+4. Enable the **GitHub** OAuth provider (Authentication → Providers) — register an OAuth App under
+   the GitHub account/org that owns this project (GitHub → Settings → Developer settings → OAuth
+   Apps → New OAuth App), set its callback URL to the **Supabase** callback shown on that provider's
+   config page (`https://<project-ref>.supabase.co/auth/v1/callback`, not the app's own
+   `/auth/callback`), then paste the OAuth App's Client ID + Secret into Supabase. Discord is no
+   longer a supported provider — see migration `0007`.
 5. Copy the project URL + anon key into `.env.local` (see `.env.example`).
 
 ## Design decisions
@@ -51,6 +61,15 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
   client-executed — no new RPC, the pass/fail decision never touches the server, only the
   resulting `complete_task` call does. Live on the three Foundations topics that are genuinely
   code-testable (Python Basics, Statistics Basics, SQL Basics) — Git/CLI/AI Literacy stay quizzes.
+- **GitHub sign-in (migration `0007`):** replaces Discord as the only OAuth provider.
+  `handle_new_user()` now reads GitHub's metadata shape (`user_name`/`preferred_username` for the
+  handle, `provider_id`/`sub` for the immutable id) instead of Discord's, and `profiles` gains
+  `github_id`/`github_username` (the old `discord_id` column is left in place, just unused going
+  forward). Members who signed up via the old Discord flow are a distinct `auth.users` identity
+  from their GitHub one — re-authing via GitHub creates a new profile, it doesn't merge with the
+  old one. `github_username` is what the admin panel's member drilldown links to
+  (`github.com/<username>`) and is the intended anchor for the commit-verification layer planned
+  on top of the per-path `projects` feature (not built yet — this migration only lands identity).
 - **Admin:** promote a user with `update public.profiles set role = 'admin' where id = '<uuid>';`
   (must run as service role / SQL editor — the protection trigger blocks clients).
 

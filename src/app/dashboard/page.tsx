@@ -78,18 +78,18 @@ export default function DashboardPage() {
             <p className="text-[10px] font-semibold uppercase tracking-wider text-outline">Active Path</p>
             <h2 className="mt-1 font-display text-xl font-bold text-on-surface">{activePathInfo?.title ?? 'Foundations'}</h2>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             <div className="text-right">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-outline">Overall Completion</p>
               <Progress
                 value={overallPct}
-                className="mt-1.5 h-1.5 w-36 rounded-none bg-surface-container-high [&>div]:rounded-none [&>div]:bg-cyan"
+                className="mt-1.5 h-1.5 w-28 rounded-none bg-surface-container-high sm:w-36 [&>div]:rounded-none [&>div]:bg-cyan"
               />
             </div>
             <span className="border-l border-outline-variant pl-4 font-display text-2xl font-bold text-cyan">{overallPct}%</span>
           </div>
         </div>
-        <div className="grid grid-cols-2 divide-x divide-y divide-outline-variant lg:grid-cols-4 lg:divide-y-0">
+        <div className="grid grid-cols-1 divide-y divide-outline-variant sm:grid-cols-2 sm:divide-x lg:grid-cols-4 lg:divide-y-0">
           {metrics.map((metric) => (
             <div key={metric.label} className="flex items-center gap-3 p-4 sm:p-5">
               <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center border', metric.tone)}>

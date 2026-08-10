@@ -19,7 +19,7 @@ non-trivial change — this file only holds what a session needs on every turn.
 ## Stack & commands
 
 - Next.js 14 (App Router), React 18, TypeScript strict, Tailwind 3, Radix primitives, Framer
-  Motion, Zustand, TanStack Query, Supabase (Discord OAuth), React Flow for the skill tree
+  Motion, Zustand, TanStack Query, Supabase (GitHub OAuth), React Flow for the skill tree
   canvas.
 - `npm run dev` / `npm run lint` / `npm run typecheck` / `npm run build` / `npm run check`
   (lint+typecheck+build — run before finishing any task). No test suite — verify visually.
@@ -31,7 +31,7 @@ non-trivial change — this file only holds what a session needs on every turn.
 
 - `src/app/` — routes: `/` (landing), `/paths`, `/roadmap` (skill tree + node sheet),
   `/dashboard`, `/admin`, `/u/[handle]` (public portfolio), `/tree` (public SEO tree),
-  `/auth/callback` (Supabase Discord OAuth handler — server Route Handler using a
+  `/auth/callback` (Supabase GitHub OAuth handler — server Route Handler using a
   cookie-based `@supabase/ssr` client; see below). Root `middleware.ts` refreshes the
   session cookie on every request via the same `@supabase/ssr` pattern.
 - `src/config/roadmap.ts` — static content, source of truth for demo mode; mirrors

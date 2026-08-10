@@ -6,7 +6,7 @@
  */
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Download, LogIn, MessageSquare } from 'lucide-react';
+import { ArrowRight, Download, GitBranch, LogIn } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 import { exportMembersCsv, useAdminData, type MemberRow } from '@/hooks/useAdminData';
 import { AdminShell, type AdminSection } from '@/components/admin/AdminShell';
@@ -81,14 +81,14 @@ function MemberDrilldown({ member, onClose }: { member: MemberRow | null; onClos
           <p className="micro-label text-cyan">{`// member · ${member.cohort ?? 'no cohort'}`}</p>
           <div className="mt-2 flex items-center justify-between gap-3">
             <SheetTitle className="font-display text-2xl font-bold">{member.username}</SheetTitle>
-            {member.discordId && (
+            {member.githubUsername && (
               <a
-                href={`https://discord.com/users/${member.discordId}`}
+                href={`https://github.com/${member.githubUsername}`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 border border-cyan/40 bg-cyan/10 px-2.5 py-1 font-code text-[10px] font-bold uppercase text-cyan hover:bg-cyan/20"
               >
-                <MessageSquare className="h-3 w-3" /> Nudge
+                <GitBranch className="h-3 w-3" /> GitHub
               </a>
             )}
           </div>
@@ -184,7 +184,7 @@ export default function AdminPage() {
   const cohorts = admin.data?.cohorts ?? [];
 
   const CohortFilter = cohorts.length > 0 && (
-    <div className="flex items-center gap-1">
+    <div className="flex max-w-full flex-wrap items-center gap-1">
       <span className="micro-label mr-1 text-outline">cohort</span>
       <button
         type="button"
@@ -210,7 +210,7 @@ export default function AdminPage() {
     <AdminShell section={section} onSectionChange={setSection} stuckCount={stuckCount} username={user.username} onSignOut={signOut}>
       {admin.isLoading ? (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[0, 1, 2, 3].map((i) => <div key={i} className="h-24 animate-pulse border border-outline-variant/40 bg-surface/50" />)}
           </div>
           <div className="h-14 animate-pulse border border-outline-variant/40 bg-surface/50" />
@@ -241,7 +241,7 @@ export default function AdminPage() {
 
           {section === 'members' && (
             <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="flex items-center gap-1" aria-label="Member status filter">
                     <button type="button" onClick={() => setMemberFilter('all')} className={cn('border px-2.5 py-1.5 font-code text-[10px] font-semibold uppercase', memberFilter === 'all' ? 'border-primary/50 bg-primary/10 text-primary-neon' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}>all members</button>
@@ -249,7 +249,7 @@ export default function AdminPage() {
                   </div>
                   {CohortFilter}
                 </div>
-                <Button variant="outline" onClick={() => exportMembersCsv(visibleMembers, pathTitles, nodePathById)} className="ml-auto">
+                <Button variant="outline" onClick={() => exportMembersCsv(visibleMembers, pathTitles, nodePathById)} className="w-full sm:ml-auto sm:w-auto">
                   <Download /> export csv
                 </Button>
               </div>

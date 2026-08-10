@@ -9,7 +9,40 @@ function fmtDate(iso: string | null) {
 
 export function MembersTable({ members, emptyLabel, onSelect }: { members: MemberRow[]; emptyLabel: string; onSelect: (member: MemberRow) => void }) {
   return (
-    <div className="overflow-x-auto border border-outline-variant bg-surface">
+    <div className="border border-outline-variant bg-surface">
+      <div className="divide-y divide-outline-variant sm:hidden">
+        {members.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            onClick={() => onSelect(m)}
+            className={cn('block w-full p-4 text-left transition-colors active:bg-surface-container-low', m.isStuck && 'bg-error/[0.04]')}
+          >
+            <span className="flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden border border-outline-variant bg-surface-container-low font-code text-[10px] font-bold uppercase text-on-surface-variant">
+                {m.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={m.avatar_url} alt="" className="h-full w-full object-cover" />
+                ) : m.username.slice(0, 2)}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2">
+                  <span className="truncate text-sm font-semibold text-on-surface">{m.username}</span>
+                  {m.isStuck && <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-error" />}
+                </span>
+                <span className="mt-1 block font-code text-[10px] uppercase text-on-surface-variant">{m.cohort ?? 'No cohort'} · {m.inProgressNodes.length || 0} in progress</span>
+              </span>
+              <span className="font-code text-xs font-semibold text-cyan">{m.overallPct}%</span>
+            </span>
+            <span className="mt-3 flex items-center gap-3">
+              <span className="h-1.5 flex-1 bg-surface-container-high"><span className="block h-full bg-cyan" style={{ width: `${m.overallPct}%` }} /></span>
+              <span className={cn('font-code text-[10px]', m.isStuck ? 'font-semibold text-error' : 'text-on-surface-variant')}>{fmtDate(m.lastActiveAt)}</span>
+            </span>
+          </button>
+        ))}
+        {members.length === 0 && <p className="px-4 py-10 text-center font-code text-xs text-outline">{`// ${emptyLabel}`}</p>}
+      </div>
+      <div className="hidden overflow-x-auto sm:block">
       <Table className="min-w-[640px]">
         <TableHeader>
           <TableRow className="border-outline-variant hover:bg-transparent">
@@ -60,6 +93,7 @@ export function MembersTable({ members, emptyLabel, onSelect }: { members: Membe
           )}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

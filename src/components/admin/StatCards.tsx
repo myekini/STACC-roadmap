@@ -31,7 +31,7 @@ export function StatCards({ members }: { members: MemberRow[] }) {
   const avgPct = total ? Math.round(members.reduce((sum, m) => sum + m.overallPct, 0) / total) : 0;
 
   return (
-    <div className="grid grid-cols-2 gap-px overflow-hidden border border-outline-variant bg-outline-variant lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-px overflow-hidden border border-outline-variant bg-outline-variant sm:grid-cols-2 lg:grid-cols-4">
       <Stat label="total members" value={String(total)} sub="across all cohorts" icon={Users} tone="border-cyan/40 bg-cyan/10 text-cyan" />
       <Stat label="active this week" value={String(activeWeek)} sub="roadmap activity in 7d" icon={TrendingUp} tone="border-secondary/40 bg-secondary/10 text-secondary" />
       <Stat label="avg. completion" value={`${avgPct}%`} sub="mean across members" icon={Zap} tone="border-tertiary/40 bg-tertiary/10 text-tertiary" />

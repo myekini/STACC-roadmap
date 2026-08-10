@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowLeft, ArrowUpRight, Check, CircleHelp, FolderGit2, Hourglass, LogIn, Play, Rocket } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, Check, CircleHelp, FolderGit2, GitBranch, Hourglass, Play, Rocket } from 'lucide-react';
 import type { QuizPayload, TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
@@ -334,14 +334,14 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
   return (
     <div className="mx-auto max-w-6xl px-4 pb-20 pt-6 sm:px-6 md:pt-8">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 font-code text-xs text-on-surface-variant">
+      <div className="flex min-w-0 items-center gap-2 font-code text-xs text-on-surface-variant">
         <button type="button" onClick={() => router.push('/roadmap')} className="inline-flex items-center gap-1.5 transition-colors hover:text-cyan">
           <ArrowLeft className="h-3.5 w-3.5" /> roadmap
         </button>
         {path && (
           <>
             <span className="text-outline">/</span>
-            <span>{path.title}</span>
+            <span className="truncate">{path.title}</span>
           </>
         )}
       </div>
@@ -386,7 +386,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             <div className="border border-cyan/30 bg-cyan/5 p-4">
               <p className="font-code text-xs font-semibold uppercase tracking-[0.12em] text-cyan">members only</p>
               <p className="mt-1 text-xs leading-5 text-on-surface-variant">Sign in to see the curated resources, work the tasks, and track your progress.</p>
-              <Button size="sm" className="mt-3" onClick={data.signInWithDiscord}><LogIn />Sign in with Discord</Button>
+              <Button size="sm" className="mt-3" onClick={data.signInWithGithub}><GitBranch />Sign in with GitHub</Button>
             </div>
           )}
 

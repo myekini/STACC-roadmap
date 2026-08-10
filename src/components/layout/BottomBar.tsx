@@ -18,7 +18,7 @@ export default function BottomBar() {
   ];
 
   return (
-    <nav className="bg-navy/95 backdrop-blur-xl border-t border-cyan/15 shadow-lg fixed bottom-0 left-0 w-full z-40 flex justify-around items-center h-16 pb-safe md:hidden">
+    <nav aria-label="Primary" className="fixed bottom-0 left-0 z-40 flex min-h-16 w-full items-start border-t border-cyan/15 bg-navy/95 pb-[env(safe-area-inset-bottom)] shadow-lg backdrop-blur-xl md:hidden">
       {items.map((item) => {
         const isActive = pathname === item.href;
         const Icon = item.icon;
@@ -26,14 +26,14 @@ export default function BottomBar() {
           <Link
             key={item.name}
             href={item.href}
-            className={`min-h-12 min-w-[88px] flex flex-col items-center justify-center px-4 py-1 rounded-xl transition-all ${
+            className={`flex min-h-16 min-w-0 flex-1 flex-col items-center justify-center px-1 py-1 transition-colors ${
               isActive
-                ? 'bg-cyan/[0.1] text-cyan scale-95 font-bold'
+                ? 'bg-cyan/[0.1] text-cyan font-bold'
                 : 'text-on-surface-variant hover:bg-surface-container-low'
             }`}
           >
             <Icon className="h-5 w-5" aria-hidden="true" />
-            <span className="micro-label mt-0.5">{item.name}</span>
+            <span className="mt-1 max-w-full truncate font-code text-[9px] font-semibold">{item.name}</span>
           </Link>
         );
       })}

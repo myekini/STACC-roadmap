@@ -8,26 +8,11 @@ priority. Update this file (don't let it drift) whenever an item is fixed or a n
 
 ## P0 — Fix before more members join
 
-### 1. Username collisions silently break the public portfolio
-**Issue:** `/u/[handle]` resolves by case-insensitive username match; `get_public_profile`
-picks "oldest profile wins" on a tie. There's no DB uniqueness constraint and no UI to change a
-username after signup (Discord OAuth sets it once from `global_name`/`full_name`).
-**Impact:** Two members named "Alex" — the second one's public profile link silently shows the
-*first* Alex's data, or 404s depending on match order. This gets more likely, not less, as the
-community grows, and it fails silently (no error, just wrong content).
-**Suggested fix:**
-1. New migration: `create unique index profiles_username_lower_idx on public.profiles (lower(username));`
-   — but first audit and de-dupe any existing collisions (`select lower(username), count(*) from
-   profiles group by 1 having count(*) > 1`), since the index will fail to create otherwise.
-2. Update `handle_new_user()` (migration `0001_init.sql`) to fall back to `Scholar-<short-id>`
-   or similar when the OAuth-provided name collides, instead of relying on `on conflict do
-   nothing` against the primary key only.
-3. Add a minimal settings affordance — doesn't need a full page, a rename field in the Sidebar's
-   profile area is enough — backed by a new RPC (`rename_profile(new_username)`) that checks
-   uniqueness server-side and returns a clear error on collision.
-4. Demo mode: `LS.profile` already stores `{ username }` locally — just needs the same rename
-   entry point wired to `writeLS`.
-**Effort:** M (one migration + one RPC + one small UI affordance).
+### 1. Username collisions silently break the public portfolio — RESOLVED (migration `0003`)
+Fixed: `profiles_username_lower_idx` unique index, `handle_new_user()` falls back to a random
+4-hex suffix on collision, `rename_username` RPC + `/settings` page for self-service renaming
+(demo mode too, via `LS.profile`). Left here so the fix stays discoverable in context; delete
+this entry the next time this file gets a real edit pass.
 
 ### 2. Verify migration `0002_evidence.sql` is actually applied in production
 **Issue:** Evidence shipping (`complete_task`'s new `p_evidence` arg) and the entire public
@@ -42,28 +27,41 @@ one-line check to whatever pre-deploy routine exists (even just "did today's mig
 in the PR description) so this can't happen again.
 **Effort:** S (five minutes, but must be done by someone with production DB access).
 
+### 2b. Migrations `0004`–`0007` (projects, challenges, content sync, GitHub auth) not yet
+verified in production, and `0007` needs a manual step no migration can do
+**Issue:** Same category as #2, compounded — `0007_github_auth.sql` also depends on registering
+a GitHub OAuth App and enabling the GitHub provider in the Supabase dashboard (Authentication →
+Providers), since Discord's provider config doesn't carry over automatically.
+**Impact:** Until both the migrations run and the provider is enabled, sign-in is broken in
+production (Discord button removed from the UI, GitHub provider not yet configured server-side)
+— members can't sign in at all in that gap window. Deploy the dashboard/provider change and the
+`0007` migration together, not the code first.
+**Additional consequence:** any existing Discord-authenticated member on production is now
+sign-in-orphaned — GitHub is a distinct `auth.users` identity, re-authing creates a new profile
+rather than recovering the old one. If there are real members already, this needs a conscious
+call (manual linking, export, or accept the loss), not something to discover after the fact.
+**Suggested fix:** Run `supabase/README.md`'s setup steps in order (provider first, then
+migrations 4-7); if production already has real members, check the P0 orphaning consequence
+above before flipping the switch.
+**Effort:** S for the migrations themselves; the OAuth App registration and any account-linking
+decision are the real work here, and only the founder can do the former.
+
 ---
 
 ## P1 — High-value, bounded scope
 
-### 3. Admin: no way to act on a stuck member
-**Issue:** `docs/PRODUCT.md` §1.11-equivalent spec'd a one-click Discord DM nudge from the
-stuck-alerts panel; today the admin can only *see* who's stuck (`src/hooks/useAdminData.ts`),
-not reach them from the panel.
-**Impact:** Stuck detection is only half a feature without the action — an admin still has to
-alt-tab to Discord and manually find the person.
-**Suggested fix (MVP, no bot required):**
-1. Discord OAuth already gives you the member's Discord user ID in
-   `auth.users.raw_user_meta_data` (the `sub`/`provider_id` field) — persist it onto `profiles`
-   at signup time (extend `handle_new_user()`).
-2. Add a "nudge" button in `MemberDrilldown` (`src/app/admin/page.tsx`) that opens
-   `discord.com/users/<id>` in a new tab (zero-infra) as a first pass, or POSTs to a small
-   Vercel Edge Function that calls a Discord bot token to actually send the DM (needs a bot
-   application + the bot sharing a server with the member — more setup, real automation).
-3. Log the nudge (timestamp + admin) somewhere simple — even a `nudged_at` column on
-   `user_progress` or a new `admin_nudges` table — so "stuck 14 days, already nudged 2 days ago"
-   is visible instead of re-nudging blindly.
-**Effort:** S for the open-profile MVP; M–L for the real bot-DM version.
+### 3. Admin: no way to act on a stuck member (partially resolved)
+**Issue:** `docs/PRODUCT.md` §1.11-equivalent spec'd a one-click nudge from the stuck-alerts
+panel. The open-profile MVP is now shipped — `MemberDrilldown` (`src/app/admin/page.tsx`) links
+to the member's GitHub profile via `profiles.github_username` (migration `0007`). What's still
+missing is any *automated outreach* — GitHub has no DM mechanism at all, unlike the
+Discord-bot route this replaced, so there's no equivalent to build toward here anymore. If
+outreach automation is wanted again, it'd have to be a different channel entirely (email, or a
+re-added Discord *webhook* — not sign-in — purely for admin-side notifications).
+**Suggested fix (remaining piece):** Log the profile-link click (timestamp + admin) somewhere
+simple — even a `nudged_at` column on `user_progress` or a new `admin_nudges` table — so "stuck
+14 days, already checked 2 days ago" is visible instead of re-checking blindly.
+**Effort:** S.
 
 ### 4. Admin: only node-level analytics, spec asked for resource-level
 **Issue:** `ModuleChart`/`useAdminData` track starts/completions **per node**. The spec's ask
@@ -121,6 +119,6 @@ handles that; this just gates the merge.
 Spec said "CSV or PDF" — CSV already satisfies that. Only worth doing if an admin explicitly
 asks for a printable report.
 
-### 8. "Full Stack" path from an early flow sketch
-Never built, not on the roadmap. Documented in `docs/PRODUCT.md` §2 as an intentional cut, not
-an open issue — listed here only so it doesn't get rediscovered and treated as a bug.
+### 8. "Full Stack" path from an early flow sketch — RESOLVED
+Had actually been implemented in `roadmap.ts` despite being documented as an intentional cut;
+removed. Left here so it doesn't get silently reintroduced without an explicit ask.

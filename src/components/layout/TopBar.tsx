@@ -43,7 +43,7 @@ export default function TopBar() {
   return (
     <header
       className={cn(
-        'fixed top-0 right-0 left-0 z-30 flex h-16 items-center justify-between border-b border-cyan/15 bg-navy/90 px-4 backdrop-blur-xl transition-[left] duration-200 md:px-6',
+        'fixed top-0 right-0 left-0 z-30 flex h-[calc(4rem+env(safe-area-inset-top))] items-center justify-between border-b border-cyan/15 bg-navy/90 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-xl transition-[left] duration-200 md:h-16 md:px-6 md:pt-0',
         sidebarCollapsed ? 'md:left-[76px]' : 'md:left-64',
       )}
     >
@@ -166,4 +166,3 @@ export default function TopBar() {
     </header>
   );
 }
-

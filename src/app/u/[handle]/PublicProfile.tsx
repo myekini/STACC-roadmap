@@ -89,7 +89,7 @@ export default function PublicProfile({ handle }: { handle: string }) {
     <main className="relative min-h-screen bg-background text-on-background">
       <div className="pointer-events-none absolute inset-0 blueprint-grid opacity-40" aria-hidden />
 
-      <div className="relative mx-auto max-w-3xl px-5 py-12 sm:px-8">
+      <div className="relative mx-auto max-w-3xl px-4 pb-12 pt-[calc(2rem+env(safe-area-inset-top))] sm:px-8 sm:py-12">
         <Link href="/" className="mb-10 inline-flex items-center gap-3">
           <StaccMark className="h-9 w-9" />
           <span className="font-code text-lg font-bold uppercase tracking-[0.14em] text-on-surface">Stacc</span>
@@ -133,7 +133,7 @@ export default function PublicProfile({ handle }: { handle: string }) {
               </div>
 
               {/* Stats */}
-              <div className="mt-6 grid grid-cols-3 divide-x divide-outline-variant border border-outline-variant">
+              <div className="mt-6 grid grid-cols-1 divide-y divide-outline-variant border border-outline-variant sm:grid-cols-3 sm:divide-x sm:divide-y-0">
                 {[
                   { icon: Package, label: 'modules shipped', value: shipped.length },
                   { icon: Rocket, label: 'artifacts', value: artifacts },
