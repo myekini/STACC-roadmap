@@ -16,7 +16,8 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
    checkpoint quizzes that became challenges — safe to run against a live DB with real members),
    `migrations/0007_github_auth.sql` (Discord → GitHub sign-in — see below),
    `migrations/0008_foundations_no_evidence.sql` (Foundations build exercises require no repo), and
-   `migrations/0009_connected_track_projects.sql` (stable GitHub repository identity + milestone submissions).
+   `migrations/0009_connected_track_projects.sql` (stable GitHub repository identity + milestone submissions), and
+   `migrations/0010_project_verification.sql` (commit reuse protection + Data Engineering milestone checks).
 3. Run `seed.sql` on a **fresh** project only (idempotency note: it assumes empty content tables —
    re-running duplicates rows). On an existing project with real member data, apply `0006` instead
    of re-running `seed.sql`.
@@ -47,13 +48,13 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
   derived, only `in_progress`/`complete` are stored.
 - **Ranks:** Bronze <500 ≤ Silver <1500 ≤ Gold <3000 ≤ Platinum <6000 ≤ Diamond (`calc_rank`).
 - **Projects (migrations `0004`, `0008`, `0009`):** each `(user, path)` can have one project. The
-  transitional flow stores `projects.repo_url`, set once via
+  legacy/manual records may store only `projects.repo_url`, set once via
   `set_project(path_id, repo_url)` and immutable afterwards. Once set, `complete_task` requires every
   specialization `build`-task evidence URL to be a prefix-match under the repo (a commit/PR/tree link
   inside it, not equality) — the point is a specialization's build tasks accumulate into one running
   project instead of N disconnected links. Foundations are exempt. Migration `0009` adds stable
   GitHub repository identity, content-owned `tasks.project_requirements`, and service-written
-  `project_submissions` for the planned **Check my work** flow. `get_public_profile` exposes projects
+  `project_submissions` for the **Check my work** flow. `get_public_profile` exposes projects
   so `/u/[handle]` can render each path as a build-log timeline.
 - **Challenge tasks (migration `0005`):** `tasks.type` gains `'challenge'`; `tasks.challenge` jsonb
   is a discriminated union on `language`. `{language:'python', prompt, starterCode, testCode}` runs
@@ -72,8 +73,8 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
   forward). Members who signed up via the old Discord flow are a distinct `auth.users` identity
   from their GitHub one — re-authing via GitHub creates a new profile, it doesn't merge with the
   old one. `github_username` is what the admin panel's member drilldown links to
-  (`github.com/<username>`) and is the intended anchor for the commit-verification layer planned
-  on top of the per-path `projects` feature (not built yet — this migration only lands identity).
+  (`github.com/<username>`). Connected project verification uses a separate GitHub App installation
+  with repository-scoped read permissions; OAuth identity tokens are not reused for repository access.
 - **Admin:** promote a user with `update public.profiles set role = 'admin' where id = '<uuid>';`
   (must run as service role / SQL editor — the protection trigger blocks clients).
 

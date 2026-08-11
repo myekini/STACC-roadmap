@@ -8,9 +8,9 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowLeft, ArrowUpRight, BookOpen, Check, CircleHelp, ExternalLink, FolderGit2, GitBranch, Hourglass, ListChecks, Play, Rocket } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, BookOpen, Check, CircleHelp, ExternalLink, GitBranch, Hourglass, ListChecks, Loader2, Play, Rocket } from 'lucide-react';
 import type { QuizPayload, TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
@@ -73,110 +73,73 @@ function QuizBlock({ quiz, onPass, disabled }: { quiz: QuizPayload; onPass: () =
   );
 }
 
-/** One-time per path: the repo every later build task on this path ships evidence into. */
-function ProjectSetupForm({ data, pathId, pathTitle }: { data: UserData; pathId: string; pathTitle: string }) {
-  const [url, setUrl] = useState('');
+function ProjectMilestone({ task, data, pathId, pathTitle, nodeSlug, disabled }: { task: TaskRow; data: UserData; pathId: string; pathTitle: string; nodeSlug: string; disabled: boolean }) {
   const [busy, setBusy] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const valid = /^https?:\/\/\S+\.\S+/i.test(url.trim());
+  const [verified, setVerified] = useState<{ url: string; sha: string } | null>(null);
+  const project = data.projectConnections[pathId];
+  const connected = project?.connection_status === 'active' && Boolean(project.github_repo_id);
+
+  if (!data.isSupabaseConnected) {
+    return (
+      <div className="border border-outline-variant bg-surface-container-low p-4">
+        <p className="font-semibold text-on-surface">GitHub verification is available in the live app.</p>
+        <p className="mt-1 text-sm leading-6 text-on-surface-variant">Sign in to connect one repository to this track and verify its milestone commits.</p>
+      </div>
+    );
+  }
+
+  if (!connected) {
+    return (
+      <div className="rounded-lg bg-background p-4">
+        <p className="flex items-center gap-2 text-sm font-semibold text-on-surface"><GitBranch className="h-4 w-4" />Connect your {pathTitle} project</p>
+        <p className="mt-1 text-xs leading-5 text-on-surface-variant">Choose one GitHub repository. Stacc will read commits from that repository only.</p>
+        <Button asChild size="sm" className="mt-3"><a href={`/api/github/install?path=${encodeURIComponent(pathId)}&returnTo=${encodeURIComponent(`/roadmap/${nodeSlug}`)}`}><GitBranch />{project ? 'Reconnect GitHub' : 'Connect GitHub'}</a></Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="mt-1 border border-cyan/25 bg-cyan/[0.04] p-3">
-      <p className="flex items-center gap-2 font-code text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan">
-        <FolderGit2 className="h-3.5 w-3.5" /> set up your {pathTitle} project
-      </p>
-      <p className="mt-1 text-[11px] leading-5 text-on-surface-variant">
-        Paste the repo you&apos;ll build this path&apos;s project in. Every build task from here on ships a
-        commit, PR, or file link inside it — one project, built piece by piece, not disconnected links.
-      </p>
-      <div className="mt-2 flex gap-2">
-        <input
-          type="url"
-          value={url}
-          onChange={(e) => {
-            setUrl(e.target.value);
-            if (errorMsg) setErrorMsg(null);
-          }}
-          disabled={busy}
-          placeholder="https://github.com/you/de-project"
-          className="h-9 min-w-0 flex-1 border border-outline-variant bg-surface px-2.5 font-code text-[11px] text-on-surface placeholder:text-outline focus:border-cyan/50 focus:outline-none"
-        />
+    <div className="rounded-lg bg-background p-4">
+      <a href={project.repo_url} target="_blank" rel="noreferrer" className="flex min-w-0 items-center gap-2 text-xs font-semibold text-cyan hover:underline"><GitBranch className="h-4 w-4 shrink-0" /><span className="truncate">{project.repo_owner}/{project.repo_name}</span><ExternalLink className="h-3 w-3 shrink-0" /></a>
+      {task.project_requirements?.requiredPaths?.length ? (
+        <div className="mt-3">
+          <p className="text-xs font-semibold text-on-surface">Required files</p>
+          <ul className="mt-1 space-y-1 font-code text-[10px] text-on-surface-variant">{task.project_requirements.requiredPaths.map((path) => <li key={path}>{path}</li>)}</ul>
+        </div>
+      ) : <p className="mt-2 text-xs leading-5 text-on-surface-variant">Push a new commit for this milestone, then let Stacc verify it.</p>}
+      {task.project_requirements?.manualReview?.length ? (
+        <div className="mt-3">
+          <p className="text-xs font-semibold text-on-surface">Before you push</p>
+          <ul className="mt-1 space-y-1 text-xs leading-5 text-on-surface-variant">{task.project_requirements.manualReview.map((item) => <li key={item}>• {item}</li>)}</ul>
+        </div>
+      ) : null}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         <Button
           size="sm"
-          disabled={busy || !valid}
+          disabled={disabled || busy || Boolean(verified)}
           onClick={async () => {
             setBusy(true);
             setErrorMsg(null);
             try {
-              await data.setProject({ pathId, repoUrl: url.trim() });
+              const response = await fetch('/api/github/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ taskId: task.id }) });
+              const result = await response.json() as { error?: string; commitUrl?: string; commitSha?: string };
+              if (!response.ok || !result.commitUrl || !result.commitSha) throw new Error(result.error ?? 'Could not verify the project.');
+              setVerified({ url: result.commitUrl, sha: result.commitSha });
+              await data.refresh();
             } catch (err) {
-              setErrorMsg(err instanceof Error ? err.message : 'Failed to save project');
+              setErrorMsg(err instanceof Error ? err.message : 'Could not verify the project.');
             } finally {
               setBusy(false);
             }
           }}
         >
-          {busy ? 'saving…' : 'save ▸'}
+          {busy ? <Loader2 className="animate-spin" /> : verified ? <Check /> : <GitBranch />}
+          {busy ? 'Checking…' : verified ? 'Verified' : 'Check my work'}
         </Button>
+        {verified && <a href={verified.url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-secondary hover:underline">Commit {verified.sha}</a>}
       </div>
-      {errorMsg && <p className="mt-1.5 font-code text-[10px] text-error">{errorMsg}</p>}
-    </div>
-  );
-}
-
-/** Build tasks ship evidence: a link into the path's project repo that becomes part of the member's portfolio. */
-function ShipForm({ onShip, disabled, projectUrl }: { onShip: (url: string) => Promise<void>; disabled: boolean; projectUrl?: string }) {
-  const [url, setUrl] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const wellFormed = /^https?:\/\/\S+\.\S+/i.test(url.trim());
-  const inProject = !projectUrl || url.trim().startsWith(projectUrl);
-  const valid = wellFormed && inProject;
-
-  return (
-    <div className="mt-1 border border-primary/25 bg-primary/[0.04] p-3">
-      <p className="flex items-center gap-2 font-code text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-neon">
-        <Rocket className="h-3.5 w-3.5" /> ship it
-      </p>
-      <p className="mt-1 text-[11px] leading-5 text-on-surface-variant">
-        {projectUrl
-          ? `Paste a commit, PR, or file link inside your project — ${projectUrl}`
-          : 'Paste a public link to what you built — GitHub repo, live app, or writeup. It goes on your public profile.'}
-      </p>
-      <div className="mt-2 flex gap-2">
-        <input
-          type="url"
-          value={url}
-          onChange={(e) => {
-            setUrl(e.target.value);
-            if (errorMsg) setErrorMsg(null);
-          }}
-          disabled={disabled || busy}
-          placeholder={projectUrl ? `${projectUrl}/commit/…` : 'https://github.com/you/project'}
-          className="h-9 min-w-0 flex-1 border border-outline-variant bg-surface px-2.5 font-code text-[11px] text-on-surface placeholder:text-outline focus:border-cyan/50 focus:outline-none"
-        />
-        <Button
-          size="sm"
-          disabled={disabled || busy || !valid}
-          onClick={async () => {
-            setBusy(true);
-            setErrorMsg(null);
-            try {
-              await onShip(url.trim());
-            } catch (err) {
-              setErrorMsg(err instanceof Error ? err.message : 'Failed to ship evidence');
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          {busy ? 'shipping…' : 'ship ▸'}
-        </Button>
-      </div>
-      {wellFormed && !inProject && (
-        <p className="mt-1.5 font-code text-[10px] text-error">Must link inside {projectUrl}</p>
-      )}
-      {errorMsg && <p className="mt-1.5 font-code text-[10px] text-error">{errorMsg}</p>}
+      {errorMsg && <p role="alert" className="mt-2 text-xs leading-5 text-error">{errorMsg}</p>}
     </div>
   );
 }
@@ -189,6 +152,7 @@ function TaskRowItem({
   hasVideoResource,
   pathId,
   pathTitle,
+  nodeSlug,
   onComplete,
 }: {
   task: TaskRow;
@@ -198,6 +162,7 @@ function TaskRowItem({
   hasVideoResource: boolean;
   pathId: string;
   pathTitle: string;
+  nodeSlug: string;
   onComplete: (task: TaskRow, evidenceUrl?: string) => Promise<void>;
 }) {
   const done = data.progress.completedTasks.includes(task.id);
@@ -211,7 +176,6 @@ function TaskRowItem({
   const needsEvidence = isBuild && pathId !== 'foundations';
   const blocked = Boolean(isQuiz) || Boolean(isChallenge) || needsEvidence || watchLocked;
   const evidence = data.progress.evidence[task.id];
-  const projectUrl = data.projects[pathId];
   const taskLabel = isWatch && !hasVideoResource ? 'review' : task.type;
   const taskDescription = isWatch && !hasVideoResource
     ? task.description.replace(/^watch\b/i, 'Review')
@@ -264,11 +228,7 @@ function TaskRowItem({
       )}
       {needsEvidence && !done && canWork && (
         <div className="ml-9 mt-3">
-          {!projectUrl ? (
-            <ProjectSetupForm data={data} pathId={pathId} pathTitle={pathTitle} />
-          ) : (
-            <ShipForm disabled={!canWork} onShip={(url) => onComplete(task, url)} projectUrl={projectUrl} />
-          )}
+          <ProjectMilestone task={task} data={data} pathId={pathId} pathTitle={pathTitle} nodeSlug={nodeSlug} disabled={!canWork} />
         </div>
       )}
       {needsEvidence && done && evidence && (
@@ -291,6 +251,7 @@ function TaskRowItem({
 
 export default function NodeWorkspace({ data, slug }: { data: UserData; slug: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const reduceMotion = useReducedMotion();
   const [justCompleted, setJustCompleted] = useState(false);
   const [watchedAny, setWatchedAny] = useState(false);
@@ -371,6 +332,12 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
       <div className="grid grid-cols-1 gap-10 border-t border-outline-variant pt-7 lg:grid-cols-[minmax(0,1fr)_340px]">
         {/* Main content column */}
         <div className="min-w-0 space-y-9">
+          {searchParams.get('githubConnected') === '1' && (
+            <div className="bg-secondary/10 p-4 text-sm text-on-surface"><span className="font-semibold text-secondary">Project connected.</span> Push your milestone commit, then choose Check my work.</div>
+          )}
+          {searchParams.get('githubError') && (
+            <div role="alert" className="bg-error/10 p-4 text-sm text-error">{searchParams.get('githubError')}</div>
+          )}
           {(justCompleted || status === 'complete') && (
             <motion.div
               initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
@@ -493,6 +460,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                       hasVideoResource={hasVideoResource}
                       pathId={node.path_id}
                       pathTitle={path?.title ?? ''}
+                      nodeSlug={node.slug}
                       onComplete={handleComplete}
                     />
                   ))}

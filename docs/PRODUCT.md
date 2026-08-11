@@ -110,7 +110,7 @@ Curriculum: starts/completions/completion-rate per node
 | Prerequisite gates | ✅ Shipped | Node-level (fan-in supported — a node can require several prerequisites) + path-level gates. |
 | Resource ratings | ⚙️ Backend only | 1–5 stars, aggregated server-side (`rate_resource`, `resources.avg_rating`) — pulled from the node workspace UI for now, re-implementing later. |
 | **Evidence shipping** | ✅ Shipped | Specialization build tasks require a public URL inside the learner's path project. Foundations build exercises stay lightweight checklist completions and do not require GitHub setup or evidence. Enforced server-side in `complete_task`. |
-| **Projects (per-path)** | ⚙️ Transitioning | One cumulative repository per specialization is shipped today through URL-prefix evidence. Migration `0009` adds stable GitHub repository identity and milestone submissions for the connected GitHub App flow. Pasted links remain transitional until the app callback and explicit **Check my work** verification ship. See `docs/ARCHITECTURE.md`. |
+| **Projects (per-path)** | ✅ Code complete; configuration required | One connected GitHub repository per specialization. The installation callback stores stable repository identity; **Check my work** verifies a new, unreused commit and content-owned file requirements before completing the milestone. Requires migrations through `0010` and the GitHub App environment values. |
 | **Public portfolio** | ✅ Shipped | `/u/[handle]` — each path renders as a build-log timeline (oldest → newest) under its project repo link, not a flat recency feed. Powered by an anon-callable `get_public_profile` RPC that exposes only username/avatar/shipped work/project repos, never XP/rank/role. |
 | **Code challenges** | ✅ Shipped (Foundations) | `challenge` task type, Monaco editor + a client-only runtime — Pyodide (CPython/WASM) for Python, sql.js (SQLite/WASM) for SQL — both loaded lazily from CDN, no server execution. Opening a challenge enters a focused full-screen workspace: problem/editor/console split on desktop and Problem/Code/Results tabs on mobile. These **replace**, not supplement, the checkpoint quiz on the three Foundations topics that are genuinely code-testable: Python Basics (`clean_scores`), Statistics Basics (`describe`), SQL Basics (aggregate query, min. 3 assertions each). Git & GitHub, Command Line, and AI Literacy stay multiple-choice — none of them reduce to a clean in-browser pass/fail check without a much bigger build (a simulated git/shell environment). Every other node's checkpoint is still a quiz — this hasn't rolled out past Foundations. |
 | XP system | ⚙️ Backend only | Accrues server-side, never shown (see §2). |
@@ -229,9 +229,9 @@ micro-labels, `// comment`-style captions.
   Clicking a node navigates to `/roadmap/[slug]` — a focused lesson workspace with ordered
   learning material in the primary column and one module checklist alongside it. A real YouTube
   lesson gates only its matching watch task; non-video material is presented as review material.
-  Specialization build tasks add milestones to one cumulative track project. Pasted evidence is
-  transitional; the approved V1 is a narrowly permissioned GitHub App with an explicit **Check my
-  work** action. Challenge tasks
+  Specialization build tasks add milestones to one cumulative track project. A narrowly
+  permissioned GitHub App connects the repository; **Check my work** verifies the latest commit
+  without asking the learner to paste a URL. Challenge tasks
   open a Monaco editor and run entirely client-side — Pyodide (WASM CPython) for Python,
   sql.js (WASM SQLite) for SQL — both loaded lazily from CDN, no server execution.
 - **Sidebar** — collapsible to a 76px icon rail (persisted), one continuous navy/cyan-border
@@ -381,7 +381,7 @@ on both sides.
 
 1. Verify all migrations through `0009_connected_track_projects.sql` in production before
    deploying code that depends on connected projects.
-2. Register and configure the GitHub App before replacing the transitional pasted-evidence UI.
+2. Register and configure the GitHub App before the connected-project UI can complete installation.
 3. Validate the Data Engineering curriculum blueprint with real learners before expanding its
    lesson-level model to every path.
 4. Move localStorage demo mode behind a development-only boundary before broad launch; production

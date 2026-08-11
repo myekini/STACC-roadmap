@@ -25,6 +25,7 @@ import type {
   NodeRow,
   NodeStatus,
   PathRow,
+  ProjectRow,
   ResourceRow,
   TaskRow,
 } from '@/lib/database.types';
@@ -219,22 +220,30 @@ export function useUserData() {
   });
 
   // ── Projects (one repo per path — build tasks accumulate into it) ──
-  const projectsQuery = useQuery<Record<string, string>>({
+  const projectsQuery = useQuery<ProjectRow[]>({
     queryKey: ['projects', userId],
     queryFn: async () => {
       if (connected && userId) {
-        const { data: rows, error } = await supabase.from('projects').select('path_id,repo_url').eq('user_id', userId);
+        const { data: rows, error } = await supabase.from('projects').select('*').eq('user_id', userId);
         if (error) throw error;
-        return Object.fromEntries(rows.map((r) => [r.path_id as string, r.repo_url as string]));
+        return rows as ProjectRow[];
       }
-      if (!connected) return readLS<Record<string, string>>(LS.projects, {});
-      return {};
+      if (!connected) {
+        return Object.entries(readLS<Record<string, string>>(LS.projects, {})).map(([pathId, repoUrl]) => ({
+          id: `local-${pathId}`, user_id: 'guest', path_id: pathId, repo_url: repoUrl,
+          github_repo_id: null, repo_owner: null, repo_name: null, default_branch: 'main',
+          github_installation_id: null, connection_status: 'manual' as const, connected_at: null,
+          last_synced_at: null, created_at: '',
+        }));
+      }
+      return [];
     },
   });
 
   const data = content.data;
   const prog = progress.data ?? EMPTY_PROGRESS;
-  const projects = projectsQuery.data ?? {};
+  const projectConnections = Object.fromEntries((projectsQuery.data ?? []).map((project) => [project.path_id, project]));
+  const projects = Object.fromEntries((projectsQuery.data ?? []).map((project) => [project.path_id, project.repo_url]));
   const isAdmin = connected ? profile.data?.role === 'admin' : true;
 
   // ── Derived: node status (locked/available/in_progress/complete) ──
@@ -487,6 +496,7 @@ export function useUserData() {
     // progress
     progress: prog,
     projects,
+    projectConnections,
     activity,
     streak,
     nodeStatus,
@@ -504,6 +514,7 @@ export function useUserData() {
     signInWithGithub,
     signInWithPassword,
     signOut,
+    refresh: () => queryClient.invalidateQueries(),
   };
 }
 

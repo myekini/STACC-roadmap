@@ -34,6 +34,19 @@ This design performs GitHub API work only when a learner requests verification. 
 
 Do not request repository administration, organization access, or write access to learner code. Installation tokens remain short-lived and are never persisted.
 
+### GitHub App configuration
+
+Register a public GitHub App with:
+
+- Setup URL: `https://app.getstacc.org/api/github/setup`
+- Webhooks: disabled for V1
+- Repository permissions: Metadata read, Contents read
+- Installation scope: any account; learners should choose only the repository created for the track
+
+Set `GITHUB_APP_SLUG`, `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, and
+`SUPABASE_SERVICE_ROLE_KEY` as server-only deployment environment variables. The private key must
+retain PEM newlines or encode them as `\\n`. Never prefix these values with `NEXT_PUBLIC_`.
+
 ### Defer
 
 - Push webhooks and real-time synchronization
@@ -97,10 +110,11 @@ GitHub repository IDs—not URLs or repository names—are the durable identity.
 
 ## Implementation sequence
 
-1. Land the connected-project schema (`0009_connected_track_projects.sql`).
-2. Register the GitHub App and configure server-only credentials.
-3. Build installation callback and repository selection.
-4. Replace pasted evidence with **Check my work** for one Data Engineering milestone.
-5. Validate the verification rubric with real learners.
-6. Expand milestone definitions across the approved track curriculum.
-7. Add webhooks only if evidence shows explicit sync is inadequate.
+1. ✅ Land the connected-project schema (`0009_connected_track_projects.sql`).
+2. **External setup:** register the GitHub App and configure server-only credentials.
+3. ✅ Build the installation callback and one-new-repository selection rule.
+4. ✅ Replace pasted evidence with **Check my work** and protect against commit reuse.
+5. ✅ Add initial Data Engineering file requirements (`0010_project_verification.sql`).
+6. Validate the verification rubric with real learners.
+7. Expand milestone definitions across each approved track curriculum.
+8. Add webhooks only if evidence shows explicit sync is inadequate.

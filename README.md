@@ -12,6 +12,7 @@ A visual skill tree that answers the three questions that stop most learners: **
 - Responsive roadmap list, sequenced learning material, real tasks, and Foundation coding challenges
 - Prerequisite gating — modules unlock in order; AI Engineering and MLOps unlock after DE + DS
 - Foundations practise inline; each specialization accumulates into one GitHub portfolio project
+- Repository-scoped GitHub App connection with explicit commit verification—no pasted evidence URLs
 - Public portfolio at `/u/[handle]` — shipped modules + evidence, no login required
 - Progress tracking with streaks, a consistency heatmap, and milestones
 - Admin panel: cohort progress, stuck-member alerts, CSV exports, module analytics
