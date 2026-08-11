@@ -73,16 +73,12 @@ export default function PathSelectionPage() {
     <div className="py-6 md:py-10 max-w-6xl mx-auto px-4">
       {/* ── Modern Hero Header ── */}
       <header className="mb-10 text-center max-w-3xl mx-auto space-y-3">
-        <Badge variant="outline" className="border-cyan/40 bg-cyan/10 text-cyan text-xs font-code tracking-wider px-3 py-1">
-          Career Track Navigator
-        </Badge>
-
         <h1 className="font-display text-3xl font-bold tracking-tight text-on-surface sm:text-5xl">
           Choose Your Direction
         </h1>
 
         <p className="text-sm leading-6 text-on-surface-variant sm:text-base">
-          Outcome-first roadmaps designed for real engineering work. Pick a track to unlock your skill tree — switch anytime without losing progress.
+          Pick a track to unlock its skill tree — switch anytime without losing progress.
         </p>
 
         {/* Level Filter Tabs */}
