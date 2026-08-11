@@ -28,7 +28,6 @@ import { useReducedMotion } from 'framer-motion';
 import { Hourglass, Maximize, Minus, Plus } from 'lucide-react';
 import type { NodeRow, NodeStatus } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
-import { useUiStore } from '@/store/useUiStore';
 import { AppIcon } from '@/components/ui/app-icon';
 import { StatusMarker } from './bits';
 import { cn } from '@/lib/utils';
@@ -61,7 +60,6 @@ const ghostHandleRight = 'pointer-events-none !h-1 !w-1 !min-h-0 !min-w-0 !borde
 
 function ModuleNode({ data }: NodeProps<Node<ModuleData>>) {
   const router = useRouter();
-  const { setFocusedNodeId } = useUiStore();
   const { node, status, done, total, isCurrent, index } = data;
   const locked = status === 'locked';
 
@@ -71,8 +69,6 @@ function ModuleNode({ data }: NodeProps<Node<ModuleData>>) {
       <button
         type="button"
         onClick={() => router.push(`/roadmap/${node.slug}`)}
-        onMouseEnter={() => setFocusedNodeId(node.id)}
-        onFocus={() => setFocusedNodeId(node.id)}
         className={cn(
           'group relative block w-full overflow-hidden border bg-surface/90 p-4 text-left transition-all',
           locked
@@ -137,7 +133,6 @@ function ModuleNode({ data }: NodeProps<Node<ModuleData>>) {
 
 function FoundationNode({ data }: NodeProps<Node<FoundationData>>) {
   const router = useRouter();
-  const { setFocusedNodeId } = useUiStore();
   const { node, status, isCurrent } = data;
   const locked = status === 'locked';
 
@@ -146,8 +141,6 @@ function FoundationNode({ data }: NodeProps<Node<FoundationData>>) {
       <button
         type="button"
         onClick={() => router.push(`/roadmap/${node.slug}`)}
-        onMouseEnter={() => setFocusedNodeId(node.id)}
-        onFocus={() => setFocusedNodeId(node.id)}
         className={cn(
           'flex w-full items-center gap-3 border bg-surface/90 p-3 text-left transition-all',
           locked
@@ -424,11 +417,6 @@ function Canvas({ data, pathId }: { data: UserData; pathId: string }) {
       >
         <Background variant={BackgroundVariant.Lines} gap={48} lineWidth={1} color="rgba(0, 217, 255, 0.07)" />
         <CanvasControls />
-        <Panel position="top-left" className="!m-3">
-          <p className="border border-outline-variant bg-surface/95 px-2.5 py-1 font-code text-[9px] uppercase tracking-[0.14em] text-on-surface-variant backdrop-blur">
-            drag to pan · scroll to zoom
-          </p>
-        </Panel>
       </ReactFlow>
     </div>
   );

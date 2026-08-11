@@ -368,11 +368,12 @@ export function useUserData() {
    */
   const completeTask = useMutation({
     mutationFn: async ({ task, evidenceUrl }: { task: TaskRow; evidenceUrl?: string }): Promise<'in_progress' | 'complete'> => {
-      if (task.type === 'build' && !/^https?:\/\//i.test(evidenceUrl ?? '')) {
+      const pathId = nodesById.get(task.node_id)?.path_id;
+      const needsEvidence = task.type === 'build' && pathId !== 'foundations';
+      if (needsEvidence && !/^https?:\/\//i.test(evidenceUrl ?? '')) {
         throw new Error('Build tasks require an evidence URL (https://…)');
       }
-      if (task.type === 'build') {
-        const pathId = nodesById.get(task.node_id)?.path_id;
+      if (needsEvidence) {
         const projectUrl = pathId ? projects[pathId] : undefined;
         if (projectUrl && !evidenceUrl?.startsWith(projectUrl)) {
           throw new Error(`Evidence must link into this path's project repo (${projectUrl}).`);

@@ -208,7 +208,8 @@ function TaskRowItem({
   const isBuild = task.type === 'build';
   const isWatch = task.type === 'watch';
   const watchLocked = isWatch && !watchGateOpen;
-  const blocked = Boolean(isQuiz) || Boolean(isChallenge) || isBuild || watchLocked;
+  const needsEvidence = isBuild && pathId !== 'foundations';
+  const blocked = Boolean(isQuiz) || Boolean(isChallenge) || needsEvidence || watchLocked;
   const evidence = data.progress.evidence[task.id];
   const projectUrl = data.projects[pathId];
   const taskLabel = isWatch && !hasVideoResource ? 'review' : task.type;
@@ -261,7 +262,7 @@ function TaskRowItem({
           <ChallengeBlock challenge={task.challenge} disabled={!canWork} onClose={() => setChallengeOpen(false)} onPass={() => onComplete(task)} />
         </div>
       )}
-      {isBuild && !done && canWork && (
+      {needsEvidence && !done && canWork && (
         <div className="ml-9 mt-3">
           {!projectUrl ? (
             <ProjectSetupForm data={data} pathId={pathId} pathTitle={pathTitle} />
@@ -270,7 +271,7 @@ function TaskRowItem({
           )}
         </div>
       )}
-      {isBuild && done && evidence && (
+      {needsEvidence && done && evidence && (
         <div className="ml-9 mt-3">
           <a
             href={evidence}

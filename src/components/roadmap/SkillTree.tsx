@@ -8,14 +8,12 @@
  *    module's skills fanning out on curved dashed connectors opposite each
  *    card. Connector geometry is row-local (fixed chip heights, no global
  *    index math) so it holds up for any phase/node count.
- * Hovering or keyboard-focusing any card feeds the floating Field Notes popover.
  */
 import { useRouter } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Hourglass } from 'lucide-react';
 import type { NodeRow, NodeStatus } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
-import { useUiStore } from '@/store/useUiStore';
 import { AppIcon } from '@/components/ui/app-icon';
 import { StatusMarker } from './bits';
 import { cn } from '@/lib/utils';
@@ -89,7 +87,6 @@ function SpinePill({ index, title, done, total }: { index: string; title: string
 
 function FoundationCard({ data, node, status, isCurrent }: { data: UserData; node: NodeRow; status: NodeStatus; isCurrent: boolean }) {
   const router = useRouter();
-  const { setFocusedNodeId } = useUiStore();
   const { done, total } = taskProgress(data, node.id);
   const locked = status === 'locked';
 
@@ -97,8 +94,6 @@ function FoundationCard({ data, node, status, isCurrent }: { data: UserData; nod
     <button
       type="button"
       onClick={() => router.push(`/roadmap/${node.slug}`)}
-      onMouseEnter={() => setFocusedNodeId(node.id)}
-      onFocus={() => setFocusedNodeId(node.id)}
       aria-haspopup="dialog"
       className={cn(
         'group relative flex flex-col border bg-surface/80 p-4 text-left transition-all',
@@ -136,7 +131,6 @@ function FoundationCard({ data, node, status, isCurrent }: { data: UserData; nod
  *  `showMarker` renders the status square inline (spine rows have no side rail to carry it). */
 function ModuleCard({ data, node, index, status, isCurrent, showMarker }: { data: UserData; node: NodeRow; index: number; status: NodeStatus; isCurrent: boolean; showMarker?: boolean }) {
   const router = useRouter();
-  const { setFocusedNodeId } = useUiStore();
   const { done, total } = taskProgress(data, node.id);
   const locked = status === 'locked';
   const missing = locked ? prereqNames(data, node) : [];
@@ -145,8 +139,6 @@ function ModuleCard({ data, node, index, status, isCurrent, showMarker }: { data
     <button
       type="button"
       onClick={() => router.push(`/roadmap/${node.slug}`)}
-      onMouseEnter={() => setFocusedNodeId(node.id)}
-      onFocus={() => setFocusedNodeId(node.id)}
       aria-haspopup="dialog"
       className={cn(
         'group relative block w-full overflow-hidden border bg-surface/80 p-5 text-left transition-all sm:p-6',

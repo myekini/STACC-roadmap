@@ -5,9 +5,6 @@ export type TreeView = 'canvas' | 'rail';
 export type Theme = 'dark' | 'light';
 
 interface UiState {
-  /** Node the floating field-notes popover describes (last hovered/focused card; not persisted) */
-  focusedNodeId: string | null;
-  setFocusedNodeId: (nodeId: string | null) => void;
   /** Desktop roadmap rendering: pan/zoom canvas or vertical rail (mobile is always rail) */
   treeView: TreeView;
   setTreeView: (view: TreeView) => void;
@@ -23,8 +20,6 @@ interface UiState {
 export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
-      focusedNodeId: null,
-      setFocusedNodeId: (focusedNodeId) => set({ focusedNodeId }),
       treeView: 'canvas',
       setTreeView: (treeView) => set({ treeView }),
       sidebarCollapsed: false,

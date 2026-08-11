@@ -75,7 +75,6 @@ export default function RoadmapPage() {
 
             {/* Right: View switcher */}
             <div className="hidden items-center gap-2 md:flex">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-outline">View:</span>
               <div className="flex border border-outline-variant/70 bg-surface-container-low">
                 {TREE_VIEWS.map(({ id, label, icon: Icon }) => (
                   <button
