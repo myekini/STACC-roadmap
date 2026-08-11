@@ -4,7 +4,7 @@
 //
 // Editorial rules (keep the tree readable, not just complete):
 //  - Exactly 3 skills per node — more than that fans too many chips off one
-//    module on the canvas and the tree reads as noise instead of a map.
+//    module on the roadmap and the progression reads as noise instead of a path.
 //  - Exactly 2 curated resources per node — one primary course/video, one
 //    reference doc to come back to. Every URL below is a stable, well-known
 //    official domain (project docs, a maintained course, or a canonical repo).

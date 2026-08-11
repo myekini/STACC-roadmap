@@ -14,7 +14,9 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
    `migrations/0005_challenges.sql` (`challenge` task type + `tasks.challenge` jsonb column — see below),
    `migrations/0006_sync_foundations_challenges.sql` (content-only: converts the 3 Foundations
    checkpoint quizzes that became challenges — safe to run against a live DB with real members),
-   `migrations/0007_github_auth.sql` (Discord → GitHub sign-in — see below).
+   `migrations/0007_github_auth.sql` (Discord → GitHub sign-in — see below),
+   `migrations/0008_foundations_no_evidence.sql` (Foundations build exercises require no repo), and
+   `migrations/0009_connected_track_projects.sql` (stable GitHub repository identity + milestone submissions).
 3. Run `seed.sql` on a **fresh** project only (idempotency note: it assumes empty content tables —
    re-running duplicates rows). On an existing project with real member data, apply `0006` instead
    of re-running `seed.sql`.
@@ -38,18 +40,20 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
 - **Public portfolio:** `get_public_profile(handle)` is a security-definer RPC callable by anon —
   it's the only public read path into a member's shipped work (username, avatar, shipped nodes,
   evidence links, activity-by-day). It deliberately never returns XP/rank/role/email. Handle
-  resolution is case-insensitive username matching with no uniqueness constraint yet — see
-  `docs/PRODUCT.md` §12 for that known gap.
+  resolution is case-insensitive and protected by migration `0003`'s lowercased uniqueness index.
 - **Gating:** node-level prerequisites via `node_prerequisites` (fan-in supported — deviation from the
   spec's single `parent_id`); path-level gates via `paths.requires_paths` (AI-Engineering and MLOps
   require every DE and DS node complete). `node_is_unlocked()` checks both; `locked`/`available` are
   derived, only `in_progress`/`complete` are stored.
 - **Ranks:** Bronze <500 ≤ Silver <1500 ≤ Gold <3000 ≤ Platinum <6000 ≤ Diamond (`calc_rank`).
-- **Projects (migration `0004`):** each `(user, path)` can have one `projects.repo_url`, set once via
+- **Projects (migrations `0004`, `0008`, `0009`):** each `(user, path)` can have one project. The
+  transitional flow stores `projects.repo_url`, set once via
   `set_project(path_id, repo_url)` and immutable afterwards. Once set, `complete_task` requires every
-  `build`-task evidence URL on that path to be a prefix-match under the repo (a commit/PR/tree link
+  specialization `build`-task evidence URL to be a prefix-match under the repo (a commit/PR/tree link
   inside it, not equality) — the point is a specialization's build tasks accumulate into one running
-  project instead of N disconnected links. `get_public_profile` exposes `projects` (path_id → repo_url)
+  project instead of N disconnected links. Foundations are exempt. Migration `0009` adds stable
+  GitHub repository identity, content-owned `tasks.project_requirements`, and service-written
+  `project_submissions` for the planned **Check my work** flow. `get_public_profile` exposes projects
   so `/u/[handle]` can render each path as a build-log timeline.
 - **Challenge tasks (migration `0005`):** `tasks.type` gains `'challenge'`; `tasks.challenge` jsonb
   is a discriminated union on `language`. `{language:'python', prompt, starterCode, testCode}` runs

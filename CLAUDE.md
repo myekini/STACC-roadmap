@@ -19,8 +19,7 @@ non-trivial change — this file only holds what a session needs on every turn.
 ## Stack & commands
 
 - Next.js 14 (App Router), React 18, TypeScript strict, Tailwind 3, Radix primitives, Framer
-  Motion, Zustand, TanStack Query, Supabase (GitHub OAuth), React Flow for the skill tree
-  canvas.
+  Motion, Zustand, TanStack Query, Supabase (GitHub OAuth).
 - `npm run dev` / `npm run lint` / `npm run typecheck` / `npm run build` / `npm run check`
   (lint+typecheck+build — run before finishing any task). No test suite — verify visually.
 - Env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (see `.env.example`).
@@ -36,7 +35,7 @@ non-trivial change — this file only holds what a session needs on every turn.
   session cookie on every request via the same `@supabase/ssr` pattern.
 - `src/config/roadmap.ts` — static content, source of truth for demo mode; mirrors
   `supabase/seed.sql` exactly. Read the editorial rules at the top before adding content.
-- `src/components/roadmap/` (SkillTreeCanvas, SkillTree, NodeSheet), `layout/` (AppLayout,
+- `src/components/roadmap/` (`SkillTree`, `NodeWorkspace`, Foundation challenge runtime), `layout/` (AppLayout,
   Sidebar, TopBar, BottomBar), `admin/`, `ui/` (shadcn-style primitives).
 - `src/hooks/useUserData.ts` — all member state, Supabase-or-localStorage. XP thresholds:
   Bronze <500 < Silver <1500 < Gold <3000 < Platinum <6000 < Diamond.

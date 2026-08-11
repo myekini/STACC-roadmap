@@ -2,25 +2,17 @@
 
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, List, Lock, Route, Waypoints } from 'lucide-react';
+import { ArrowRight, Lock, Route } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
-import { useUiStore, type TreeView } from '@/store/useUiStore';
 import SkillTree from '@/components/roadmap/SkillTree';
-import SkillTreeCanvas from '@/components/roadmap/SkillTreeCanvas';
 import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
-const TREE_VIEWS: { id: TreeView; label: string; icon: typeof List }[] = [
-  { id: 'canvas', label: 'canvas', icon: Waypoints },
-  { id: 'rail', label: 'list', icon: List },
-];
-
 export default function RoadmapPage() {
   const data = useUserData();
   const reduceMotion = useReducedMotion();
-  const { treeView, setTreeView } = useUiStore();
   const { paths, nodes, nodesByPath, progress, activePath, hasSelectedPath, isLoading } = data;
 
   const specializations = paths.filter((p) => p.id !== 'foundations');
@@ -72,27 +64,6 @@ export default function RoadmapPage() {
                 <span className="font-code text-xs font-bold text-cyan">{overallPct}%</span>
               </div>
             </div>
-
-            {/* Right: View switcher */}
-            <div className="hidden items-center gap-2 md:flex">
-              <div className="flex border border-outline-variant/70 bg-surface-container-low">
-                {TREE_VIEWS.map(({ id, label, icon: Icon }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setTreeView(id)}
-                    aria-pressed={treeView === id}
-                    className={cn(
-                      'flex items-center gap-1.5 px-3 py-1 font-code text-[10px] font-semibold uppercase tracking-[0.1em] transition-colors',
-                      treeView === id ? 'bg-cyan/15 text-cyan' : 'text-on-surface-variant hover:text-on-surface',
-                    )}
-                  >
-                    <Icon className="h-3 w-3" />
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Path switcher segmented tab bar */}
@@ -140,14 +111,8 @@ export default function RoadmapPage() {
                 <div className="mx-auto max-w-5xl px-4 sm:px-6 md:hidden">
                   <SkillTree data={data} pathId={pathId} />
                 </div>
-                <div className="hidden md:block">
-                  {treeView === 'canvas' ? (
-                    <SkillTreeCanvas data={data} pathId={pathId} />
-                  ) : (
-                    <div className="mx-auto max-w-5xl px-4 sm:px-6 py-6">
-                      <SkillTree data={data} pathId={pathId} variant="spine" />
-                    </div>
-                  )}
+                <div className="mx-auto hidden max-w-5xl px-4 py-6 sm:px-6 md:block">
+                  <SkillTree data={data} pathId={pathId} variant="spine" />
                 </div>
               </>
             )

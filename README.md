@@ -9,9 +9,9 @@ The Roadmap Tracker for [Stacc](https://www.getstacc.org), a data-career communi
 A visual skill tree that answers the three questions that stop most learners: **What do I learn next? Am I on track? What does ready look like?**
 
 - 38 modules across Foundations + 5 specialization paths (DE, DA, DS, AI Engineering, MLOps)
-- Pan/zoom skill-tree canvas, curated free resources with community ratings, real tasks, checkpoint quizzes
+- Responsive roadmap list, sequenced learning material, real tasks, and Foundation coding challenges
 - Prerequisite gating — modules unlock in order; AI Engineering and MLOps unlock after DE + DS
-- Build tasks ship a public evidence URL instead of a checkbox — the roadmap doubles as a portfolio
+- Foundations practise inline; each specialization accumulates into one GitHub portfolio project
 - Public portfolio at `/u/[handle]` — shipped modules + evidence, no login required
 - Progress tracking with streaks, a consistency heatmap, and milestones
 - Admin panel: cohort progress, stuck-member alerts, CSV exports, module analytics
@@ -30,7 +30,7 @@ A visual skill tree that answers the three questions that stop most learners: **
 
 ## Stack
 
-Next.js 14 (App Router) · React 18 · TypeScript strict · Tailwind 3 · Radix · Framer Motion · Zustand · TanStack Query · Supabase (Postgres + Discord OAuth) · React Flow.
+Next.js 14 (App Router) · React 18 · TypeScript strict · Tailwind 3 · Radix · Framer Motion · Zustand · TanStack Query · Supabase (Postgres + GitHub OAuth).
 
 ## Quick start
 
@@ -41,7 +41,7 @@ npm run dev
 
 Without env vars the app runs in **localStorage demo mode** — full product, progress saved on-device.
 For the real backend, copy `.env.example` to `.env.local` and follow [`supabase/README.md`](supabase/README.md)
-(migration, seed, Discord OAuth — ~10 minutes).
+(migrations, seed, GitHub OAuth).
 
 ## Scripts
 
@@ -54,6 +54,8 @@ For the real backend, copy `.env.example` to `.env.local` and follow [`supabase/
 ## Repo map
 
 - `docs/PRODUCT.md` — full product spec + architecture reference (single source of truth)
+- `docs/ARCHITECTURE.md` — scale, GitHub integration, and feature-weight decisions
+- `docs/CURRICULUM_*.md` — reviewed lesson-level track blueprints
 - `src/config/roadmap.ts` — the content engine (mirrors `supabase/seed.sql`)
 - `src/hooks/useUserData.ts` — all user state; Supabase RPCs or localStorage with identical semantics
 - `supabase/` — schema migrations, seed, setup guide; XP-safe RPCs + RLS

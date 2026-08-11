@@ -107,6 +107,12 @@ export interface TaskRow {
   order: number;
   quiz: QuizPayload | null;
   challenge: ChallengePayload | null;
+  project_requirements?: {
+    requiredPaths?: string[];
+    requiredHeadings?: Record<string, string[]>;
+    submissionMode?: 'commit' | 'pull_request';
+    manualReview?: string[];
+  } | null;
 }
 
 export interface UserPathRow {
@@ -165,7 +171,29 @@ export interface ProjectRow {
   user_id: string;
   path_id: string;
   repo_url: string;
+  github_repo_id: number | null;
+  repo_owner: string | null;
+  repo_name: string | null;
+  default_branch: string;
+  github_installation_id: number | null;
+  connection_status: 'manual' | 'active' | 'suspended' | 'error';
+  connected_at: string | null;
+  last_synced_at: string | null;
   created_at: string;
+}
+
+export interface ProjectSubmissionRow {
+  id: string;
+  project_id: string;
+  user_id: string;
+  task_id: string;
+  commit_sha: string;
+  commit_url: string;
+  branch: string;
+  status: 'pending' | 'verified' | 'needs_review' | 'rejected';
+  checks: Record<string, boolean | string>;
+  submitted_at: string;
+  verified_at: string | null;
 }
 
 export interface Database {
@@ -182,6 +210,7 @@ export interface Database {
       task_completions: { Row: TaskCompletionRow; Insert: Partial<TaskCompletionRow>; Update: Partial<TaskCompletionRow> };
       resource_ratings: { Row: ResourceRatingRow; Insert: Partial<ResourceRatingRow>; Update: Partial<ResourceRatingRow> };
       projects: { Row: ProjectRow; Insert: Partial<ProjectRow>; Update: Partial<ProjectRow> };
+      project_submissions: { Row: ProjectSubmissionRow; Insert: Partial<ProjectSubmissionRow>; Update: Partial<ProjectSubmissionRow> };
     };
     Functions: {
       start_node: { Args: { p_node_slug: string }; Returns: undefined };

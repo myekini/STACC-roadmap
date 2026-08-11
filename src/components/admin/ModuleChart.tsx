@@ -1,15 +1,6 @@
-'use client';
-
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import type { NodeAnalytics } from '@/hooks/useAdminData';
 import type { NodeRow } from '@/lib/database.types';
-
-const chartConfig: ChartConfig = {
-  starts: { label: 'Started', color: 'var(--chart-1)' },
-  completions: { label: 'Completed', color: 'var(--chart-3)' },
-};
 
 export function ModuleChart({ analytics, nodeById }: { analytics: NodeAnalytics[]; nodeById: Record<string, NodeRow> }) {
   const data = analytics
@@ -21,6 +12,7 @@ export function ModuleChart({ analytics, nodeById }: { analytics: NodeAnalytics[
       starts: a.starts,
       completions: a.completions,
     }));
+  const maxStarts = Math.max(1, ...data.map((item) => item.starts));
 
   return (
     <Card className="rounded-none bg-surface">
@@ -31,24 +23,20 @@ export function ModuleChart({ analytics, nodeById }: { analytics: NodeAnalytics[
         {data.length === 0 ? (
           <p className="py-10 text-center font-code text-xs lowercase text-outline">{'// no module activity yet'}</p>
         ) : (
-          <ChartContainer config={chartConfig} className="h-64 w-full">
-            <BarChart data={data} margin={{ left: -20 }}>
-              <CartesianGrid vertical={false} stroke="var(--border-subtle)" strokeDasharray="4 4" />
-              <XAxis
-                dataKey="name"
-                tickLine={false}
-                axisLine={false}
-                interval={0}
-                angle={-25}
-                textAnchor="end"
-                height={56}
-                tick={{ fill: 'var(--fg-muted)', fontSize: 10, fontFamily: 'var(--font-geist-mono)' }}
-              />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="starts" fill="var(--color-starts)" radius={0} />
-              <Bar dataKey="completions" fill="var(--color-completions)" radius={0} />
-            </BarChart>
-          </ChartContainer>
+          <ol className="space-y-4" aria-label="Most-started modules">
+            {data.map((item) => (
+              <li key={item.name}>
+                <div className="flex items-center justify-between gap-4 text-xs">
+                  <span className="min-w-0 truncate font-medium text-on-surface">{item.name}</span>
+                  <span className="shrink-0 text-on-surface-variant">{item.completions}/{item.starts} completed</span>
+                </div>
+                <div className="relative mt-2 h-2 overflow-hidden bg-surface-container-high" title={`${item.starts} started; ${item.completions} completed`}>
+                  <div className="absolute inset-y-0 left-0 bg-cyan/35" style={{ width: `${(item.starts / maxStarts) * 100}%` }} />
+                  <div className="absolute inset-y-0 left-0 bg-secondary" style={{ width: `${(item.completions / maxStarts) * 100}%` }} />
+                </div>
+              </li>
+            ))}
+          </ol>
         )}
       </CardContent>
     </Card>

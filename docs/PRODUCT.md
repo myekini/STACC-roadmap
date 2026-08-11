@@ -52,6 +52,10 @@ These are deliberate product cuts, not gaps to fill in. Don't reintroduce withou
 - **No "Full Stack" path.** An early flow sketch mentioned a 6th "Full Stack" specialization
   alongside DE/DA/DS/AI-Engineering/MLOps. It was never built and there's no plan to build it —
   the tree is Foundations + 5 specializations.
+- **Foundations practise inline; specializations build one cumulative project per track.** Python,
+  SQL, and knowledge checks stay inside Stacc during Foundations. Each specialization starts one
+  GitHub repository, and every build milestone adds to that project until it is an end-to-end
+  portfolio artifact. Do not reintroduce disconnected build submissions.
 - **Part 2, "The Ladder"** (peer interview-prep product) is fully deferred — see §9. Do not
   build until the trigger criteria in that section are met.
 
@@ -64,11 +68,11 @@ These are deliberate product cuts, not gaps to fill in. Don't reintroduce withou
 ```
 Sign in (GitHub OAuth, or admin email/password) → Choose a path (/paths)
     ↓
-/roadmap — pan/zoom skill-tree canvas (or list view on mobile)
+/roadmap — responsive progression list
     ↓
 Click a node → full-page workspace (`/roadmap/[slug]`): description, skills, resources, tasks
     ↓
-Read/watch tasks: mark complete · Build tasks: ship a public evidence URL · Quiz tasks: pass the checkpoint
+Foundation tasks run inline · Specialization builds sync a verified project milestone · Quizzes pass in-app
     ↓
 All tasks done → node completes, XP awarded (silently) → next node unlocks
     ↓
@@ -99,14 +103,14 @@ Curriculum: starts/completions/completion-rate per node
 
 | Feature | Status | Notes |
 |---|---|---|
-| Skill tree | ✅ Shipped | Pan/zoom canvas (React Flow) on desktop with a canvas/list toggle — the list is a zigzag center-spine layout (landing-page visual language); vertical rail on mobile. Public, structure-only version at `/tree` for SEO. |
+| Roadmap progression | ✅ Shipped | One responsive list experience: a zigzag center spine on desktop and a compact vertical rail on mobile. The former React Flow canvas was archived to reduce interaction and bundle complexity. Public, structure-only version at `/tree` remains for SEO. |
 | Path selection | ✅ Shipped | Foundations + Data Engineering, Data Analysis, Data Science, AI Engineering, MLOps. AI-Eng and MLOps unlock only after DE + DS are fully complete. |
 | Node detail | ✅ Shipped | Description, skills, curated resources (2 per node, community-rated), tasks, estimated hours. |
 | Progress tracking | ✅ Shipped | Per-node and per-path completion; derived status `locked \| available \| in_progress \| complete`. |
 | Prerequisite gates | ✅ Shipped | Node-level (fan-in supported — a node can require several prerequisites) + path-level gates. |
 | Resource ratings | ⚙️ Backend only | 1–5 stars, aggregated server-side (`rate_resource`, `resources.avg_rating`) — pulled from the node workspace UI for now, re-implementing later. |
 | **Evidence shipping** | ✅ Shipped | Specialization build tasks require a public URL inside the learner's path project. Foundations build exercises stay lightweight checklist completions and do not require GitHub setup or evidence. Enforced server-side in `complete_task`. |
-| **Projects (per-path)** | ✅ Shipped | Migration `0004`: one repo per `(user, path)`, set once via `set_project`. Once set, every later build-task evidence on that path must link inside it (prefix match) — a specialization's build tasks accumulate into one running project instead of disconnected links. |
+| **Projects (per-path)** | ⚙️ Transitioning | One cumulative repository per specialization is shipped today through URL-prefix evidence. Migration `0009` adds stable GitHub repository identity and milestone submissions for the connected GitHub App flow. Pasted links remain transitional until the app callback and explicit **Check my work** verification ship. See `docs/ARCHITECTURE.md`. |
 | **Public portfolio** | ✅ Shipped | `/u/[handle]` — each path renders as a build-log timeline (oldest → newest) under its project repo link, not a flat recency feed. Powered by an anon-callable `get_public_profile` RPC that exposes only username/avatar/shipped work/project repos, never XP/rank/role. |
 | **Code challenges** | ✅ Shipped (Foundations) | `challenge` task type, Monaco editor + a client-only runtime — Pyodide (CPython/WASM) for Python, sql.js (SQLite/WASM) for SQL — both loaded lazily from CDN, no server execution. Opening a challenge enters a focused full-screen workspace: problem/editor/console split on desktop and Problem/Code/Results tabs on mobile. These **replace**, not supplement, the checkpoint quiz on the three Foundations topics that are genuinely code-testable: Python Basics (`clean_scores`), Statistics Basics (`describe`), SQL Basics (aggregate query, min. 3 assertions each). Git & GitHub, Command Line, and AI Literacy stay multiple-choice — none of them reduce to a clean in-browser pass/fail check without a much bigger build (a simulated git/shell environment). Every other node's checkpoint is still a quiz — this hasn't rolled out past Foundations. |
 | XP system | ⚙️ Backend only | Accrues server-side, never shown (see §2). |
@@ -166,7 +170,7 @@ MLOPS ← unlocks after DE + DS
 ```
 
 38 modules total. Every node ships with exactly 3 skills and 2 curated resources — kept
-deliberately capped so the canvas stays readable and the sheet stays scannable; see
+deliberately capped so the roadmap stays readable and the node workspace stays scannable; see
 `src/config/roadmap.ts` for the editorial rule and content, which mirrors `supabase/seed.sql`
 exactly.
 
@@ -183,11 +187,11 @@ below. Two deliberate deviations from the earliest spec sketch:
 - **No custom REST API layer.** There is no `/api/roadmap`, `/api/progress`, etc. The frontend
   talks to Supabase directly (via `@supabase/ssr`'s cookie-based `createBrowserClient`, see
   `src/utils/supabase/client.ts`) for reads, and to security-definer RPCs for every write:
-  `start_node`, `complete_task` (evidence URL — migration `0002_evidence.sql` — validated
-  against the path's project repo once one is set, migration `0004_projects.sql`),
-  `rate_resource`, `set_project` (one repo per user+path, immutable once set), and the
+  `start_node`, `complete_task` (transitional evidence support from migrations `0002`/`0004`),
+  `rate_resource`, `set_project` (transitional manual project connection), and the
   anon-callable `get_public_profile` for portfolio pages. See `supabase/README.md` for the
-  full RLS/RPC design notes and setup steps.
+  full RLS/RPC design notes and setup steps. Migration `0009` adds stable connected-repository
+  identity and milestone submissions for the approved GitHub App flow.
 - **Session storage is cookie-based, not localStorage.** `src/utils/supabase/client.ts` uses
   `createBrowserClient`, `src/utils/supabase/server.ts` uses `createServerClient` (Route
   Handlers), and root `middleware.ts` + `src/utils/supabase/middleware.ts` refresh the session
@@ -216,27 +220,20 @@ Follows the landing page's **Modern Technical Brutalism** design language: deep 
 orange primary actions, cyan for progress/signal, `rounded-none`, uppercase Geist Mono
 micro-labels, `// comment`-style captions.
 
-- **`/roadmap`** — command header (overall %, streak, canvas/list toggle) + the skill tree.
-  Desktop default is a pan/zoom canvas (React Flow): Foundations converge on a junction gate,
-  the active specialization runs down a central trunk, skills fan out on dotted curves.
-  The desktop list view is a zigzag spine (adapted from the landing-page roadmap preview):
+- **`/roadmap`** — compact header (overall progress and path switcher) + one progression list.
+  Desktop uses a zigzag spine adapted from the landing-page roadmap preview:
   a central spine with a glowing progress fill that ends at the last completed junction,
   module cards alternating sides, and skill chips fanning out on curved dashed connectors
   opposite each card. Connector geometry is row-local (fixed chip heights), so it holds for
   any node count. Mobile keeps the single-column left rail.
-  Clicking a node navigates to `/roadmap/[slug]` — a full-bleed workspace page, not a
-  slide-in sheet: description/skills/resources (click-to-load YouTube embeds; ratings UI
-  pulled for now, see §4) in the primary column, a sticky task rail alongside it. Build tasks
-  ship evidence into the path's project repo — the first build task on a path prompts for a
-  repo URL once (`set_project`), every later build task on that path ships a commit/PR/file
-  link inside it instead of an unrelated one-off link. Watch tasks are gated behind actually
-  opening a video resource on the node, tracked client-side per page visit. Challenge tasks
+  Clicking a node navigates to `/roadmap/[slug]` — a focused lesson workspace with ordered
+  learning material in the primary column and one module checklist alongside it. A real YouTube
+  lesson gates only its matching watch task; non-video material is presented as review material.
+  Specialization build tasks add milestones to one cumulative track project. Pasted evidence is
+  transitional; the approved V1 is a narrowly permissioned GitHub App with an explicit **Check my
+  work** action. Challenge tasks
   open a Monaco editor and run entirely client-side — Pyodide (WASM CPython) for Python,
   sql.js (WASM SQLite) for SQL — both loaded lazily from CDN, no server execution.
-  A floating **field notes** pill (bottom-right, desktop, `❯ stacc explain "<module>"`
-  terminal framing) shows the curriculum description of the hovered/keyboard-focused node —
-  content comes straight from the roadmap config; it is *not* an AI feature. It only renders
-  on `/roadmap` while the tree is in view.
 - **Sidebar** — collapsible to a 76px icon rail (persisted), one continuous navy/cyan-border
   shell with the TopBar (no duplicate branding, no mismatched tokens). Carries only
   workspace navigation (Roadmap, Progress, Explore paths, Admin) — account-level links
@@ -293,9 +290,8 @@ banks, rubrics, level structure); practice is peer-matched at the same level wit
 
 Five levels (Foundations → Technical Core → Applied Practice → System Design → Senior/FAANG),
 gated by community track (Dev/Stagee/Builder/Alumni). Full level content, sample questions,
-session format, rubric dimensions, and matching logic are preserved in git history
-(`03_products.md` as of commit before this doc existed) — restore from there if/when this gets
-built, rather than re-deriving it.
+session format, rubric dimensions, and matching logic are preserved in git history — restore
+the archived legacy specification if and when this gets built, rather than re-deriving it.
 
 ---
 
@@ -304,8 +300,7 @@ built, rather than re-deriving it.
 ### Stack
 
 Next.js 14 (App Router) · React 18 · TypeScript strict · Tailwind 3 · Radix primitives ·
-Framer Motion · Zustand · TanStack Query · Supabase (Postgres + GitHub OAuth) · React Flow
-(`@xyflow/react`) for the skill tree canvas.
+Framer Motion · Zustand · TanStack Query · Supabase (Postgres + GitHub OAuth).
 
 ### Mobile and PWA
 
@@ -341,8 +336,8 @@ on both sides.
 - `src/config/roadmap.ts` — static path/node/resource/task/quiz content, source of truth for
   demo mode; mirrors `supabase/seed.sql` exactly. See the editorial rules at the top of that
   file (3 skills/node, 2 resources/node) before adding content.
-- `src/components/roadmap/` — `SkillTreeCanvas` (desktop pan/zoom tree), `SkillTree` (mobile
-  rail), `NodeWorkspace` (full-page task/resource workspace + evidence shipping, rendered at
+- `src/components/roadmap/` — `SkillTree` (desktop spine and mobile rail), `NodeWorkspace`
+  (full-page task/resource workspace + evidence shipping, rendered at
   `/roadmap/[slug]`), `ChallengeBlock` (Monaco + `usePyodide`/`useSqlJs`, dynamically imported so
   Monaco never ships in a bundle that doesn't need it), `bits.tsx` (shared status chips/badges).
 - `src/components/layout/` — `AppLayout`, `Sidebar` (collapsible), `TopBar`, `BottomBar`
@@ -382,35 +377,14 @@ on both sides.
 
 ---
 
-## 12. Known gaps (as of this doc)
+## 12. Current delivery risks
 
-Ranked by how much they actually matter — **see `docs/ISSUES.md` for the concrete fix for
-each one**; this list stays a one-line summary on purpose, don't let the two drift apart.
-
-1. **Migration `0002_evidence.sql` may not be applied to the production Supabase project yet.**
-   Evidence shipping and `/u/[handle]` need it — verify it's been run before relying on either
-   in production.
-2. **No username uniqueness or self-service editing.** `/u/[handle]` is keyed on username with
-   no DB constraint; `get_public_profile` resolves collisions by "oldest profile wins," which
-   silently breaks a second member with the same name. There's also no settings page to change
-   a username at all.
-3. **Resource-level analytics** (§4) — spec'd, not built.
-4. **§9 success metrics** — not instrumented.
-5. No CI — `npm run check` is a local/manual gate, not enforced on push.
-6. **Migrations `0004_projects.sql` through `0007_github_auth.sql` may not be applied to the
-   production Supabase project yet.** Same category of risk as gap 1 — verify before relying on
-   per-path projects, challenge tasks, or GitHub sign-in in production. `0007` additionally
-   requires a manual step outside any migration: registering a GitHub OAuth App and enabling the
-   GitHub provider in the Supabase dashboard (Discord's provider config doesn't carry over).
-7. **`supabase/seed.sql`'s checkpoint-quiz text has drifted from `src/config/roadmap.ts`** on
-   the ~29 nodes outside the challenge-conversion rounds — the resource-grounded question
-   rewrites only landed in `roadmap.ts` (demo mode), never backported to the seed file. Cosmetic
-   (wrong wording, not wrong behavior) but worth a sync pass before it's forgotten.
-8. **Members who signed up via the old Discord flow can't sign back in.** GitHub fully replaced
-   Discord as the sign-in provider (migration `0007`) rather than being added alongside it — any
-   existing Discord-authenticated `auth.users` row is now sign-in-orphaned. Re-authing via GitHub
-   creates a new profile rather than recovering the old one. If there are real members on the
-   production project from before this change, this needs a conscious decision (manual account
-   linking, a one-time export, or accepting the loss) — it isn't handled automatically.
-
-See `git log` for what's shipped when; this section will drift, keep it honest.
+1. Verify all migrations through `0009_connected_track_projects.sql` in production before
+   deploying code that depends on connected projects.
+2. Register and configure the GitHub App before replacing the transitional pasted-evidence UI.
+3. Validate the Data Engineering curriculum blueprint with real learners before expanding its
+   lesson-level model to every path.
+4. Move localStorage demo mode behind a development-only boundary before broad launch; production
+   must have one source of truth.
+Scale and feature-weight decisions live in `docs/ARCHITECTURE.md`; curriculum detail lives in the
+corresponding `docs/CURRICULUM_*.md` file.

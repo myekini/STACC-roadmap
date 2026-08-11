@@ -27,8 +27,6 @@
     "@tailwindcss/forms": "^0.5.11",
     "@tanstack/react-query": "^5.101.1",
     "@vercel/analytics": "^2.0.1",
-    "@xyflow/react": "^12.11.2",
-    "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.42.0",
@@ -36,12 +34,10 @@
     "next": "14.2.35",
     "react": "^18",
     "react-dom": "^18",
-    "recharts": "^2.15.4",
     "tailwind-merge": "^3.6.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
