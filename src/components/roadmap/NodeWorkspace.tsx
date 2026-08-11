@@ -251,7 +251,7 @@ function TaskRowItem({
       )}
       {isChallenge && challengeOpen && !done && task.challenge && (
         <div className="px-3 pb-3">
-          <ChallengeBlock challenge={task.challenge} disabled={!canWork} onPass={() => onComplete(task)} />
+          <ChallengeBlock challenge={task.challenge} disabled={!canWork} onClose={() => setChallengeOpen(false)} onPass={() => onComplete(task)} />
         </div>
       )}
       {isBuild && !done && canWork && (
