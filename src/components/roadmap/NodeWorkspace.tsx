@@ -357,7 +357,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
         transition={{ duration: 0.3 }}
         className="mt-5 max-w-3xl pb-6"
       >
-        <p className="text-xs font-semibold text-cyan">Module {node.order} · {path?.title ?? ''}</p>
+        <p className="text-xs font-semibold text-cyan">Module {node.order}</p>
         <h1 className="mt-2 text-balance font-display text-3xl font-bold leading-tight text-on-surface sm:text-4xl">{node.name}</h1>
         <p className="mt-2 text-base leading-7 text-on-surface-variant">{node.subtitle}</p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
