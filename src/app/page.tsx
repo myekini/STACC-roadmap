@@ -151,7 +151,7 @@ export default function LandingPage() {
             transition={{ duration: 0.45, delay: 0.1 }}
             className="mx-auto max-w-2xl text-base leading-7 text-on-surface-variant sm:text-lg"
           >
-            An outcome-first skill tree for technical careers. Master Python, SQL, Data Engineering, AI Engineering, and MLOps by shipping real code.
+            A prerequisite-gated skill tree for data and AI careers — built to prove you can ship, not that you watched.
           </motion.p>
 
           {/* Primary Action Buttons */}
@@ -171,13 +171,17 @@ export default function LandingPage() {
                 Explore All Tracks <ArrowRight className="h-4 w-4 ml-1.5 inline" />
               </Link>
             </Button>
-
-            {isSupabaseConnected && (
-              <Button size="lg" variant="ghost" onClick={signInWithGithub} className="gap-2 font-code text-xs text-on-surface-variant hover:text-cyan">
-                <GitBranch className="h-4 w-4 text-cyan" /> Sign in with GitHub
-              </Button>
-            )}
           </motion.div>
+
+          {isSupabaseConnected && (
+            <button
+              type="button"
+              onClick={signInWithGithub}
+              className="inline-flex items-center gap-1.5 font-code text-xs text-on-surface-variant transition-colors hover:text-cyan"
+            >
+              <GitBranch className="h-3.5 w-3.5" /> Already a member? Sign in with GitHub
+            </button>
+          )}
 
           <Suspense fallback={null}>
             <AuthErrorBanner />
@@ -219,10 +223,10 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl px-5 md:px-8">
           <div className="mx-auto max-w-3xl text-center space-y-3">
             <h2 className="font-display text-3xl font-bold tracking-tight text-on-surface sm:text-4xl">
-              Engineered for Real Engineering Momentum
+              Momentum, Not Video Hours
             </h2>
             <p className="text-sm leading-6 text-on-surface-variant sm:text-base">
-              No endless 50-hour video loops or fake badges. Learn through structured DAG prerequisites and real project deliverables.
+              No 50-hour video loops or fake badges — structured prerequisites and real deliverables instead.
             </p>
           </div>
 
@@ -340,33 +344,16 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Bottom Callout ── */}
-      <section className="border-t border-cyan/25 bg-gradient-to-br from-cyan/[0.08] via-surface to-surface py-16 text-center">
-        <div className="mx-auto max-w-4xl px-5 md:px-8 space-y-6">
-          <h2 className="font-display text-3xl font-bold tracking-tight text-on-surface sm:text-5xl">
-            Ready to Start Building Your Career?
-          </h2>
-          <p className="mx-auto max-w-xl text-sm leading-6 text-on-surface-variant sm:text-base">
-            Start from Foundations or jump directly into Data Engineering, Data Science, AI Engineering, or MLOps today.
-          </p>
-          <div className="flex justify-center gap-3">
-            <Button size="lg" onClick={handleStart} className="gap-2 shadow-xl font-code uppercase font-bold tracking-wider text-xs px-6 py-3">
-              Get Started Now <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </section>
-
       {/* ── Public Footer ── */}
       <footer className="border-t border-outline-variant bg-navy py-12 text-on-surface">
         <div className="mx-auto max-w-7xl px-5 md:px-8">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 font-code">
+          <div className="flex flex-col justify-between gap-8 font-code sm:flex-row">
             <div>
               <div className="flex items-center gap-2 text-base font-bold uppercase tracking-wider">
                 <StaccMark className="h-6 w-6" />
                 <span>Stacc</span>
               </div>
-              <p className="mt-3 text-xs leading-5 text-on-surface-variant font-sans">
+              <p className="mt-3 max-w-xs text-xs leading-5 text-on-surface-variant font-sans">
                 The outcome-first data & AI career roadmap tracker.
               </p>
             </div>
@@ -377,42 +364,12 @@ export default function LandingPage() {
                 <li><Link href="/paths" className="hover:text-cyan">Explore Paths</Link></li>
                 <li><Link href="/tree" className="hover:text-cyan">Skill Tree</Link></li>
                 <li><Link href="/roadmap" className="hover:text-cyan">Roadmap Tracker</Link></li>
-                <li><Link href="/settings" className="hover:text-cyan">Member Settings</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-semibold text-outline uppercase tracking-wider mb-3 font-code">Tracks</h4>
-              <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
-                <li><Link href="/paths" className="hover:text-cyan">Foundations</Link></li>
-                <li><Link href="/paths" className="hover:text-cyan">Data Analysis</Link></li>
-                <li><Link href="/paths" className="hover:text-cyan">Data Engineering</Link></li>
-                <li><Link href="/paths" className="hover:text-cyan">AI Engineering</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-semibold text-outline uppercase tracking-wider mb-3">Platform</h4>
-              <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
-                <li><span>{isSupabaseConnected ? 'Cloud Auth Enabled' : 'Local Demo Mode'}</span></li>
               </ul>
             </div>
           </div>
 
-          <div className="mt-12 border-t border-outline-variant/60 pt-6 flex flex-col items-center justify-between gap-4 sm:flex-row font-code text-xs text-on-surface-variant">
+          <div className="mt-12 border-t border-outline-variant/60 pt-6 font-code text-xs text-on-surface-variant">
             <p>© 2026 Stacc Inc. All Rights Reserved.</p>
-            <div className="flex items-center gap-3">
-              <span>Theme:</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={toggleTheme}
-                className="h-7 gap-1.5 text-xs border-outline-variant rounded-none"
-              >
-                {theme === 'dark' ? <Sun className="h-3.5 w-3.5 text-warning" /> : <Moon className="h-3.5 w-3.5 text-cyan" />}
-                {theme === 'dark' ? 'Dark' : 'Light'}
-              </Button>
-            </div>
           </div>
         </div>
       </footer>
