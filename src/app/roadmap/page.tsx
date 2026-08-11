@@ -1,14 +1,12 @@
 'use client';
 
-import { useRef } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, Flame, List, Lock, Route, Waypoints } from 'lucide-react';
+import { ArrowRight, List, Lock, Route, Waypoints } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 import { useUiStore, type TreeView } from '@/store/useUiStore';
 import SkillTree from '@/components/roadmap/SkillTree';
 import SkillTreeCanvas from '@/components/roadmap/SkillTreeCanvas';
-import FieldNotes from '@/components/roadmap/FieldNotes';
 import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -22,7 +20,6 @@ const TREE_VIEWS: { id: TreeView; label: string; icon: typeof List }[] = [
 export default function RoadmapPage() {
   const data = useUserData();
   const reduceMotion = useReducedMotion();
-  const treeRef = useRef<HTMLDivElement | null>(null);
   const { treeView, setTreeView } = useUiStore();
   const { paths, nodes, nodesByPath, progress, activePath, hasSelectedPath, isLoading } = data;
 
@@ -52,19 +49,19 @@ export default function RoadmapPage() {
 
   return (
     <div className="w-full pb-16 pt-3 md:pb-6">
-      {/* Streamlined Command Header Sub-bar */}
+      {/* Course navigation */}
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <motion.header
           initial={reduceMotion ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="border border-outline-variant/80 bg-surface/90 shadow-md backdrop-blur-md"
+          className="border-b border-outline-variant bg-background"
         >
           <div className="flex flex-col gap-3 p-3 sm:p-4 md:flex-row md:items-center md:justify-between">
             {/* Left: Section title & overall progress */}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:gap-4">
               <h1 className="font-display text-lg font-bold tracking-tight text-on-surface sm:text-xl">
-                Skill Tree
+                Your roadmap
               </h1>
               <div className="h-4 w-px bg-outline-variant/60" />
               <div className="flex items-center gap-2">
@@ -73,11 +70,6 @@ export default function RoadmapPage() {
                   className="h-1.5 w-16 rounded-none bg-surface-container-high sm:w-24 [&>div]:rounded-none [&>div]:bg-cyan"
                 />
                 <span className="font-code text-xs font-bold text-cyan">{overallPct}%</span>
-              </div>
-              <div className="h-4 w-px bg-outline-variant/60" />
-              <div className="flex items-center gap-1 font-code text-xs font-bold text-tertiary">
-                <Flame className="h-3.5 w-3.5 fill-tertiary" />
-                <span>{data.streak}d streak</span>
               </div>
             </div>
 
@@ -105,7 +97,7 @@ export default function RoadmapPage() {
           </div>
 
           {/* Path switcher segmented tab bar */}
-          <div className="flex gap-1.5 overflow-x-auto border-t border-outline-variant/60 p-2 no-scrollbar bg-surface-container-low/40">
+          <div className="flex gap-1 overflow-x-auto border-t border-outline-variant/60 py-2 no-scrollbar">
             {specializations.map((path) => {
               const pathNodes = nodesByPath[path.id] ?? [];
               const done = pathNodes.filter((n) => progress.completedNodes[n.id]).length;
@@ -117,10 +109,10 @@ export default function RoadmapPage() {
                   type="button"
                   onClick={() => data.selectPath(path.id)}
                   className={cn(
-                    'flex shrink-0 items-center gap-2 border px-3 py-1.5 font-code text-[10px] font-semibold uppercase tracking-[0.1em] transition-all',
+                    'flex shrink-0 items-center gap-2 px-3 py-2 text-xs font-semibold transition-colors',
                     active
-                      ? 'border-cyan bg-cyan/10 text-cyan shadow-sm'
-                      : 'border-outline-variant/40 bg-surface/50 text-on-surface-variant hover:border-cyan/40 hover:text-on-surface',
+                      ? 'bg-cyan/10 text-cyan'
+                      : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface',
                   )}
                 >
                   {locked ? <Lock className="h-3 w-3 text-outline" /> : <AppIcon name={path.icon} className="h-3.5 w-3.5" />}
@@ -135,9 +127,7 @@ export default function RoadmapPage() {
         </motion.header>
       </div>
 
-      {/* Tree Container — Spacious & Full-Bleed Canvas */}
-      <div ref={treeRef} className="relative mt-4">
-        <div aria-hidden className="pointer-events-none absolute inset-0 blueprint-grid opacity-50" />
+      <div className="relative mt-4">
         <div className="relative">
           {isLoading ? (
             <div className="mx-auto max-w-5xl space-y-4 px-4 py-10 sm:px-6">
@@ -166,7 +156,6 @@ export default function RoadmapPage() {
         </div>
       </div>
 
-      <FieldNotes data={data} watchRef={treeRef} />
     </div>
   );
 }

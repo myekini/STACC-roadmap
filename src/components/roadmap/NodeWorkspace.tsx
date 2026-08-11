@@ -3,15 +3,14 @@
 /**
  * Node workspace: full-bleed page (not a sheet) for reading/watching resources
  * and working tasks — this is where members spend real time, not a quick peek.
- * Content is the primary column; tasks live in a sticky rail alongside it.
- * Watch tasks are gated behind actually opening a video resource on the node.
+ * Content is the primary column; a concise completion checklist sits alongside it.
+ * Video tasks are only called "watch" when the node has a real video resource.
  */
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import confetti from 'canvas-confetti';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowLeft, ArrowUpRight, Check, CircleHelp, FolderGit2, GitBranch, Hourglass, Play, Rocket } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, BookOpen, Check, CircleHelp, ExternalLink, FolderGit2, GitBranch, Hourglass, ListChecks, Play, Rocket } from 'lucide-react';
 import type { QuizPayload, TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
@@ -187,6 +186,7 @@ function TaskRowItem({
   data,
   canWork,
   watchGateOpen,
+  hasVideoResource,
   pathId,
   pathTitle,
   onComplete,
@@ -195,6 +195,7 @@ function TaskRowItem({
   data: UserData;
   canWork: boolean;
   watchGateOpen: boolean;
+  hasVideoResource: boolean;
   pathId: string;
   pathTitle: string;
   onComplete: (task: TaskRow, evidenceUrl?: string) => Promise<void>;
@@ -210,10 +211,14 @@ function TaskRowItem({
   const blocked = Boolean(isQuiz) || Boolean(isChallenge) || isBuild || watchLocked;
   const evidence = data.progress.evidence[task.id];
   const projectUrl = data.projects[pathId];
+  const taskLabel = isWatch && !hasVideoResource ? 'review' : task.type;
+  const taskDescription = isWatch && !hasVideoResource
+    ? task.description.replace(/^watch\b/i, 'Review')
+    : task.description;
 
   return (
-    <li className={cn('border border-outline-variant/70 bg-surface/60 transition-colors', done && 'border-secondary/30')}>
-      <div className="flex items-center gap-3 p-3">
+    <li className={cn('border-b border-outline-variant/60 py-3 last:border-b-0', done && 'opacity-70')}>
+      <div className="flex items-start gap-3">
         <button
           type="button"
           disabled={done || !canWork || blocked}
@@ -226,10 +231,12 @@ function TaskRowItem({
         >
           {done && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
         </button>
-        <TaskTypeBadge type={task.type} />
-        <span className={cn('flex-1 text-xs leading-5', done ? 'text-on-surface-variant line-through decoration-secondary/50' : 'text-on-surface')}>
-          {task.description}
-        </span>
+        <div className="min-w-0 flex-1">
+          <TaskTypeBadge type={task.type} label={taskLabel} />
+          <p className={cn('mt-0.5 text-sm leading-5', done ? 'text-on-surface-variant line-through decoration-secondary/50' : 'text-on-surface')}>
+            {taskDescription}
+          </p>
+        </div>
         {isQuiz && !done && (
           <Button size="sm" variant="outline" disabled={!canWork} onClick={() => setQuizOpen((v) => !v)}>
             {quizOpen ? 'hide' : 'take quiz'}
@@ -242,20 +249,20 @@ function TaskRowItem({
         )}
       </div>
       {watchLocked && !done && canWork && (
-        <p className="px-3 pb-3 font-code text-[10px] text-outline">{'// watch a video resource below to unlock this'}</p>
+        <p className="ml-9 mt-2 text-xs text-on-surface-variant">Play a video lesson to complete this step.</p>
       )}
       {isQuiz && quizOpen && !done && task.quiz && (
-        <div className="px-3 pb-3">
+        <div className="ml-9 mt-3">
           <QuizBlock quiz={task.quiz} disabled={!canWork} onPass={() => onComplete(task)} />
         </div>
       )}
       {isChallenge && challengeOpen && !done && task.challenge && (
-        <div className="px-3 pb-3">
+        <div className="ml-9 mt-3">
           <ChallengeBlock challenge={task.challenge} disabled={!canWork} onClose={() => setChallengeOpen(false)} onPass={() => onComplete(task)} />
         </div>
       )}
       {isBuild && !done && canWork && (
-        <div className="px-3 pb-3">
+        <div className="ml-9 mt-3">
           {!projectUrl ? (
             <ProjectSetupForm data={data} pathId={pathId} pathTitle={pathTitle} />
           ) : (
@@ -264,7 +271,7 @@ function TaskRowItem({
         </div>
       )}
       {isBuild && done && evidence && (
-        <div className="px-3 pb-3">
+        <div className="ml-9 mt-3">
           <a
             href={evidence}
             target="_blank"
@@ -308,9 +315,6 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
       const result = await data.completeTask({ task, evidenceUrl });
       if (result === 'complete') {
         setJustCompleted(true);
-        if (!reduceMotion) {
-          confetti({ particleCount: 90, spread: 75, origin: { y: 0.7 }, colors: ['#00d9ff', '#d9622e', '#10b981', '#e0e3e5'] });
-        }
       }
     } catch (err) {
       console.error('Task completion failed:', err);
@@ -332,7 +336,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
   if (!node) return null;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-20 pt-6 sm:px-6 md:pt-8">
+    <div className="mx-auto max-w-6xl px-4 pb-24 pt-5 sm:px-6 md:pt-8">
       {/* Breadcrumb */}
       <div className="flex min-w-0 items-center gap-2 font-code text-xs text-on-surface-variant">
         <button type="button" onClick={() => router.push('/roadmap')} className="inline-flex items-center gap-1.5 transition-colors hover:text-cyan">
@@ -346,16 +350,15 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
         )}
       </div>
 
-      {/* Header */}
       <motion.header
         initial={reduceMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="mt-4 border-b border-outline-variant pb-6"
+        className="mt-5 max-w-3xl pb-6"
       >
-        <p className="micro-label text-cyan">{`// module ${String(node.order).padStart(2, '0')} · ${path?.title ?? ''}`}</p>
-        <h1 className="mt-2 font-display text-3xl font-bold leading-tight text-on-surface sm:text-4xl">{node.name}</h1>
-        <p className="mt-1 font-code text-[11px] lowercase text-on-surface-variant">{`// ${node.subtitle}`}</p>
+        <p className="text-xs font-semibold text-cyan">Module {node.order} · {path?.title ?? ''}</p>
+        <h1 className="mt-2 text-balance font-display text-3xl font-bold leading-tight text-on-surface sm:text-4xl">{node.name}</h1>
+        <p className="mt-2 text-base leading-7 text-on-surface-variant">{node.subtitle}</p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <StatusChip status={status} />
           <span className="inline-flex items-center gap-1.5 border border-outline-variant px-2 py-0.5 font-code text-[10px] uppercase tracking-[0.1em] text-on-surface-variant">
@@ -364,14 +367,14 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
         </div>
       </motion.header>
 
-      <div className="mt-7 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
+      <div className="grid grid-cols-1 gap-10 border-t border-outline-variant pt-7 lg:grid-cols-[minmax(0,1fr)_340px]">
         {/* Main content column */}
-        <div className="space-y-7">
+        <div className="min-w-0 space-y-9">
           {(justCompleted || status === 'complete') && (
             <motion.div
               initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="border border-secondary/40 bg-secondary/10 p-4"
+              className="bg-secondary/10 p-4"
             >
               <p className="flex items-center gap-2 font-code text-xs font-bold uppercase tracking-[0.14em] text-secondary">
                 <Check className="h-4 w-4" strokeWidth={3} /> module complete
@@ -390,14 +393,17 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             </div>
           )}
 
-          <p className="text-sm leading-6 text-on-surface-variant">{node.description}</p>
+          <section>
+            <h2 className="text-lg font-bold text-on-surface">What you’ll learn</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-7 text-on-surface-variant">{node.description}</p>
+          </section>
 
           {node.skills.length > 0 && (
             <div>
-              <p className="micro-label text-outline">skills covered</p>
+              <p className="text-xs font-semibold text-on-surface-variant">Skills covered</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {node.skills.map((skill) => (
-                  <span key={skill} className="border border-outline-variant bg-surface-container-low px-2 py-0.5 font-code text-[10px] text-on-surface-variant">
+                  <span key={skill} className="rounded-md bg-surface-container-low px-2.5 py-1 text-xs text-on-surface-variant">
                     {skill}
                   </span>
                 ))}
@@ -414,32 +420,37 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
           {!needsAuth && resources.length > 0 && status !== 'locked' && (
             <section>
-              <p className="micro-label text-outline">resources</p>
-              <ul className="mt-3 space-y-3">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-cyan" />
+                <h2 className="text-lg font-bold text-on-surface">Learning material</h2>
+              </div>
+              <p className="mt-1 text-sm text-on-surface-variant">Work through these in order, then complete the module checklist.</p>
+              <ol className="mt-5 divide-y divide-outline-variant border-y border-outline-variant">
                 {resources.map((resource) => {
                   const youtubeRef = getYouTubeRef(resource.url);
 
                   return (
-                    <li key={resource.id} className="group relative border border-outline-variant bg-surface/80 p-4 transition-all hover:border-cyan/40 hover:shadow-md">
-                      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0 flex-1 space-y-1">
-                          <span className="inline-flex items-center border border-cyan/30 bg-cyan/10 px-2 py-0.5 font-code text-[9px] font-bold uppercase tracking-[0.1em] text-cyan">
-                            {resource.platform} · {resource.type}
+                    <li key={resource.id} className="group py-5 first:pt-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex min-w-0 flex-1 gap-3">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-container-low text-xs font-bold text-on-surface-variant">
+                            {youtubeRef ? <Play className="h-3.5 w-3.5" /> : <BookOpen className="h-3.5 w-3.5" />}
                           </span>
-                          <h4 className="font-display text-sm font-bold text-on-surface group-hover:text-cyan transition-colors">
-                            {resource.name}
-                          </h4>
+                          <div className="min-w-0">
+                            <h3 className="text-sm font-semibold text-on-surface transition-colors group-hover:text-cyan">{resource.name}</h3>
+                            <p className="mt-1 text-xs text-on-surface-variant">{resource.platform} · {youtubeRef ? 'Video' : resource.type}</p>
+                          </div>
                         </div>
                         <a
                           href={resource.url}
                           target="_blank"
                           rel="noreferrer"
                           className={cn(
-                            'inline-flex shrink-0 items-center justify-center gap-1.5 border border-cyan/40 bg-cyan/10 font-code font-bold uppercase tracking-[0.1em] text-cyan transition-colors hover:bg-cyan/20',
-                            youtubeRef ? 'px-2 py-1 text-[9px]' : 'px-3 py-1.5 text-[10px]',
+                            'inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors',
+                            youtubeRef ? 'text-cyan hover:bg-cyan/10' : 'bg-surface-container-low text-on-surface hover:bg-surface-container-high',
                           )}
                         >
-                          {youtubeRef ? 'Open on YouTube' : 'Open Resource'} <ArrowUpRight className="h-3 w-3" />
+                          {youtubeRef ? 'YouTube' : 'Open material'} <ExternalLink className="h-3.5 w-3.5" />
                         </a>
                       </div>
 
@@ -447,7 +458,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                     </li>
                   );
                 })}
-              </ul>
+              </ol>
             </section>
           )}
         </div>
@@ -462,15 +473,15 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             )}
 
             {tasks.length > 0 && (
-              <section className="border border-outline-variant bg-surface/60 p-4">
+              <section className="rounded-xl bg-surface-container-low p-5">
                 <div className="flex items-center justify-between">
-                  <p className="micro-label text-outline">tasks</p>
-                  <span className="font-code text-[10px] font-semibold text-on-surface-variant">{doneCount}/{tasks.length}</span>
+                  <p className="flex items-center gap-2 text-sm font-bold text-on-surface"><ListChecks className="h-4 w-4 text-cyan" />Module checklist</p>
+                  <span className="text-xs font-semibold text-on-surface-variant">{doneCount}/{tasks.length}</span>
                 </div>
                 <div className="mt-2 h-1 w-full bg-surface-container-high">
                   <div className="h-full bg-cyan transition-all duration-500" style={{ width: `${tasks.length ? (doneCount / tasks.length) * 100 : 0}%` }} />
                 </div>
-                <ul className="mt-3 space-y-2">
+                <ul className="mt-3">
                   {tasks.map((task) => (
                     <TaskRowItem
                       key={task.id}
@@ -478,6 +489,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                       data={data}
                       canWork={canWork}
                       watchGateOpen={watchGateOpen}
+                      hasVideoResource={hasVideoResource}
                       pathId={node.path_id}
                       pathTitle={path?.title ?? ''}
                       onComplete={handleComplete}

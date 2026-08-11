@@ -137,10 +137,10 @@ const TASK_TYPE_STYLE: Record<TaskType, string> = {
   challenge: 'text-tertiary',
 };
 
-export function TaskTypeBadge({ type }: { type: TaskType }) {
+export function TaskTypeBadge({ type, label }: { type: TaskType; label?: string }) {
   return (
     <span className={cn('shrink-0 font-code text-[9px] font-semibold uppercase tracking-[0.14em]', TASK_TYPE_STYLE[type])}>
-      {type}
+      {label ?? type}
     </span>
   );
 }
