@@ -10,68 +10,14 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowLeft, ArrowUpRight, BookOpen, Check, CircleHelp, ExternalLink, GitBranch, Hourglass, ListChecks, Loader2, Play, Rocket } from 'lucide-react';
-import type { QuizPayload, TaskRow } from '@/lib/database.types';
+import { ArrowLeft, ArrowUpRight, BookOpen, Check, ExternalLink, GitBranch, Hourglass, ListChecks, Loader2, Play, Rocket } from 'lucide-react';
+import type { TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
 import { getYouTubeRef, StatusChip, TaskTypeBadge, YouTubeEmbed } from './bits';
 import { ChallengeBlock } from './ChallengeBlock';
+import { QuizWorkspace } from './QuizWorkspace';
 import { cn } from '@/lib/utils';
-
-function QuizBlock({ quiz, onPass, disabled }: { quiz: QuizPayload; onPass: () => void; disabled: boolean }) {
-  const [picked, setPicked] = useState<number | null>(null);
-  const answered = picked !== null;
-  const correct = picked === quiz.correctIndex;
-
-  return (
-    <div className="mt-3 border border-outline-variant bg-surface-container-low p-4">
-      <p className="flex items-center gap-2 font-code text-[10px] font-semibold uppercase tracking-[0.14em] text-secondary">
-        <CircleHelp className="h-3.5 w-3.5" /> checkpoint
-      </p>
-      <p className="mt-2 text-sm font-semibold leading-6 text-on-surface">{quiz.question}</p>
-      <div className="mt-3 space-y-2">
-        {quiz.options.map((option, i) => {
-          const isCorrect = i === quiz.correctIndex;
-          const isPicked = i === picked;
-          return (
-            <button
-              key={i}
-              type="button"
-              disabled={answered || disabled}
-              onClick={() => {
-                setPicked(i);
-                if (i === quiz.correctIndex) onPass();
-              }}
-              className={cn(
-                'flex w-full items-center justify-between gap-2 border px-3 py-2.5 text-left text-xs transition-colors',
-                !answered && 'border-outline-variant hover:border-cyan/40 hover:bg-cyan/5',
-                answered && isCorrect && 'border-secondary bg-secondary/10 text-secondary',
-                answered && isPicked && !isCorrect && 'border-error bg-error/10 text-error',
-                answered && !isPicked && !isCorrect && 'border-outline-variant opacity-50',
-              )}
-            >
-              <span className="flex items-center gap-2.5">
-                <span className="font-code text-[10px] font-bold text-outline">{String.fromCharCode(65 + i)}</span>
-                {option}
-              </span>
-              {answered && isCorrect && <Check className="h-4 w-4 shrink-0" />}
-            </button>
-          );
-        })}
-      </div>
-      {answered && (
-        <p className={cn('mt-3 border-l-2 pl-3 text-xs leading-5', correct ? 'border-secondary text-on-surface-variant' : 'border-error text-on-surface-variant')}>
-          {correct ? quiz.explanation : 'Not quite — think it through and try again.'}
-          {!correct && (
-            <Button size="sm" variant="ghost" className="ml-2 h-auto min-h-0 px-2 py-1" onClick={() => setPicked(null)}>
-              retry
-            </Button>
-          )}
-        </p>
-      )}
-    </div>
-  );
-}
 
 function ProjectMilestone({ task, data, pathId, pathTitle, nodeSlug, disabled }: { task: TaskRow; data: UserData; pathId: string; pathTitle: string; nodeSlug: string; disabled: boolean }) {
   const [busy, setBusy] = useState(false);
@@ -217,9 +163,7 @@ function TaskRowItem({
         <p className="ml-9 mt-2 text-xs text-on-surface-variant">Play a video lesson to complete this step.</p>
       )}
       {isQuiz && quizOpen && !done && task.quiz && (
-        <div className="ml-9 mt-3">
-          <QuizBlock quiz={task.quiz} disabled={!canWork} onPass={() => onComplete(task)} />
-        </div>
+        <QuizWorkspace quiz={task.quiz} disabled={!canWork} onClose={() => setQuizOpen(false)} onPass={() => onComplete(task)} />
       )}
       {isChallenge && challengeOpen && !done && task.challenge && (
         <div className="ml-9 mt-3">

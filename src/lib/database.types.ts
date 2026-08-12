@@ -9,11 +9,15 @@ export type TaskType = 'read' | 'watch' | 'build' | 'quiz' | 'challenge';
 export type Role = 'member' | 'admin';
 export type Rank = 'Bronze' | 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
 
-export interface QuizPayload {
+export interface QuizQuestion {
   question: string;
   options: string[];
   correctIndex: number;
   explanation: string;
+}
+
+export interface QuizPayload {
+  questions: QuizQuestion[];
 }
 
 /**
