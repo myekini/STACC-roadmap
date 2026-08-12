@@ -3,10 +3,12 @@
 /** Focused in-browser kata workspace: Monaco + Pyodide (Python) or sql.js (SQL). */
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import type { BeforeMount } from '@monaco-editor/react';
 import { Check, Code2, FileCode2, Loader2, Play, RotateCcw, TerminalSquare, X } from 'lucide-react';
 import type { ChallengePayload } from '@/lib/database.types';
 import { usePyodide } from '@/hooks/usePyodide';
 import { useSqlJs } from '@/hooks/useSqlJs';
+import { useUiStore } from '@/store/useUiStore';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -14,12 +16,30 @@ import { cn } from '@/lib/utils';
 const Editor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
   loading: () => (
-    <div className="flex min-h-[360px] flex-1 flex-col items-center justify-center gap-3 bg-[#0d1117] font-code text-xs text-[#8395ac]">
+    <div className="flex min-h-[360px] flex-1 flex-col items-center justify-center gap-3 bg-background font-code text-xs text-on-surface-variant">
       <div className="h-8 w-8 border-4 border-primary border-t-transparent animate-spin" />
       preparing editor
     </div>
   ),
 });
+
+/** Mirrors the `--surface`/`--fg` design tokens (globals.css) into Monaco's own theme API,
+ * which only accepts literal hex — CSS custom properties can't reach it. Keep these two pairs
+ * in sync with globals.css if those tokens ever change. */
+const defineStaccMonacoThemes: BeforeMount = (monaco) => {
+  monaco.editor.defineTheme('stacc-dark', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [],
+    colors: { 'editor.background': '#0d1117', 'editor.foreground': '#e0e3e5' },
+  });
+  monaco.editor.defineTheme('stacc-light', {
+    base: 'vs',
+    inherit: true,
+    rules: [],
+    colors: { 'editor.background': '#f8fafc', 'editor.foreground': '#0f172a' },
+  });
+};
 
 type WorkspaceTab = 'problem' | 'code' | 'results';
 type RunResult = { passed: boolean; error?: string } | null;
@@ -52,6 +72,7 @@ export function ChallengeBlock({
   const [tab, setTab] = useState<WorkspaceTab>('problem');
   const { run: runPython } = usePyodide();
   const { run: runSql } = useSqlJs();
+  const { theme } = useUiStore();
 
   const handleRun = async () => {
     setBusy(true);
@@ -143,10 +164,10 @@ export function ChallengeBlock({
           </div>
         </section>
 
-        <section className={cn('min-h-0 flex-col bg-[#0d1117]', tab === 'code' ? 'flex' : 'hidden lg:flex')}>
-          <div className="flex h-10 shrink-0 items-center justify-between border-b border-[#2a3547] bg-[#101b2c] px-4">
-            <span className="flex items-center gap-2 font-code text-[11px] text-[#e0e3e5]"><FileCode2 className="h-3.5 w-3.5 text-[#00d9ff]" />{FILE_LABEL[challenge.language]}</span>
-            <span className="font-code text-[9px] uppercase text-[#8395ac]">{challenge.language}</span>
+        <section className={cn('min-h-0 flex-col bg-background', tab === 'code' ? 'flex' : 'hidden lg:flex')}>
+          <div className="flex h-10 shrink-0 items-center justify-between border-b border-outline-variant bg-surface-container-low px-4">
+            <span className="flex items-center gap-2 font-code text-[11px] text-on-surface"><FileCode2 className="h-3.5 w-3.5 text-cyan" />{FILE_LABEL[challenge.language]}</span>
+            <span className="font-code text-[9px] uppercase text-on-surface-variant">{challenge.language}</span>
           </div>
           <div className="min-h-0 flex-1">
           <Editor
@@ -154,7 +175,8 @@ export function ChallengeBlock({
             defaultLanguage={challenge.language}
             value={code}
             onChange={(value) => setCode(value ?? '')}
-            theme="vs-dark"
+            theme={theme === 'dark' ? 'stacc-dark' : 'stacc-light'}
+            beforeMount={defineStaccMonacoThemes}
             options={{
               minimap: { enabled: false },
               fontSize: 14,
@@ -170,12 +192,12 @@ export function ChallengeBlock({
           </div>
         </section>
 
-        <section className={cn('min-h-0 overflow-y-auto bg-[#0d1117] p-4 text-[#e0e3e5] lg:col-start-2 lg:row-start-1 lg:hidden', tab !== 'results' && 'hidden')} aria-live="polite">
+        <section className={cn('min-h-0 overflow-y-auto bg-background p-4 text-on-surface lg:col-start-2 lg:row-start-1 lg:hidden', tab !== 'results' && 'hidden')} aria-live="polite">
           <ConsolePanel busy={busy} saving={saving} result={result} />
         </section>
       </main>
 
-      <div className="hidden max-h-48 shrink-0 overflow-y-auto border-t border-[#2a3547] bg-[#0d1117] p-4 text-[#e0e3e5] lg:block" aria-live="polite">
+      <div className="hidden max-h-48 shrink-0 overflow-y-auto border-t border-outline-variant bg-background p-4 text-on-surface lg:block" aria-live="polite">
         <ConsolePanel busy={busy} saving={saving} result={result} />
       </div>
 
@@ -196,26 +218,30 @@ export function ChallengeBlock({
 
 function ConsolePanel({ busy, saving, result }: { busy: boolean; saving: boolean; result: RunResult }) {
   if (busy) {
-    return <p className="flex items-center gap-2 font-code text-xs text-[#f59e0b]"><Loader2 className="h-4 w-4 animate-spin" />Running your solution against the test suite…</p>;
+    return <p className="flex items-center gap-2 font-code text-xs text-tertiary"><Loader2 className="h-4 w-4 animate-spin" />Running your solution against the test suite…</p>;
   }
   if (saving) {
-    return <p className="flex items-center gap-2 font-code text-xs text-[#10b981]"><Loader2 className="h-4 w-4 animate-spin" />All tests passed. Saving your completion…</p>;
+    return <p className="flex items-center gap-2 font-code text-xs text-secondary"><Loader2 className="h-4 w-4 animate-spin" />All tests passed. Saving your completion…</p>;
   }
   if (result?.passed) {
     return (
       <div>
-        <p className="flex items-center gap-2 font-code text-xs font-semibold text-[#10b981]"><Check className="h-4 w-4" />All tests passed</p>
-        <p className="mt-2 font-code text-[11px] leading-5 text-[#8395ac]">Challenge complete. Returning to your module…</p>
+        <p className="flex items-center gap-2 font-code text-xs font-semibold text-secondary"><Check className="h-4 w-4" />All tests passed</p>
+        <p className="mt-2 font-code text-[11px] leading-5 text-on-surface-variant">Challenge complete. Returning to your module…</p>
       </div>
     );
   }
   if (result) {
     return (
       <div>
-        <p className="flex items-center gap-2 font-code text-xs font-semibold text-[#ef4444]"><X className="h-4 w-4" />Tests failed</p>
-        <pre className="mt-2 whitespace-pre-wrap font-code text-[11px] leading-5 text-[#b7c2d0]">{result.error}</pre>
+        <p className="flex items-center gap-2 font-code text-xs font-semibold text-error"><X className="h-4 w-4" />Tests failed</p>
+        <pre className="mt-2 whitespace-pre-wrap font-code text-[11px] leading-5 text-on-surface-variant">{result.error}</pre>
       </div>
     );
   }
-  return <p className="font-code text-[11px] text-[#8395ac]">Run your solution to see test results here.</p>;
+  return (
+    <p className="flex items-center gap-2 font-code text-[11px] text-on-surface-variant">
+      <span className="text-cyan">$</span> run your solution to see test results here
+    </p>
+  );
 }
