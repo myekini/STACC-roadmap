@@ -198,7 +198,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
   const searchParams = useSearchParams();
   const reduceMotion = useReducedMotion();
   const [justCompleted, setJustCompleted] = useState(false);
-  const [watchedAny, setWatchedAny] = useState(false);
+  const [videoWatched, setVideoWatched] = useState(false);
 
   const node = data.nodes.find((n) => n.slug === slug) ?? null;
   const status = node ? data.nodeStatus(node.id) : 'locked';
@@ -209,11 +209,11 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
   const needsAuth = data.isSupabaseConnected && !data.isAuthenticated;
   const canWork = !needsAuth && (status === 'in_progress' || status === 'available');
   const hasVideoResource = useMemo(() => resources.some((r) => getYouTubeRef(r.url)), [resources]);
-  const watchGateOpen = !hasVideoResource || watchedAny;
+  const watchGateOpen = !hasVideoResource || videoWatched;
 
   useEffect(() => {
     setJustCompleted(false);
-    setWatchedAny(false);
+    setVideoWatched(false);
   }, [slug]);
 
   const handleComplete = async (task: TaskRow, evidenceUrl?: string) => {
@@ -353,20 +353,26 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                             <p className="mt-1 text-xs text-on-surface-variant">{resource.platform} · {youtubeRef ? 'Video' : resource.type}</p>
                           </div>
                         </div>
-                        <a
-                          href={resource.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={cn(
-                            'inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors',
-                            youtubeRef ? 'text-cyan hover:bg-cyan/10' : 'bg-surface-container-low text-on-surface hover:bg-surface-container-high',
-                          )}
-                        >
-                          {youtubeRef ? 'YouTube' : 'Open material'} <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
+                        {!youtubeRef && (
+                          <a
+                            href={resource.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-md bg-surface-container-low px-3 text-xs font-semibold text-on-surface transition-colors hover:bg-surface-container-high"
+                          >
+                            Open material <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        )}
                       </div>
 
-                      {youtubeRef && <YouTubeEmbed source={youtubeRef} title={resource.name} onPlay={() => setWatchedAny(true)} />}
+                      {youtubeRef && (
+                        <YouTubeEmbed
+                          source={youtubeRef}
+                          title={resource.name}
+                          onPlay={() => youtubeRef.kind === 'playlist' && setVideoWatched(true)}
+                          onWatchThreshold={() => setVideoWatched(true)}
+                        />
+                      )}
                     </li>
                   );
                 })}

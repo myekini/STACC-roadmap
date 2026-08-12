@@ -1,9 +1,61 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Check, ListVideo, Lock, Play, Star } from 'lucide-react';
 import type { NodeStatus, TaskType } from '@/lib/database.types';
 import { cn } from '@/lib/utils';
+
+/** Fraction of a video's duration that counts as "watched" — YouTube Analytics uses the same bar. */
+const WATCH_THRESHOLD = 0.9;
+
+interface YTPlayer {
+  getDuration: () => number;
+  getCurrentTime: () => number;
+  destroy: () => void;
+}
+interface YTPlayerEvent {
+  target: YTPlayer;
+  data: number;
+}
+interface YTNamespace {
+  Player: new (
+    element: HTMLElement,
+    config: {
+      events: {
+        onStateChange: (event: YTPlayerEvent) => void;
+      };
+    },
+  ) => YTPlayer;
+  PlayerState: { PLAYING: number };
+}
+declare global {
+  interface Window {
+    YT?: YTNamespace;
+    onYouTubeIframeAPIReady?: () => void;
+  }
+}
+
+let iframeApiPromise: Promise<YTNamespace> | null = null;
+
+/** Loads the YouTube IFrame Player API script once, lazily (only once a user opts into playback). */
+function loadYouTubeIframeApi(): Promise<YTNamespace> {
+  if (iframeApiPromise) return iframeApiPromise;
+  iframeApiPromise = new Promise((resolve) => {
+    if (window.YT?.Player) {
+      resolve(window.YT);
+      return;
+    }
+    const previousReady = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      previousReady?.();
+      resolve(window.YT!);
+    };
+    const script = document.createElement('script');
+    script.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(script);
+  });
+  return iframeApiPromise;
+}
 
 export type YouTubeRef = { kind: 'video'; id: string } | { kind: 'playlist'; id: string };
 
@@ -33,24 +85,101 @@ export function getYouTubeRef(url: string): YouTubeRef | null {
 
 /** Click-to-load inline player — shows a thumbnail (or a playlist marker) until the user
  * opts in, so the node sheet doesn't fire YouTube's embed scripts/cookies for every
- * resource up front. */
-export function YouTubeEmbed({ source, title, onPlay }: { source: YouTubeRef; title: string; onPlay?: () => void }) {
+ * resource up front. Once loaded, polls the real IFrame Player API for playback position
+ * so `onWatchThreshold` reflects actually watching ~90% of the video, not just opening it. */
+export function YouTubeEmbed({
+  source,
+  title,
+  onPlay,
+  onWatchThreshold,
+}: {
+  source: YouTubeRef;
+  title: string;
+  onPlay?: () => void;
+  onWatchThreshold?: () => void;
+}) {
   const [loaded, setLoaded] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const embedSrc =
     source.kind === 'video'
-      ? `https://www.youtube-nocookie.com/embed/${source.id}?autoplay=1`
-      : `https://www.youtube-nocookie.com/embed/videoseries?list=${source.id}&autoplay=1`;
+      ? `https://www.youtube-nocookie.com/embed/${source.id}?autoplay=1&enablejsapi=1`
+      : `https://www.youtube-nocookie.com/embed/videoseries?list=${source.id}&autoplay=1&enablejsapi=1`;
+
+  useEffect(() => {
+    // Playlists don't expose a single duration to track against — leave them on the
+    // simpler "opened it" signal via onPlay below.
+    if (!loaded || source.kind !== 'video' || !iframeRef.current) return;
+
+    let cancelled = false;
+    let player: YTPlayer | null = null;
+    let pollId: ReturnType<typeof setInterval> | null = null;
+    let thresholdFired = false;
+
+    const stopPolling = () => {
+      if (pollId) clearInterval(pollId);
+      pollId = null;
+    };
+
+    loadYouTubeIframeApi().then((YT) => {
+      if (cancelled || !iframeRef.current) return;
+      player = new YT.Player(iframeRef.current, {
+        events: {
+          onStateChange: (event) => {
+            if (event.data !== YT.PlayerState.PLAYING) {
+              stopPolling();
+              return;
+            }
+            if (pollId) return;
+            pollId = setInterval(() => {
+              const duration = player?.getDuration() ?? 0;
+              if (!duration) return;
+              const fraction = Math.min(1, (player?.getCurrentTime() ?? 0) / duration);
+              setProgress(fraction);
+              if (!thresholdFired && fraction >= WATCH_THRESHOLD) {
+                thresholdFired = true;
+                onWatchThreshold?.();
+              }
+            }, 1000);
+          },
+        },
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      stopPolling();
+      player?.destroy();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- source/onWatchThreshold identity churn shouldn't tear down and reload the player
+  }, [loaded]);
 
   if (loaded) {
     return (
-      <div className="mt-3 aspect-video w-full overflow-hidden border border-outline-variant bg-black">
-        <iframe
-          className="h-full w-full"
-          src={embedSrc}
-          title={title}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
+      <div className="mt-3">
+        <div className="aspect-video w-full overflow-hidden border border-outline-variant bg-black">
+          <iframe
+            ref={iframeRef}
+            className="h-full w-full"
+            src={embedSrc}
+            title={title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+        {source.kind === 'video' && (
+          <div className="mt-2 h-1 w-full bg-surface-container-high">
+            <div className="h-full bg-cyan transition-all duration-500" style={{ width: `${progress * 100}%` }} />
+          </div>
+        )}
+        <a
+          href={source.kind === 'video' ? `https://www.youtube.com/watch?v=${source.id}` : `https://www.youtube.com/playlist?list=${source.id}`}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-2 inline-block font-code text-[10px] text-on-surface-variant underline decoration-outline-variant underline-offset-2 hover:text-cyan"
+        >
+          Open on youtube.com ↗ {source.kind === 'video' && <span className="text-outline">— watch here to complete this step</span>}
+        </a>
       </div>
     );
   }
