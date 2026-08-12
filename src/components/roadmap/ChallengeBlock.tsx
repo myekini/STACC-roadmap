@@ -14,8 +14,9 @@ import { cn } from '@/lib/utils';
 const Editor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
   loading: () => (
-    <div className="flex min-h-[360px] flex-1 items-center justify-center bg-[#0d1117] font-code text-xs text-[#8395ac]">
-      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> preparing editor
+    <div className="flex min-h-[360px] flex-1 flex-col items-center justify-center gap-3 bg-[#0d1117] font-code text-xs text-[#8395ac]">
+      <div className="h-8 w-8 border-4 border-primary border-t-transparent animate-spin" />
+      preparing editor
     </div>
   ),
 });
