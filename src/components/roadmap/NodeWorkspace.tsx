@@ -35,6 +35,7 @@ import type { UserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AnimatedStaccMark } from '@/components/brand/AnimatedStaccMark';
+import { GithubLogo } from '@/components/icons/GithubLogo';
 import { getYouTubeRef, YouTubeEmbed } from './bits';
 import { ChallengeBlock } from './ChallengeBlock';
 import { QuizWorkspace } from './QuizWorkspace';
@@ -77,16 +78,16 @@ function ProjectMilestone({
     return (
       <div className="rounded-xl border border-outline-variant bg-surface-card p-4 text-xs">
         <p className="flex items-center gap-2 font-semibold text-on-surface">
-          <GitBranch className="h-4 w-4 text-cyan" />
+          <GithubLogo className="h-4 w-4 text-cyan" />
           Connect your {pathTitle} project repo
         </p>
         <p className="mt-1 leading-5 text-on-surface-variant">
           Choose one GitHub repository. Stacc reads commits from that repo only to verify your work.
         </p>
-        <Button asChild size="sm" className="mt-3 rounded-lg font-code">
+        <Button asChild size="sm" className="mt-3 rounded-xl font-code gap-2 bg-surface-card border border-outline-variant hover:border-cyan text-on-surface">
           <a href={`/api/github/install?path=${encodeURIComponent(pathId)}&returnTo=${encodeURIComponent(`/roadmap/${nodeSlug}`)}`}>
-            <GitBranch className="h-3.5 w-3.5" />
-            {project ? 'Reconnect GitHub' : 'Connect GitHub'}
+            <GithubLogo className="h-4 w-4 text-on-surface" />
+            <span>{project ? 'Reconnect GitHub' : 'Connect GitHub'}</span>
           </a>
         </Button>
       </div>

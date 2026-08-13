@@ -9,7 +9,6 @@ import {
   ArrowRight,
   Code2,
   Compass,
-  GitBranch,
   Hourglass,
   Layers,
   Moon,
@@ -24,6 +23,7 @@ import { useUserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StaccMark } from '@/components/brand/StaccMark';
+import { GithubLogo } from '@/components/icons/GithubLogo';
 import { useUiStore } from '@/store/useUiStore';
 import { cn } from '@/lib/utils';
 
@@ -31,7 +31,7 @@ function AuthErrorBanner() {
   const authError = useSearchParams().get('authError');
   if (!authError) return null;
   return (
-    <div className="mt-4 flex items-start gap-2.5 border border-orange/40 bg-orange/10 px-4 py-3 font-code text-xs">
+    <div className="mt-4 flex items-start gap-2.5 border border-orange/40 bg-orange/10 px-4 py-3 font-code text-xs rounded-xl">
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange" />
       <p className="leading-5 text-on-surface-variant">
         <span className="font-semibold text-orange">Sign-in failed —</span> {authError}
@@ -106,12 +106,24 @@ export default function LandingPage() {
               size="icon"
               onClick={toggleTheme}
               title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-              className="h-8 w-8 rounded-none border-outline-variant bg-surface text-on-surface-variant hover:text-cyan"
+              className="h-9 w-9 rounded-xl border-outline-variant bg-surface text-on-surface-variant hover:text-cyan"
             >
               {theme === 'dark' ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-cyan" />}
             </Button>
 
-            <Button onClick={handleStart} size="sm" className="gap-1.5 text-xs font-code uppercase font-bold tracking-wider">
+            {isSupabaseConnected && !isAuthenticated && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={signInWithGithub}
+                className="gap-2 font-code text-xs rounded-xl border-outline-variant bg-surface-card hover:bg-surface-container-high"
+              >
+                <GithubLogo className="h-4 w-4" />
+                <span>Sign in</span>
+              </Button>
+            )}
+
+            <Button onClick={handleStart} size="sm" className="gap-1.5 text-xs font-code uppercase font-bold tracking-wider rounded-xl bg-cyan text-navy hover:bg-cyan/90">
               {hasSelectedPath ? 'Continue Roadmap' : 'Start Roadmap'}
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
@@ -131,7 +143,7 @@ export default function LandingPage() {
             transition={{ duration: 0.4 }}
             className="flex justify-center"
           >
-            <Badge variant="outline" className="border-cyan/40 bg-cyan/10 text-cyan text-xs font-code tracking-[0.14em] uppercase px-3.5 py-1">
+            <Badge variant="outline" className="border-cyan/40 bg-cyan/10 text-cyan text-xs font-code tracking-[0.14em] uppercase px-3.5 py-1 rounded-full">
               <Sparkles className="h-3.5 w-3.5 mr-1.5 inline" /> Data & AI Career Engine
             </Badge>
           </motion.div>
@@ -161,27 +173,29 @@ export default function LandingPage() {
             transition={{ duration: 0.45, delay: 0.15 }}
             className="flex flex-wrap items-center justify-center gap-4 pt-2"
           >
-            <Button size="lg" onClick={handleStart} className="gap-2 shadow-xl font-code uppercase font-bold tracking-wider px-6 py-3 text-xs">
+            <Button size="lg" onClick={handleStart} className="gap-2 shadow-xl font-code uppercase font-bold tracking-wider px-6 py-3.5 text-xs rounded-xl bg-secondary text-white hover:bg-secondary/90">
               <Rocket className="h-4 w-4" />
               {hasSelectedPath ? 'Continue Your Roadmap' : 'Start Learning Free'}
             </Button>
 
-            <Button size="lg" variant="outline" asChild className="font-code uppercase text-xs font-semibold px-6 py-3 border-cyan/40 hover:border-cyan">
-              <Link href="/paths">
-                Explore All Tracks <ArrowRight className="h-4 w-4 ml-1.5 inline" />
-              </Link>
-            </Button>
+            {isSupabaseConnected && !isAuthenticated ? (
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={signInWithGithub}
+                className="gap-2.5 font-code text-xs font-bold tracking-wider px-6 py-3.5 rounded-xl border-cyan/40 hover:border-cyan bg-surface-card"
+              >
+                <GithubLogo className="h-4 w-4 text-on-surface" />
+                <span>Sign in with GitHub</span>
+              </Button>
+            ) : (
+              <Button size="lg" variant="outline" asChild className="font-code uppercase text-xs font-semibold px-6 py-3.5 rounded-xl border-cyan/40 hover:border-cyan">
+                <Link href="/paths">
+                  Explore All Tracks <ArrowRight className="h-4 w-4 ml-1.5 inline" />
+                </Link>
+              </Button>
+            )}
           </motion.div>
-
-          {isSupabaseConnected && (
-            <button
-              type="button"
-              onClick={signInWithGithub}
-              className="inline-flex items-center gap-1.5 font-code text-xs text-on-surface-variant transition-colors hover:text-cyan"
-            >
-              <GitBranch className="h-3.5 w-3.5" /> Already a member? Sign in with GitHub
-            </button>
-          )}
 
           <Suspense fallback={null}>
             <AuthErrorBanner />
@@ -248,9 +262,9 @@ export default function LandingPage() {
                 desc: 'One canonical visual map connecting official documentation, battle-tested tutorials, and core architectural concepts.',
               },
             ].map((feat) => (
-              <div key={feat.title} className="group relative flex flex-col justify-between border border-outline-variant bg-surface p-6 transition-all hover:-translate-y-1 hover:border-cyan/40 hover:shadow-xl">
+              <div key={feat.title} className="group relative flex flex-col justify-between border border-outline-variant bg-surface-card rounded-2xl p-6 transition-all hover:-translate-y-1 hover:border-cyan/40 hover:shadow-xl">
                 <div className="space-y-4">
-                  <div className="flex h-11 w-11 items-center justify-center border border-cyan/40 bg-cyan/10 text-cyan">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan/40 bg-cyan/10 text-cyan">
                     <feat.icon className="h-5 w-5" />
                   </div>
 
@@ -288,10 +302,10 @@ export default function LandingPage() {
                 type="button"
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
                 className={cn(
-                  'px-3.5 py-1.5 font-code text-xs font-semibold uppercase tracking-[0.1em] border transition-all',
+                  'px-3.5 py-1.5 font-code text-xs font-semibold uppercase tracking-[0.1em] border transition-all rounded-xl',
                   activeTab === tab.id
                     ? 'border-cyan bg-cyan/15 text-cyan shadow-sm'
-                    : 'border-outline-variant/60 bg-surface/60 text-on-surface-variant hover:border-cyan/40 hover:text-on-surface',
+                    : 'border-outline-variant/60 bg-surface-card text-on-surface-variant hover:border-cyan/40 hover:text-on-surface',
                 )}
               >
                 {tab.label}
@@ -304,14 +318,14 @@ export default function LandingPage() {
             {featuredPaths.map((path) => (
               <article
                 key={path.id}
-                className="group flex flex-col justify-between border border-outline-variant bg-surface p-6 transition-all hover:-translate-y-1 hover:border-cyan/40 hover:shadow-xl"
+                className="group flex flex-col justify-between border border-outline-variant bg-surface-card rounded-2xl p-6 transition-all hover:-translate-y-1 hover:border-cyan/40 hover:shadow-xl"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="font-code text-[10px] font-semibold uppercase tracking-wider text-cyan">
                       {path.requires_paths.length === 0 ? 'Core Track' : 'Specialization'}
                     </span>
-                    <Badge variant="outline" className="border-cyan/30 bg-cyan/10 font-code text-[10px] text-cyan">
+                    <Badge variant="outline" className="border-cyan/30 bg-cyan/10 font-code text-[10px] text-cyan rounded-md">
                       {path.tags[0] ?? 'Data'}
                     </Badge>
                   </div>
@@ -331,7 +345,7 @@ export default function LandingPage() {
                     <span className="flex items-center gap-1"><Layers className="h-3.5 w-3.5 text-secondary" /> {nodes.filter((n) => n.path_id === path.id).length} modules</span>
                   </div>
 
-                  <Button asChild variant="outline" className="w-full justify-between group-hover:border-cyan font-code text-xs uppercase tracking-wider">
+                  <Button asChild variant="outline" className="w-full justify-between group-hover:border-cyan font-code text-xs uppercase tracking-wider rounded-xl">
                     <Link href="/paths">
                       <span>Explore Track</span>
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

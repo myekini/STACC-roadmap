@@ -108,6 +108,31 @@ GitHub repository IDs—not URLs or repository names—are the durable identity.
 - Store compact check results, never repository contents or webhook payload archives.
 - Keep GitHub failures recoverable: project progress remains intact if the app is suspended or uninstalled.
 
+## Production readiness layers
+
+**Living checklist — update this table in the same PR that changes a layer's state. Don't
+re-derive this from scratch in a future session; edit it in place.**
+
+Target: hold up cleanly at 10,000 registered learners with bursty, self-paced usage (matches
+the scale target above). Ordered frontend → data, then cross-cutting layers.
+
+| Layer | Current state | Gap at 10k users | Priority |
+|---|---|---|---|
+| Frontend delivery | Next.js App Router on Vercel, CDN + image optimization | No bundle-size budget/check in CI — Monaco/Pyodide/sql.js are dynamically imported but nothing catches a regression | Medium |
+| API / route handlers | No custom REST layer; Supabase direct reads + security-definer RPC writes (§6 of PRODUCT.md) | No rate limiting on public endpoints (`/auth/callback`, `get_public_profile`, project verification) | High |
+| Auth | Supabase GitHub OAuth, cookie-based `@supabase/ssr`, session refresh in `middleware.ts` | None known — admin role gating is server-side per RLS | Low |
+| Data layer | Supabase Postgres, RLS policies, migrations tracked in `supabase/migrations/` | Backup/PITR policy not confirmed against Supabase plan tier | High |
+| GitHub verification | User-triggered installation tokens, short-lived, no polling (see above) | Rate-limit project verification per user/task not yet implemented (listed under Operational guardrails, unconfirmed built) | Medium |
+| CI | `.github/workflows/check.yml` — lint + typecheck + build gate on PR/push to main | No automated test suite (by design, per PRODUCT.md §11 — verify visually); no dependency vulnerability scan (Dependabot/`npm audit`) in the pipeline | Medium |
+| CD | Vercel auto preview + prod deploy on push to main | No documented rollback runbook (capability exists in Vercel, not written down) | Low |
+| Error tracking | **None wired** | No Sentry or equivalent — a production error currently surfaces only if a user reports it | **Highest** |
+| Observability / logging | Vercel Analytics wired for pageviews only | No structured server-side logging, no APM, no uptime/status monitoring | High |
+| Security | Supabase RLS, short-lived GitHub installation tokens, server-only env vars | No WAF/bot management (Vercel Firewall/BotID) configured; no dependency vuln scanning in CI | Medium |
+| Product analytics | Not instrumented — PRODUCT.md §9 targets (WAU%, completion rate, etc.) are defined but unmeasured | Full instrumentation pass needed before those targets mean anything | Medium |
+
+**Read this table before any "make this production-ready" or "can we handle N users" question** —
+update priorities and state as each gap closes instead of re-auditing from zero.
+
 ## Implementation sequence
 
 1. ✅ Land the connected-project schema (`0009_connected_track_projects.sql`).
