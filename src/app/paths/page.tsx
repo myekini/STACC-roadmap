@@ -314,7 +314,7 @@ export default function PathSelectionPage() {
 
                 {/* Instructor Avatar & Metadata Bar (DataCamp Style) */}
                 <div className="mt-5 flex items-center gap-3 pt-4 border-t border-outline-variant/60">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-800 font-bold text-cyan text-xs border border-cyan/30">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container-high font-bold text-cyan text-xs border border-cyan/30">
                     {meta.instructor.split(' ').map((n) => n[0]).join('')}
                   </div>
                   <div className="min-w-0">
@@ -349,7 +349,7 @@ export default function PathSelectionPage() {
                     </div>
                     <Progress
                       value={pathNodes.length ? (done / pathNodes.length) * 100 : 0}
-                      className="h-1.5 rounded-full bg-slate-800 [&>div]:bg-cyan"
+                      className="h-1.5 rounded-full bg-surface-container-high [&>div]:bg-cyan"
                     />
                   </div>
                 )}
@@ -363,7 +363,7 @@ export default function PathSelectionPage() {
                       ? 'bg-cyan text-navy hover:bg-cyan/90'
                       : locked
                         ? 'border border-outline-variant/60 bg-surface text-outline cursor-not-allowed'
-                        : 'bg-slate-900 border border-cyan/40 text-cyan hover:bg-cyan hover:text-navy',
+                        : 'bg-surface-card border border-cyan/40 text-cyan hover:bg-cyan hover:text-navy',
                   )}
                 >
                   {isActive ? (
