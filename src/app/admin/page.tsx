@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { StatusMarker } from '@/components/roadmap/bits';
 import { StaccMark } from '@/components/brand/StaccMark';
+import { CurriculumManager } from '@/components/admin/CurriculumManager';
 import { cn } from '@/lib/utils';
 
 function AdminLogin({ signIn }: { signIn: (email: string, password: string) => Promise<string | null> }) {
@@ -258,8 +259,12 @@ export default function AdminPage() {
           )}
 
           {section === 'curriculum' && (
-            <div className="space-y-4">
-              <ModuleChart analytics={admin.data?.nodeAnalytics ?? []} nodeById={nodeById} />
+            <div className="space-y-8">
+              <CurriculumManager />
+              <div className="pt-6 border-t border-outline-variant/60">
+                <h3 className="font-display text-lg font-bold text-on-surface mb-4">Module Completion Analytics</h3>
+                <ModuleChart analytics={admin.data?.nodeAnalytics ?? []} nodeById={nodeById} />
+              </div>
               <div className="overflow-x-auto border border-outline-variant bg-surface">
                 <table className="w-full min-w-[560px] text-left">
                   <thead>

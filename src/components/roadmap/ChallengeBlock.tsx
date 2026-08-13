@@ -4,7 +4,8 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import type { BeforeMount } from '@monaco-editor/react';
-import { Check, Code2, FileCode2, Loader2, Play, RotateCcw, TerminalSquare, X } from 'lucide-react';
+import { Check, Code2, FileCode2, Play, RotateCcw, TerminalSquare, X } from 'lucide-react';
+import { AnimatedStaccMark } from '@/components/brand/AnimatedStaccMark';
 import type { ChallengePayload } from '@/lib/database.types';
 import { usePyodide } from '@/hooks/usePyodide';
 import { useSqlJs } from '@/hooks/useSqlJs';
@@ -17,7 +18,7 @@ const Editor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
   loading: () => (
     <div className="flex min-h-[360px] flex-1 flex-col items-center justify-center gap-3 bg-background font-code text-xs text-on-surface-variant">
-      <div className="h-8 w-8 border-4 border-primary border-t-transparent animate-spin" />
+      <AnimatedStaccMark className="h-8 w-8" />
       preparing editor
     </div>
   ),
@@ -207,7 +208,7 @@ export function ChallengeBlock({
         </Button>
         <div className="flex-1" />
         <Button type="button" disabled={disabled || busy || saving || result?.passed} onClick={handleRun} className="h-11 min-w-36 bg-primary px-5 text-on-primary">
-          {busy || saving ? <Loader2 className="h-4 w-4 animate-spin" /> : result?.passed ? <Check className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          {busy || saving ? <AnimatedStaccMark className="h-4 w-4" /> : result?.passed ? <Check className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           {busy ? 'Running tests…' : saving ? 'Saving…' : result?.passed ? 'Passed' : 'Run tests'}
         </Button>
       </footer>
@@ -218,10 +219,10 @@ export function ChallengeBlock({
 
 function ConsolePanel({ busy, saving, result }: { busy: boolean; saving: boolean; result: RunResult }) {
   if (busy) {
-    return <p className="flex items-center gap-2 font-code text-xs text-tertiary"><Loader2 className="h-4 w-4 animate-spin" />Running your solution against the test suite…</p>;
+    return <p className="flex items-center gap-2 font-code text-xs text-tertiary"><AnimatedStaccMark className="h-4 w-4" />Running your solution against the test suite…</p>;
   }
   if (saving) {
-    return <p className="flex items-center gap-2 font-code text-xs text-secondary"><Loader2 className="h-4 w-4 animate-spin" />All tests passed. Saving your completion…</p>;
+    return <p className="flex items-center gap-2 font-code text-xs text-secondary"><AnimatedStaccMark className="h-4 w-4" />All tests passed. Saving your completion…</p>;
   }
   if (result?.passed) {
     return (
