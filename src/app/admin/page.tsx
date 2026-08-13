@@ -6,7 +6,7 @@
  */
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Download, GitBranch, LogIn } from 'lucide-react';
+import { ArrowRight, Download, LogIn } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 import { exportMembersCsv, useAdminData, type MemberRow } from '@/hooks/useAdminData';
 import { AdminShell, type AdminSection } from '@/components/admin/AdminShell';
@@ -18,6 +18,8 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { StatusMarker } from '@/components/roadmap/bits';
 import { StaccMark } from '@/components/brand/StaccMark';
+import { AnimatedStaccMark } from '@/components/brand/AnimatedStaccMark';
+import { GithubLogo } from '@/components/icons/GithubLogo';
 import { CurriculumManager } from '@/components/admin/CurriculumManager';
 import { cn } from '@/lib/utils';
 
@@ -87,9 +89,9 @@ function MemberDrilldown({ member, onClose }: { member: MemberRow | null; onClos
                 href={`https://github.com/${member.githubUsername}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 border border-cyan/40 bg-cyan/10 px-2.5 py-1 font-code text-[10px] font-bold uppercase text-cyan hover:bg-cyan/20"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-cyan/40 bg-cyan/10 px-2.5 py-1 font-code text-[10px] font-bold uppercase text-cyan hover:bg-cyan/20"
               >
-                <GitBranch className="h-3 w-3" /> GitHub
+                <GithubLogo className="h-3 w-3" /> GitHub
               </a>
             )}
           </div>
@@ -162,7 +164,11 @@ export default function AdminPage() {
   }
 
   if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center bg-background"><div className="h-10 w-10 border-4 border-primary border-t-transparent animate-spin" /></div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <AnimatedStaccMark className="h-14 w-14" />
+      </div>
+    );
   }
 
   if (!isAdmin) {
@@ -260,8 +266,11 @@ export default function AdminPage() {
 
           {section === 'curriculum' && (
             <div className="space-y-8">
-              <CurriculumManager />
-              <div className="pt-6 border-t border-outline-variant/60">
+              {/* 3-panel CurriculumManager — needs a fixed height to enable internal scroll */}
+              <div className="overflow-hidden rounded-2xl border border-outline-variant bg-surface" style={{ height: '70vh', minHeight: 520 }}>
+                <CurriculumManager />
+              </div>
+              <div className="pt-2 border-t border-outline-variant/60">
                 <h3 className="font-display text-lg font-bold text-on-surface mb-4">Module Completion Analytics</h3>
                 <ModuleChart analytics={admin.data?.nodeAnalytics ?? []} nodeById={nodeById} />
               </div>
