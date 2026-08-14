@@ -187,6 +187,11 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
   const quizTask = tasks.find((t) => t.type === 'quiz' && t.quiz);
   const buildTask = tasks.find((t) => t.type === 'build');
 
+  /* ── Connected project repo — visible on every node in the track, not
+     just wherever the build task card happens to be ── */
+  const trackProject = path && path.id !== 'foundations' ? data.projectConnections[path.id] : undefined;
+  const trackRepoConnected = trackProject?.connection_status === 'active' && Boolean(trackProject.github_repo_id);
+
   useEffect(() => {
     setActiveResourceIndex(0);
   }, [slug]);
@@ -286,6 +291,31 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             <span className="hidden sm:inline">Course Outline</span>
             <ChevronRight className="h-3 w-3 -ml-1 opacity-60" />
           </button>
+
+          {/* Connected project repo — persistent across every node in this track */}
+          {path && path.id !== 'foundations' && data.isSupabaseConnected && (
+            trackRepoConnected ? (
+              <a
+                href={trackProject!.repo_url}
+                target="_blank"
+                rel="noreferrer"
+                title="Connected project repo"
+                className="hidden items-center gap-1.5 rounded-lg border border-outline-variant bg-surface-card px-2.5 py-1.5 font-code text-xs text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan md:flex"
+              >
+                <GithubLogo className="h-3.5 w-3.5" />
+                <span className="max-w-[140px] truncate">{trackProject!.repo_owner}/{trackProject!.repo_name}</span>
+              </a>
+            ) : (
+              <a
+                href={`/api/github/install?path=${encodeURIComponent(path.id)}&returnTo=${encodeURIComponent(`/roadmap/${slug}`)}`}
+                title="Connect a GitHub repo for this track"
+                className="hidden items-center gap-1.5 rounded-lg border border-dashed border-outline-variant bg-surface-card px-2.5 py-1.5 font-code text-xs text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan md:flex"
+              >
+                <GithubLogo className="h-3.5 w-3.5" />
+                <span>Connect repo</span>
+              </a>
+            )
+          )}
 
           {/* XP chip */}
           <div className="hidden items-center gap-1.5 rounded-lg border border-cyan/30 bg-cyan/10 px-3 py-1.5 font-code text-xs text-cyan md:flex">

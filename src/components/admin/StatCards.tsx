@@ -1,13 +1,8 @@
 import type { LucideIcon } from 'lucide-react';
 import { AlertTriangle, TrendingUp, Users, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { MemberRow } from '@/hooks/useAdminData';
+import type { OverviewStats } from '@/hooks/useAdminData';
 import { cn } from '@/lib/utils';
-
-function daysSince(iso: string | null) {
-  if (!iso) return Infinity;
-  return (Date.now() - new Date(iso).getTime()) / 86_400_000;
-}
 
 function Stat({ label, value, sub, icon: Icon, tone }: { label: string; value: string; sub: string; icon: LucideIcon; tone: string }) {
   return (
@@ -24,18 +19,15 @@ function Stat({ label, value, sub, icon: Icon, tone }: { label: string; value: s
   );
 }
 
-export function StatCards({ members }: { members: MemberRow[] }) {
-  const total = members.length;
-  const stuck = members.filter((m) => m.isStuck).length;
-  const activeWeek = members.filter((m) => daysSince(m.lastActiveAt) <= 7).length;
-  const avgPct = total ? Math.round(members.reduce((sum, m) => sum + m.overallPct, 0) / total) : 0;
-
+/** Stats are aggregated server-side (admin_overview_stats RPC) — the panel
+ * never needs the full member list in the browser just to show four numbers. */
+export function StatCards({ stats }: { stats: OverviewStats }) {
   return (
     <div className="grid grid-cols-1 gap-px overflow-hidden border border-outline-variant bg-outline-variant sm:grid-cols-2 lg:grid-cols-4">
-      <Stat label="total members" value={String(total)} sub="across all cohorts" icon={Users} tone="border-cyan/40 bg-cyan/10 text-cyan" />
-      <Stat label="active this week" value={String(activeWeek)} sub="roadmap activity in 7d" icon={TrendingUp} tone="border-secondary/40 bg-secondary/10 text-secondary" />
-      <Stat label="avg. completion" value={`${avgPct}%`} sub="mean across members" icon={Zap} tone="border-tertiary/40 bg-tertiary/10 text-tertiary" />
-      <Stat label="stuck" value={String(stuck)} sub="14+ days no activity" icon={AlertTriangle} tone="border-error/40 bg-error/10 text-error" />
+      <Stat label="total members" value={String(stats.totalMembers)} sub="across all cohorts" icon={Users} tone="border-cyan/40 bg-cyan/10 text-cyan" />
+      <Stat label="active this week" value={String(stats.activeThisWeek)} sub="roadmap activity in 7d" icon={TrendingUp} tone="border-secondary/40 bg-secondary/10 text-secondary" />
+      <Stat label="avg. completion" value={`${stats.avgCompletionPct}%`} sub="mean across members" icon={Zap} tone="border-tertiary/40 bg-tertiary/10 text-tertiary" />
+      <Stat label="stuck" value={String(stats.stuckCount)} sub="14+ days no activity" icon={AlertTriangle} tone="border-error/40 bg-error/10 text-error" />
     </div>
   );
 }

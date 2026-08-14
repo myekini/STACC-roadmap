@@ -56,6 +56,7 @@ export interface ProfileRow {
   rank: Rank;
   role: Role;
   cohort_label: string | null;
+  github_username: string | null;
   created_at: string;
   last_active_at: string;
 }
@@ -235,6 +236,61 @@ export interface Database {
       node_is_unlocked: { Args: { p_user: string; p_node: string }; Returns: boolean };
       is_admin: { Args: Record<string, never>; Returns: boolean };
       calc_rank: { Args: { xp: number }; Returns: Rank };
+      admin_upsert_path: {
+        Args: { p_id: string; p_title: string; p_description: string; p_icon: string; p_tags: string[]; p_order: number; p_requires_paths: string[] };
+        Returns: PathRow;
+      };
+      admin_delete_path: { Args: { p_id: string }; Returns: undefined };
+      admin_reorder_paths: { Args: { p_ordered_ids: string[] }; Returns: undefined };
+      admin_upsert_node: {
+        Args: { p_id: string | null; p_path_id: string; p_slug: string; p_name: string; p_subtitle: string; p_description: string; p_icon: string; p_order: number; p_est_hours: number; p_xp_reward: number; p_skills: string[] };
+        Returns: NodeRow;
+      };
+      admin_delete_node: { Args: { p_id: string }; Returns: undefined };
+      admin_reorder_nodes: { Args: { p_path_id: string; p_ordered_ids: string[] }; Returns: undefined };
+      admin_set_node_prerequisites: { Args: { p_node_id: string; p_prerequisite_ids: string[] }; Returns: undefined };
+      admin_upsert_resource: {
+        Args: { p_id: string | null; p_node_id: string; p_name: string; p_type: ResourceType; p_platform: string; p_url: string; p_cost: 'free' | 'paid' };
+        Returns: ResourceRow;
+      };
+      admin_delete_resource: { Args: { p_id: string }; Returns: undefined };
+      admin_upsert_task: {
+        Args: { p_id: string | null; p_node_id: string; p_description: string; p_type: TaskType; p_order: number; p_quiz: QuizPayload | null; p_challenge: ChallengePayload | null; p_project_requirements: TaskRow['project_requirements'] };
+        Returns: TaskRow;
+      };
+      admin_delete_task: { Args: { p_id: string }; Returns: undefined };
+      admin_member_rollup: {
+        Args: {
+          p_total_nodes: number;
+          p_search: string | null;
+          p_cohort: string | null;
+          p_stuck_only: boolean;
+          p_limit: number;
+          p_offset: number;
+        };
+        Returns: AdminMemberRollupRow[];
+      };
+      admin_node_analytics: { Args: Record<string, never>; Returns: { node_id: string; starts: number; completions: number }[] };
+      admin_cohorts: { Args: Record<string, never>; Returns: { cohort: string }[] };
+      admin_overview_stats: {
+        Args: { p_total_nodes: number };
+        Returns: { total_members: number; active_this_week: number; avg_completion_pct: number; stuck_count: number }[];
+      };
     };
   };
+}
+
+export interface AdminMemberRollupRow {
+  id: string;
+  username: string;
+  avatar_url: string;
+  github_username: string | null;
+  cohort: string | null;
+  joined_at: string;
+  last_active_at: string | null;
+  completed_nodes: Record<string, string>;
+  in_progress_nodes: string[];
+  overall_pct: number;
+  is_stuck: boolean;
+  total_count: number;
 }

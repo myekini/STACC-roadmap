@@ -4,11 +4,19 @@
  * Admin panel (spec §1.3/§1.11). Built from free shadcn dashboard primitives,
  * restyled to Stacc and wired to real roadmap data via useAdminData.
  */
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Download, LogIn } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Download, LogIn } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
-import { exportMembersCsv, useAdminData, type MemberRow } from '@/hooks/useAdminData';
+import {
+  exportAllMembersCsv,
+  MEMBERS_PAGE_SIZE,
+  useAdminCohorts,
+  useAdminMembers,
+  useAdminNodeAnalytics,
+  useAdminOverview,
+  type MemberRow,
+} from '@/hooks/useAdminData';
 import { AdminShell, type AdminSection } from '@/components/admin/AdminShell';
 import { StatCards } from '@/components/admin/StatCards';
 import { ModuleChart } from '@/components/admin/ModuleChart';
@@ -141,23 +149,28 @@ function MemberDrilldown({ member, onClose }: { member: MemberRow | null; onClos
 
 export default function AdminPage() {
   const userData = useUserData();
-  const admin = useAdminData(userData);
   const [cohort, setCohort] = useState<string | null>(null);
   const [section, setSection] = useState<AdminSection>('overview');
   const [memberFilter, setMemberFilter] = useState<'all' | 'attention'>('all');
+  const [memberSearch, setMemberSearch] = useState('');
+  const [memberPage, setMemberPage] = useState(0);
   const [selected, setSelected] = useState<MemberRow | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const { paths, nodes, isAdmin, isLoading, isAuthenticated, isSupabaseConnected, user, signOut } = userData;
 
-  const members = useMemo(() => {
-    const all = admin.data?.members ?? [];
-    return cohort ? all.filter((m) => m.cohort === cohort) : all;
-  }, [admin.data?.members, cohort]);
-
-  const visibleMembers = useMemo(
-    () => memberFilter === 'attention' ? members.filter((member) => member.isStuck) : members,
-    [memberFilter, members],
-  );
+  const overview = useAdminOverview(userData);
+  const cohortsQuery = useAdminCohorts(userData);
+  const nodeAnalytics = useAdminNodeAnalytics(userData);
+  const membersQuery = useAdminMembers(userData, {
+    search: memberSearch,
+    cohort,
+    stuckOnly: memberFilter === 'attention',
+    page: memberPage,
+  });
+  const members = membersQuery.data?.members ?? [];
+  const totalMembers = membersQuery.data?.totalCount ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalMembers / MEMBERS_PAGE_SIZE));
 
   if (isSupabaseConnected && !isAuthenticated) {
     return <AdminLogin signIn={userData.signInWithPassword} />;
@@ -187,8 +200,8 @@ export default function AdminPage() {
   const pathTitles = Object.fromEntries(paths.filter((p) => p.id !== 'foundations').map((p) => [p.id, p.title] as const));
   const nodePathById = Object.fromEntries(nodes.map((n) => [n.id, n.path_id] as const));
   const nodeById = Object.fromEntries(nodes.map((n) => [n.id, n] as const));
-  const stuckCount = admin.data?.stuck.length ?? 0;
-  const cohorts = admin.data?.cohorts ?? [];
+  const stuckCount = overview.data?.stuckCount ?? 0;
+  const cohorts = cohortsQuery.data ?? [];
 
   const CohortFilter = cohorts.length > 0 && (
     <div className="flex max-w-full flex-wrap items-center gap-1">
@@ -215,7 +228,7 @@ export default function AdminPage() {
 
   return (
     <AdminShell section={section} onSectionChange={setSection} stuckCount={stuckCount} username={user.username} onSignOut={signOut}>
-      {admin.isLoading ? (
+      {overview.isLoading ? (
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[0, 1, 2, 3].map((i) => <div key={i} className="h-24 animate-pulse border border-outline-variant/40 bg-surface/50" />)}
@@ -226,11 +239,11 @@ export default function AdminPage() {
         <>
           {section === 'overview' && (
             <div className="space-y-6">
-              <StatCards members={admin.data?.members ?? []} />
+              <StatCards stats={overview.data ?? { totalMembers: 0, activeThisWeek: 0, avgCompletionPct: 0, stuckCount: 0 }} />
               <div className="grid gap-px overflow-hidden border border-outline-variant bg-outline-variant md:grid-cols-2">
                 <button
                   type="button"
-                  onClick={() => { setCohort(null); setMemberFilter(stuckCount > 0 ? 'attention' : 'all'); setSection('members'); }}
+                  onClick={() => { setCohort(null); setMemberFilter(stuckCount > 0 ? 'attention' : 'all'); setMemberPage(0); setSection('members'); }}
                   className="group bg-surface p-5 text-left transition-colors hover:bg-surface-container-low"
                 >
                   <span className="text-sm font-semibold text-on-surface">{stuckCount > 0 ? `${stuckCount} ${stuckCount === 1 ? 'member needs' : 'members need'} attention` : 'Everyone is on track'}</span>
@@ -251,16 +264,47 @@ export default function AdminPage() {
               <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="flex items-center gap-1" aria-label="Member status filter">
-                    <button type="button" onClick={() => setMemberFilter('all')} className={cn('border px-2.5 py-1.5 font-code text-[10px] font-semibold uppercase', memberFilter === 'all' ? 'border-primary/50 bg-primary/10 text-primary-neon' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}>all members</button>
-                    <button type="button" onClick={() => setMemberFilter('attention')} className={cn('border px-2.5 py-1.5 font-code text-[10px] font-semibold uppercase', memberFilter === 'attention' ? 'border-error/50 bg-error/10 text-error' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}>needs attention</button>
+                    <button type="button" onClick={() => { setMemberFilter('all'); setMemberPage(0); }} className={cn('border px-2.5 py-1.5 font-code text-[10px] font-semibold uppercase', memberFilter === 'all' ? 'border-primary/50 bg-primary/10 text-primary-neon' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}>all members</button>
+                    <button type="button" onClick={() => { setMemberFilter('attention'); setMemberPage(0); }} className={cn('border px-2.5 py-1.5 font-code text-[10px] font-semibold uppercase', memberFilter === 'attention' ? 'border-error/50 bg-error/10 text-error' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}>needs attention</button>
                   </div>
                   {CohortFilter}
+                  <Input
+                    placeholder="Search username…"
+                    value={memberSearch}
+                    onChange={(e) => { setMemberSearch(e.target.value); setMemberPage(0); }}
+                    className="h-8 w-40 text-xs"
+                  />
                 </div>
-                <Button variant="outline" onClick={() => exportMembersCsv(visibleMembers, pathTitles, nodePathById)} className="w-full sm:ml-auto sm:w-auto">
-                  <Download /> export csv
+                <Button
+                  variant="outline"
+                  disabled={exporting}
+                  onClick={async () => {
+                    setExporting(true);
+                    try {
+                      await exportAllMembersCsv(userData, pathTitles, nodePathById, { search: memberSearch, cohort, stuckOnly: memberFilter === 'attention' });
+                    } finally {
+                      setExporting(false);
+                    }
+                  }}
+                  className="w-full sm:ml-auto sm:w-auto"
+                >
+                  <Download /> {exporting ? 'exporting…' : 'export csv'}
                 </Button>
               </div>
-              <MembersTable members={visibleMembers} emptyLabel={memberFilter === 'attention' ? 'nobody needs attention' : 'no members yet'} onSelect={setSelected} />
+              <MembersTable members={members} emptyLabel={memberFilter === 'attention' ? 'nobody needs attention' : 'no members yet'} onSelect={setSelected} />
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between font-code text-[11px] text-on-surface-variant">
+                  <span>page {memberPage + 1} of {totalPages} · {totalMembers} members</span>
+                  <div className="flex items-center gap-2">
+                    <button type="button" disabled={memberPage === 0} onClick={() => setMemberPage((p) => Math.max(0, p - 1))} className="flex items-center gap-1 border border-outline-variant px-2 py-1 disabled:opacity-40">
+                      <ChevronLeft className="h-3 w-3" /> prev
+                    </button>
+                    <button type="button" disabled={memberPage + 1 >= totalPages} onClick={() => setMemberPage((p) => Math.min(totalPages - 1, p + 1))} className="flex items-center gap-1 border border-outline-variant px-2 py-1 disabled:opacity-40">
+                      next <ChevronRight className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -272,7 +316,7 @@ export default function AdminPage() {
               </div>
               <div className="pt-2 border-t border-outline-variant/60">
                 <h3 className="font-display text-lg font-bold text-on-surface mb-4">Module Completion Analytics</h3>
-                <ModuleChart analytics={admin.data?.nodeAnalytics ?? []} nodeById={nodeById} />
+                <ModuleChart analytics={nodeAnalytics.data ?? []} nodeById={nodeById} />
               </div>
               <div className="overflow-x-auto border border-outline-variant bg-surface">
                 <table className="w-full min-w-[560px] text-left">
@@ -284,7 +328,7 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-outline-variant/60">
-                    {(admin.data?.nodeAnalytics ?? [])
+                    {(nodeAnalytics.data ?? [])
                       .filter((a) => a.starts > 0)
                       .sort((a, b) => b.starts - a.starts)
                       .map((a) => {
@@ -307,7 +351,7 @@ export default function AdminPage() {
                           </tr>
                         );
                       })}
-                    {(admin.data?.nodeAnalytics ?? []).filter((a) => a.starts > 0).length === 0 && (
+                    {(nodeAnalytics.data ?? []).filter((a) => a.starts > 0).length === 0 && (
                       <tr><td colSpan={5} className="px-4 py-8 text-center font-code text-xs lowercase text-outline">{'// no module activity yet'}</td></tr>
                     )}
                   </tbody>
