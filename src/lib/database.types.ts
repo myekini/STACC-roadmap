@@ -200,6 +200,15 @@ export interface ProjectSubmissionRow {
   verified_at: string | null;
 }
 
+/** Per-(user, task) cooldown/window state for "Check my work" abuse guarding (migration 0011). */
+export interface VerificationAttemptRow {
+  user_id: string;
+  task_id: string;
+  attempted_at: string;
+  window_started_at: string;
+  attempts_in_window: number;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -215,6 +224,7 @@ export interface Database {
       resource_ratings: { Row: ResourceRatingRow; Insert: Partial<ResourceRatingRow>; Update: Partial<ResourceRatingRow> };
       projects: { Row: ProjectRow; Insert: Partial<ProjectRow>; Update: Partial<ProjectRow> };
       project_submissions: { Row: ProjectSubmissionRow; Insert: Partial<ProjectSubmissionRow>; Update: Partial<ProjectSubmissionRow> };
+      verification_attempts: { Row: VerificationAttemptRow; Insert: Partial<VerificationAttemptRow>; Update: Partial<VerificationAttemptRow> };
     };
     Functions: {
       start_node: { Args: { p_node_slug: string }; Returns: undefined };

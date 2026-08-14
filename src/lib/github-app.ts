@@ -28,17 +28,31 @@ function appJwt() {
   return `${unsigned}.${signature}`;
 }
 
+const GITHUB_TIMEOUT_MS = 10_000;
+
 async function githubFetch<T>(path: string, token: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`https://api.github.com${path}`, {
-    ...init,
-    headers: {
-      Accept: 'application/vnd.github+json',
-      Authorization: `Bearer ${token}`,
-      'X-GitHub-Api-Version': '2022-11-28',
-      ...init?.headers,
-    },
-    cache: 'no-store',
-  });
+  let response: Response;
+  try {
+    response = await fetch(`https://api.github.com${path}`, {
+      ...init,
+      headers: {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${token}`,
+        'X-GitHub-Api-Version': '2022-11-28',
+        ...init?.headers,
+      },
+      cache: 'no-store',
+      // Bounds how long a serverless invocation can be held open by a slow
+      // GitHub response — without this, a hung upstream call burns function
+      // concurrency under load instead of failing fast.
+      signal: AbortSignal.timeout(GITHUB_TIMEOUT_MS),
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      throw new Error('GitHub took too long to respond. Try again in a moment.');
+    }
+    throw error;
+  }
   if (!response.ok) {
     const detail = await response.text();
     throw new Error(`GitHub returned ${response.status}: ${detail.slice(0, 240)}`);
@@ -76,4 +90,17 @@ export async function repositoryTree(token: string, owner: string, repo: string,
   );
   if (result.truncated) throw new Error('The repository is too large to verify automatically.');
   return new Set(result.tree.filter((item) => item.type === 'blob').map((item) => item.path));
+}
+
+// Only called for paths already confirmed present in the tree — the
+// Contents API 404s on a missing path, and callers use repositoryTree()
+// as the existence check first.
+export async function fileContent(token: string, owner: string, repo: string, path: string, sha: string): Promise<string> {
+  const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+  const result = await githubFetch<{ content: string; encoding: string }>(
+    `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodedPath}?ref=${encodeURIComponent(sha)}`,
+    token,
+  );
+  if (result.encoding !== 'base64') throw new Error(`Unexpected encoding reading ${path}.`);
+  return Buffer.from(result.content, 'base64').toString('utf-8');
 }
