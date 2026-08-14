@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
   ArrowRight,
@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import type { PathRow } from '@/lib/database.types';
 
 const PATH_META: Record<
   string,
@@ -98,6 +99,20 @@ const ALL_FILTER_TAGS = [
   'Git',
 ];
 
+/** Reads ?track=<pathId> from the landing page's per-card CTA and narrows
+ * the existing search filter to that track — isolated + Suspense-wrapped so
+ * useSearchParams doesn't force this whole client page out of static
+ * rendering (same pattern as the homepage's AuthErrorBanner). */
+function TrackFocus({ paths, onFound }: { paths: PathRow[]; onFound: (title: string) => void }) {
+  const track = useSearchParams().get('track');
+  useEffect(() => {
+    if (!track || paths.length === 0) return;
+    const match = paths.find((p) => p.id === track);
+    if (match) onFound(match.title);
+  }, [track, paths, onFound]);
+  return null;
+}
+
 export default function PathSelectionPage() {
   const data = useUserData();
   const router = useRouter();
@@ -135,6 +150,9 @@ export default function PathSelectionPage() {
 
   return (
     <div className="py-6 md:py-10 max-w-7xl mx-auto px-4 space-y-8">
+      <Suspense fallback={null}>
+        <TrackFocus paths={paths} onFound={setSearchQuery} />
+      </Suspense>
       {/* ── DataCamp Style Dark Hero Banner ── */}
       <section className="relative overflow-hidden rounded-2xl border border-outline-variant/80 bg-gradient-to-r from-navy via-slate-900 to-navy-2 p-6 md:p-10 shadow-2xl">
         <div className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full bg-cyan/10 blur-3xl" />

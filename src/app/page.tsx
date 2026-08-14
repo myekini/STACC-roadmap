@@ -11,6 +11,7 @@ import {
   Compass,
   Hourglass,
   Layers,
+  Menu,
   Moon,
   Rocket,
   Route,
@@ -24,14 +25,24 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StaccMark } from '@/components/brand/StaccMark';
 import { GithubLogo } from '@/components/icons/GithubLogo';
+import { DiscordLogo } from '@/components/icons/DiscordLogo';
+import { XLogo } from '@/components/icons/XLogo';
+import { LinkedInLogo } from '@/components/icons/LinkedInLogo';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { useUiStore } from '@/store/useUiStore';
 import { cn } from '@/lib/utils';
+
+const NAV_LINKS = [
+  { href: '/paths', label: 'Explore Paths' },
+  { href: '/tree', label: 'Skill Tree' },
+  { href: '/roadmap', label: 'Roadmap' },
+];
 
 function AuthErrorBanner() {
   const authError = useSearchParams().get('authError');
   if (!authError) return null;
   return (
-    <div className="mt-4 flex items-start gap-2.5 border border-orange/40 bg-orange/10 px-4 py-3 font-code text-xs rounded-xl">
+    <div className="mt-4 flex items-start gap-2.5 border border-orange/40 bg-orange/10 px-4 py-3 font-code text-xs rounded-none">
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange" />
       <p className="leading-5 text-on-surface-variant">
         <span className="font-semibold text-orange">Sign-in failed —</span> {authError}
@@ -46,6 +57,7 @@ export default function LandingPage() {
   const reduceMotion = useReducedMotion();
   const { theme, toggleTheme } = useUiStore();
   const [activeTab, setActiveTab] = useState<'all' | 'foundations' | 'specializations' | 'advanced'>('all');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     if (isSupabaseConnected && isAuthenticated) {
@@ -89,15 +101,11 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex text-xs font-code font-semibold uppercase tracking-[0.1em]">
-            <Link href="/paths" className="text-on-surface-variant hover:text-cyan transition-colors">
-              Explore Paths
-            </Link>
-            <Link href="/tree" className="text-on-surface-variant hover:text-cyan transition-colors">
-              Skill Tree
-            </Link>
-            <Link href="/roadmap" className="text-on-surface-variant hover:text-cyan transition-colors">
-              Roadmap
-            </Link>
+            {NAV_LINKS.map((link) => (
+              <Link key={link.href} href={link.href} className="text-on-surface-variant hover:text-cyan transition-colors">
+                {link.label}
+              </Link>
+            ))}
           </nav>
 
           <div className="flex items-center gap-3">
@@ -106,7 +114,7 @@ export default function LandingPage() {
               size="icon"
               onClick={toggleTheme}
               title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-              className="h-9 w-9 rounded-xl border-outline-variant bg-surface text-on-surface-variant hover:text-cyan"
+              className="h-9 w-9 rounded-none border-outline-variant bg-surface text-on-surface-variant hover:text-cyan"
             >
               {theme === 'dark' ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-cyan" />}
             </Button>
@@ -116,20 +124,59 @@ export default function LandingPage() {
                 variant="outline"
                 size="sm"
                 onClick={signInWithGithub}
-                className="gap-2 font-code text-xs rounded-xl border-outline-variant bg-surface-card hover:bg-surface-container-high"
+                className="hidden gap-2 font-code text-xs rounded-none border-outline-variant bg-surface-card hover:bg-surface-container-high sm:inline-flex"
               >
                 <GithubLogo className="h-4 w-4" />
                 <span>Sign in</span>
               </Button>
             )}
 
-            <Button onClick={handleStart} size="sm" className="gap-1.5 text-xs font-code uppercase font-bold tracking-wider rounded-xl bg-cyan text-navy hover:bg-cyan/90">
+            <Button onClick={handleStart} size="sm" className="gap-1.5 text-xs font-code uppercase font-bold tracking-wider rounded-none bg-cyan text-navy hover:bg-cyan/90">
               {hasSelectedPath ? 'Continue Roadmap' : 'Start Roadmap'}
               <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setMobileNavOpen(true)}
+              title="Open menu"
+              className="h-9 w-9 rounded-none border-outline-variant bg-surface text-on-surface-variant hover:text-cyan md:hidden"
+            >
+              <Menu className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </header>
+
+      {/* ── Mobile nav drawer ── */}
+      <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <SheetContent side="right" className="w-64">
+          <SheetTitle className="font-display text-lg font-bold uppercase tracking-wider">Menu</SheetTitle>
+          <nav className="mt-6 flex flex-col gap-1 font-code text-sm font-semibold uppercase tracking-wider">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileNavOpen(false)}
+                className="rounded-none px-3 py-2.5 text-on-surface-variant transition-colors hover:bg-surface-card hover:text-cyan"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          {isSupabaseConnected && !isAuthenticated && (
+            <Button
+              variant="outline"
+              onClick={() => { setMobileNavOpen(false); signInWithGithub(); }}
+              className="mt-6 w-full gap-2 font-code text-xs rounded-none border-outline-variant bg-surface-card"
+            >
+              <GithubLogo className="h-4 w-4" />
+              <span>Sign in with GitHub</span>
+            </Button>
+          )}
+        </SheetContent>
+      </Sheet>
 
       {/* ── Modern Centered Hero Section ── */}
       <section className="relative overflow-hidden border-b border-outline-variant/60 py-16 md:py-28">
@@ -143,10 +190,19 @@ export default function LandingPage() {
             transition={{ duration: 0.4 }}
             className="flex justify-center"
           >
-            <Badge variant="outline" className="border-cyan/40 bg-cyan/10 text-cyan text-xs font-code tracking-[0.14em] uppercase px-3.5 py-1 rounded-full">
+            <Badge variant="outline" className="border-cyan/40 bg-cyan/10 text-cyan text-xs font-code tracking-[0.14em] uppercase px-3.5 py-1 rounded-none">
               <Sparkles className="h-3.5 w-3.5 mr-1.5 inline" /> Data & AI Career Engine
             </Badge>
           </motion.div>
+
+          <motion.p
+            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.02 }}
+            className="font-code text-xs font-bold uppercase tracking-[0.2em] text-cyan"
+          >
+            {'// not learning. just shipping.'}
+          </motion.p>
 
           <motion.h1
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
@@ -173,7 +229,7 @@ export default function LandingPage() {
             transition={{ duration: 0.45, delay: 0.15 }}
             className="flex flex-wrap items-center justify-center gap-4 pt-2"
           >
-            <Button size="lg" onClick={handleStart} className="gap-2 shadow-xl font-code uppercase font-bold tracking-wider px-6 py-3.5 text-xs rounded-xl bg-secondary text-white hover:bg-secondary/90">
+            <Button size="lg" onClick={handleStart} className="gap-2 shadow-xl font-code uppercase font-bold tracking-wider px-6 py-3.5 text-xs rounded-none bg-secondary text-white hover:bg-secondary/90">
               <Rocket className="h-4 w-4" />
               {hasSelectedPath ? 'Continue Your Roadmap' : 'Start Learning Free'}
             </Button>
@@ -183,13 +239,13 @@ export default function LandingPage() {
                 size="lg"
                 variant="outline"
                 onClick={signInWithGithub}
-                className="gap-2.5 font-code text-xs font-bold tracking-wider px-6 py-3.5 rounded-xl border-cyan/40 hover:border-cyan bg-surface-card"
+                className="gap-2.5 font-code text-xs font-bold tracking-wider px-6 py-3.5 rounded-none border-cyan/40 hover:border-cyan bg-surface-card"
               >
                 <GithubLogo className="h-4 w-4 text-on-surface" />
                 <span>Sign in with GitHub</span>
               </Button>
             ) : (
-              <Button size="lg" variant="outline" asChild className="font-code uppercase text-xs font-semibold px-6 py-3.5 rounded-xl border-cyan/40 hover:border-cyan">
+              <Button size="lg" variant="outline" asChild className="font-code uppercase text-xs font-semibold px-6 py-3.5 rounded-none border-cyan/40 hover:border-cyan">
                 <Link href="/paths">
                   Explore All Tracks <ArrowRight className="h-4 w-4 ml-1.5 inline" />
                 </Link>
@@ -222,6 +278,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl px-5 md:px-8">
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1.5 font-code text-xs text-on-surface-variant">
             <Code2 className="h-3.5 w-3.5 shrink-0 text-cyan" />
+            <span className="text-outline">Across all tracks:</span>
             {techStack.map((tech, i) => (
               <span key={tech}>
                 {tech}
@@ -262,9 +319,9 @@ export default function LandingPage() {
                 desc: 'One canonical visual map connecting official documentation, battle-tested tutorials, and core architectural concepts.',
               },
             ].map((feat) => (
-              <div key={feat.title} className="group relative flex flex-col justify-between border border-outline-variant bg-surface-card rounded-2xl p-6 transition-all hover:-translate-y-1 hover:border-cyan/40 hover:shadow-xl">
+              <div key={feat.title} className="group relative flex flex-col justify-between border border-outline-variant bg-surface-card rounded-none p-6 transition-all hover:-translate-y-1 hover:border-cyan/40 hover:shadow-xl">
                 <div className="space-y-4">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan/40 bg-cyan/10 text-cyan">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-none border border-cyan/40 bg-cyan/10 text-cyan">
                     <feat.icon className="h-5 w-5" />
                   </div>
 
@@ -302,7 +359,7 @@ export default function LandingPage() {
                 type="button"
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
                 className={cn(
-                  'px-3.5 py-1.5 font-code text-xs font-semibold uppercase tracking-[0.1em] border transition-all rounded-xl',
+                  'px-3.5 py-1.5 font-code text-xs font-semibold uppercase tracking-[0.1em] border transition-all rounded-none',
                   activeTab === tab.id
                     ? 'border-cyan bg-cyan/15 text-cyan shadow-sm'
                     : 'border-outline-variant/60 bg-surface-card text-on-surface-variant hover:border-cyan/40 hover:text-on-surface',
@@ -318,14 +375,14 @@ export default function LandingPage() {
             {featuredPaths.map((path) => (
               <article
                 key={path.id}
-                className="group flex flex-col justify-between border border-outline-variant bg-surface-card rounded-2xl p-6 transition-all hover:-translate-y-1 hover:border-cyan/40 hover:shadow-xl"
+                className="group flex flex-col justify-between border border-outline-variant bg-surface-card rounded-none p-6 transition-all hover:-translate-y-1 hover:border-cyan/40 hover:shadow-xl"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="font-code text-[10px] font-semibold uppercase tracking-wider text-cyan">
-                      {path.requires_paths.length === 0 ? 'Core Track' : 'Specialization'}
+                      {path.id === 'foundations' ? 'Prerequisite' : path.requires_paths.length > 0 ? 'Advanced' : 'Specialization'}
                     </span>
-                    <Badge variant="outline" className="border-cyan/30 bg-cyan/10 font-code text-[10px] text-cyan rounded-md">
+                    <Badge variant="outline" className="border-cyan/30 bg-cyan/10 font-code text-[10px] text-cyan rounded-none">
                       {path.tags[0] ?? 'Data'}
                     </Badge>
                   </div>
@@ -345,8 +402,8 @@ export default function LandingPage() {
                     <span className="flex items-center gap-1"><Layers className="h-3.5 w-3.5 text-secondary" /> {nodes.filter((n) => n.path_id === path.id).length} modules</span>
                   </div>
 
-                  <Button asChild variant="outline" className="w-full justify-between group-hover:border-cyan font-code text-xs uppercase tracking-wider rounded-xl">
-                    <Link href="/paths">
+                  <Button asChild variant="outline" className="w-full justify-between group-hover:border-cyan font-code text-xs uppercase tracking-wider rounded-none">
+                    <Link href={`/paths?track=${path.id}`}>
                       <span>Explore Track</span>
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Link>
@@ -361,28 +418,73 @@ export default function LandingPage() {
       {/* ── Public Footer ── */}
       <footer className="border-t border-outline-variant bg-navy py-12 text-on-surface">
         <div className="mx-auto max-w-7xl px-5 md:px-8">
-          <div className="flex flex-col justify-between gap-8 font-code sm:flex-row">
+          <div className="flex flex-col justify-between gap-10 font-code sm:flex-row">
             <div>
               <div className="flex items-center gap-2 text-base font-bold uppercase tracking-wider">
                 <StaccMark className="h-6 w-6" />
                 <span>Stacc</span>
               </div>
               <p className="mt-3 max-w-xs text-xs leading-5 text-on-surface-variant font-sans">
+                {'// not learning. just shipping.'}
+              </p>
+              <p className="mt-2 max-w-xs text-xs leading-5 text-on-surface-variant font-sans">
                 The outcome-first data & AI career roadmap tracker.
               </p>
+
+              {/* Social links — placeholders until real URLs are provided */}
+              <div className="mt-5 flex items-center gap-3">
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noreferrer"
+                  title="Discord"
+                  className="flex h-8 w-8 items-center justify-center border border-outline-variant text-on-surface-variant transition-colors hover:border-cyan hover:text-cyan"
+                >
+                  <DiscordLogo className="h-4 w-4" />
+                </a>
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noreferrer"
+                  title="X / Twitter"
+                  className="flex h-8 w-8 items-center justify-center border border-outline-variant text-on-surface-variant transition-colors hover:border-cyan hover:text-cyan"
+                >
+                  <XLogo className="h-3.5 w-3.5" />
+                </a>
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noreferrer"
+                  title="LinkedIn"
+                  className="flex h-8 w-8 items-center justify-center border border-outline-variant text-on-surface-variant transition-colors hover:border-cyan hover:text-cyan"
+                >
+                  <LinkedInLogo className="h-4 w-4" />
+                </a>
+              </div>
             </div>
 
-            <div>
-              <h4 className="text-xs font-semibold text-outline uppercase tracking-wider mb-3">Product</h4>
-              <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
-                <li><Link href="/paths" className="hover:text-cyan">Explore Paths</Link></li>
-                <li><Link href="/tree" className="hover:text-cyan">Skill Tree</Link></li>
-                <li><Link href="/roadmap" className="hover:text-cyan">Roadmap Tracker</Link></li>
-              </ul>
+            <div className="grid grid-cols-2 gap-8 sm:flex sm:gap-16">
+              <div>
+                <h4 className="text-xs font-semibold text-outline uppercase tracking-wider mb-3">Product</h4>
+                <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
+                  <li><Link href="/paths" className="hover:text-cyan">Explore Paths</Link></li>
+                  <li><Link href="/tree" className="hover:text-cyan">Skill Tree</Link></li>
+                  <li><Link href="/roadmap" className="hover:text-cyan">Roadmap Tracker</Link></li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-semibold text-outline uppercase tracking-wider mb-3">Community</h4>
+                <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
+                  <li><a href="#" target="_blank" rel="noreferrer" className="hover:text-cyan">Discord</a></li>
+                  <li><a href="#" target="_blank" rel="noreferrer" className="hover:text-cyan">X / Twitter</a></li>
+                  <li><a href="#" target="_blank" rel="noreferrer" className="hover:text-cyan">LinkedIn</a></li>
+                </ul>
+              </div>
             </div>
           </div>
 
-          <div className="mt-12 border-t border-outline-variant/60 pt-6 font-code text-xs text-on-surface-variant">
+          <div className="mt-12 flex flex-col gap-2 border-t border-outline-variant/60 pt-6 font-code text-xs text-on-surface-variant sm:flex-row sm:items-center sm:justify-between">
             <p>© 2026 Stacc Inc. All Rights Reserved.</p>
           </div>
         </div>
