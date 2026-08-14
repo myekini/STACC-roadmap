@@ -439,27 +439,6 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                 </section>
               )}
 
-              {/* Module navigation inside the panel (mobile-friendly) */}
-              <section className="flex flex-col gap-1.5 pt-2">
-                {prevNode && (
-                  <Link
-                    href={`/roadmap/${prevNode.slug}`}
-                    className="flex items-center gap-1.5 rounded-xl border border-outline-variant/60 bg-surface-card px-3 py-2 text-xs text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan"
-                  >
-                    <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate">{prevNode.name}</span>
-                  </Link>
-                )}
-                {nextNode && (
-                  <Link
-                    href={`/roadmap/${nextNode.slug}`}
-                    className="flex items-center justify-between gap-1.5 rounded-xl border border-outline-variant/60 bg-surface-card px-3 py-2 text-xs text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan"
-                  >
-                    <span className="truncate">{nextNode.name}</span>
-                    <ChevronRight className="h-3.5 w-3.5 shrink-0" />
-                  </Link>
-                )}
-              </section>
             </div>
           </aside>
         )}
