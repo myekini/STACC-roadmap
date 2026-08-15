@@ -4,7 +4,7 @@
  * DataCamp-Inspired Interactive Learning Workspace
  *
  * Layout:
- *   ┌─ sticky top bar (breadcrumb + "< Course Outline >" sidebar toggle + XP chip) ─┐
+ *   ┌─ sticky top bar (breadcrumb + "< Course Outline >" sidebar toggle) ─┐
  *   │  ← collapsible LEFT PANEL (resource list + task checklist)                     │
  *   │  MAIN CANVAS (module header · video/reader · code/quiz cards · milestone)      │
  *   └─ sticky bottom bar (← Prev · segmented progress · Got It! / Next lesson →)    ┘
@@ -28,7 +28,6 @@ import {
   PanelLeftOpen,
   Play,
   Terminal,
-  Trophy,
 } from 'lucide-react';
 import type { TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
@@ -67,7 +66,7 @@ function ProjectMilestone({
 
   if (!data.isSupabaseConnected) {
     return (
-      <div className="rounded-xl border border-outline-variant bg-surface-card p-4 text-xs text-on-surface-variant">
+      <div className="rounded-none border border-outline-variant bg-surface-card p-4 text-xs text-on-surface-variant">
         <p className="font-semibold text-on-surface">GitHub verification is available in the live app.</p>
         <p className="mt-1 leading-5">Sign in to connect one repository to this track and verify your milestone commits.</p>
       </div>
@@ -76,7 +75,7 @@ function ProjectMilestone({
 
   if (!connected) {
     return (
-      <div className="rounded-xl border border-outline-variant bg-surface-card p-4 text-xs">
+      <div className="rounded-none border border-outline-variant bg-surface-card p-4 text-xs">
         <p className="flex items-center gap-2 font-semibold text-on-surface">
           <GithubLogo className="h-4 w-4 text-cyan" />
           Connect your {pathTitle} project repo
@@ -84,7 +83,7 @@ function ProjectMilestone({
         <p className="mt-1 leading-5 text-on-surface-variant">
           Choose one GitHub repository. Stacc reads commits from that repo only to verify your work.
         </p>
-        <Button asChild size="sm" className="mt-3 rounded-xl font-code gap-2 bg-surface-card border border-outline-variant hover:border-cyan text-on-surface">
+        <Button asChild size="sm" className="mt-3 rounded-none font-code gap-2 bg-surface-card border border-outline-variant hover:border-cyan text-on-surface">
           <a href={`/api/github/install?path=${encodeURIComponent(pathId)}&returnTo=${encodeURIComponent(`/roadmap/${nodeSlug}`)}`}>
             <GithubLogo className="h-4 w-4 text-on-surface" />
             <span>{project ? 'Reconnect GitHub' : 'Connect GitHub'}</span>
@@ -95,7 +94,7 @@ function ProjectMilestone({
   }
 
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-card p-4 text-xs">
+    <div className="rounded-none border border-outline-variant bg-surface-card p-4 text-xs">
       <a
         href={project.repo_url}
         target="_blank"
@@ -111,7 +110,7 @@ function ProjectMilestone({
         <Button
           size="sm"
           disabled={disabled || busy || Boolean(verified)}
-          className="rounded-lg font-code text-xs"
+          className="rounded-none font-code text-xs"
           onClick={async () => {
             setBusy(true);
             setErrorMsg(null);
@@ -228,7 +227,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
         <p className="font-code text-xs text-outline">{'// not found'}</p>
         <h1 className="mt-2 font-display text-2xl font-bold text-on-surface">Module not found</h1>
         <p className="mt-2 text-sm text-on-surface-variant">It may have moved, or the link is incorrect.</p>
-        <Button asChild className="mt-6 rounded-lg">
+        <Button asChild className="mt-6 rounded-none">
           <Link href="/roadmap"><ArrowLeft className="h-4 w-4" /> Back to Roadmap</Link>
         </Button>
       </div>
@@ -264,7 +263,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
         <div className="flex min-w-0 items-center gap-2 text-xs">
           <Link
             href="/roadmap"
-            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-outline-variant bg-surface-card px-2.5 py-1.5 font-code font-semibold text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan"
+            className="flex shrink-0 items-center gap-1.5 rounded-none border border-outline-variant bg-surface-card px-2.5 py-1.5 font-code font-semibold text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Roadmap</span>
@@ -284,7 +283,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
           <button
             type="button"
             onClick={() => setShowPanel((v) => !v)}
-            className="flex items-center gap-1 rounded-lg border border-outline-variant bg-surface-card px-2.5 py-1.5 font-code text-xs font-semibold text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan"
+            className="flex items-center gap-1 rounded-none border border-outline-variant bg-surface-card px-2.5 py-1.5 font-code text-xs font-semibold text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan"
           >
             {showPanel ? <PanelLeftClose className="h-3.5 w-3.5" /> : <PanelLeftOpen className="h-3.5 w-3.5" />}
             <ChevronLeft className="h-3 w-3 -mr-1 opacity-60" />
@@ -300,7 +299,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                 target="_blank"
                 rel="noreferrer"
                 title="Connected project repo"
-                className="hidden items-center gap-1.5 rounded-lg border border-outline-variant bg-surface-card px-2.5 py-1.5 font-code text-xs text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan md:flex"
+                className="hidden items-center gap-1.5 rounded-none border border-outline-variant bg-surface-card px-2.5 py-1.5 font-code text-xs text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan md:flex"
               >
                 <GithubLogo className="h-3.5 w-3.5" />
                 <span className="max-w-[140px] truncate">{trackProject!.repo_owner}/{trackProject!.repo_name}</span>
@@ -309,7 +308,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
               <a
                 href={`/api/github/install?path=${encodeURIComponent(path.id)}&returnTo=${encodeURIComponent(`/roadmap/${slug}`)}`}
                 title="Connect a GitHub repo for this track"
-                className="hidden items-center gap-1.5 rounded-lg border border-dashed border-outline-variant bg-surface-card px-2.5 py-1.5 font-code text-xs text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan md:flex"
+                className="hidden items-center gap-1.5 rounded-none border border-dashed border-outline-variant bg-surface-card px-2.5 py-1.5 font-code text-xs text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan md:flex"
               >
                 <GithubLogo className="h-3.5 w-3.5" />
                 <span>Connect repo</span>
@@ -317,11 +316,6 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             )
           )}
 
-          {/* XP chip */}
-          <div className="hidden items-center gap-1.5 rounded-lg border border-cyan/30 bg-cyan/10 px-3 py-1.5 font-code text-xs text-cyan md:flex">
-            <Trophy className="h-3.5 w-3.5" />
-            <span>XP <strong>+50</strong></span>
-          </div>
         </div>
       </header>
 
@@ -339,7 +333,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
               <button
                 type="button"
                 onClick={() => setShowPanel(false)}
-                className="rounded-md p-1 text-on-surface-variant hover:text-on-surface"
+                className="rounded-none p-1 text-on-surface-variant hover:text-on-surface"
                 title="Hide outline"
               >
                 <PanelLeftClose className="h-4 w-4" />
@@ -365,13 +359,13 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                             type="button"
                             onClick={() => setActiveResourceIndex(idx)}
                             className={cn(
-                              'flex w-full items-start gap-2.5 rounded-xl border p-2.5 text-left text-xs transition-all',
+                              'flex w-full items-start gap-2.5 rounded-none border p-2.5 text-left text-xs transition-all',
                               isActive
                                 ? 'border-cyan bg-cyan/10 text-on-surface font-semibold'
                                 : 'border-transparent bg-surface-card text-on-surface-variant hover:border-outline-variant hover:text-on-surface',
                             )}
                           >
-                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-container-high text-cyan">
+                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-none bg-surface-container-high text-cyan">
                               {yt ? <Play className="h-2.5 w-2.5" /> : <BookOpen className="h-2.5 w-2.5" />}
                             </span>
                             <div className="min-w-0">
@@ -403,11 +397,11 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                       return (
                         <li
                           key={task.id}
-                          className="flex items-center gap-2 rounded-xl border border-outline-variant/50 bg-surface-card p-2.5 text-[11px]"
+                          className="flex items-center gap-2 rounded-none border border-outline-variant/50 bg-surface-card p-2.5 text-[11px]"
                         >
                           {/* Completion checkbox / icon */}
                           <span className={cn(
-                            'flex h-4 w-4 shrink-0 items-center justify-center rounded-full border',
+                            'flex h-4 w-4 shrink-0 items-center justify-center rounded-none border',
                             done ? 'border-secondary bg-secondary' : 'border-outline-variant bg-surface-container-high',
                           )}>
                             {done && <Check className="h-2.5 w-2.5 text-white" />}
@@ -418,18 +412,9 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                             {task.description}
                           </span>
 
-                          {/* Action shortcut (not-done only) */}
-                          {!done && task.type === 'quiz' && (
-                            <button type="button" onClick={() => setActiveQuizTask(task)} className="shrink-0 rounded-md border border-outline-variant px-1.5 py-0.5 text-[10px] font-code font-semibold text-on-surface-variant hover:border-cyan hover:text-cyan">
-                              Quiz
-                            </button>
-                          )}
-                          {!done && task.type === 'challenge' && (
-                            <button type="button" onClick={() => setActiveChallengeTask(task)} className="shrink-0 rounded-md border border-outline-variant px-1.5 py-0.5 text-[10px] font-code font-semibold text-on-surface-variant hover:border-cyan hover:text-cyan">
-                              Code
-                            </button>
-                          )}
-                          {!done && task.type === 'build' && (
+                          {/* Type marker — the action itself lives in the main
+                              canvas card or the bottom CTA, not duplicated here */}
+                          {!done && (task.type === 'quiz' || task.type === 'challenge' || task.type === 'build') && (
                             <span className="shrink-0 font-code text-[10px] text-cyan">↓</span>
                           )}
                         </li>
@@ -454,7 +439,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                 <span className="text-outline">·</span>
                 <span>{node.est_hours}h</span>
                 {status === 'locked' && (
-                  <Badge variant="outline" className="ml-2 rounded-md border-warning/40 bg-warning/10 font-code text-[10px] text-warning uppercase">
+                  <Badge variant="outline" className="ml-2 rounded-none border-warning/40 bg-warning/10 font-code text-[10px] text-warning uppercase">
                     Locked
                   </Badge>
                 )}
@@ -465,7 +450,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
             {/* ── Resource viewer ── */}
             {activeResource ? (
-              <div className="overflow-hidden rounded-2xl border border-outline-variant bg-surface-card shadow-lg">
+              <div className="overflow-hidden rounded-none border border-outline-variant bg-surface-card shadow-lg">
                 {/* Resource header bar */}
                 <div className="flex items-center justify-between border-b border-outline-variant bg-surface px-4 py-2.5">
                   <div className="flex items-center gap-2 text-xs font-semibold text-on-surface">
@@ -489,9 +474,9 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                   {activeYouTubeRef ? (
                     <YouTubeEmbed source={activeYouTubeRef} title={activeResource.name} />
                   ) : (
-                    <div className="flex flex-col items-center gap-4 rounded-xl border border-outline-variant bg-surface py-12 text-center">
+                    <div className="flex flex-col items-center gap-4 rounded-none border border-outline-variant bg-surface py-12 text-center">
                       <p className="text-sm text-on-surface-variant">External reading resource — opens in a new tab.</p>
-                      <Button asChild className="gap-2 rounded-xl bg-cyan font-bold text-navy hover:bg-cyan/90">
+                      <Button asChild className="gap-2 rounded-none bg-cyan font-bold text-navy hover:bg-cyan/90">
                         <a href={activeResource.url} target="_blank" rel="noreferrer">
                           Read on {activeResource.platform} <ExternalLink className="h-4 w-4" />
                         </a>
@@ -526,16 +511,18 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                 )}
               </div>
             ) : (
-              <div className="rounded-2xl border border-outline-variant bg-surface-card p-10 text-center">
+              <div className="rounded-none border border-outline-variant bg-surface-card p-10 text-center">
                 <p className="text-sm text-on-surface-variant">No resources yet — check back soon, or start the tasks below.</p>
               </div>
             )}
 
-            {/* ── Interactive task cards ── */}
+            {/* ── Interactive task cards — a node only ever has a quiz or a
+                challenge, never both, so the 2-col layout only kicks in if
+                that ever changes. ── */}
             {(challengeTask || quizTask) && (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className={cn('grid grid-cols-1 gap-4', challengeTask && quizTask && 'sm:grid-cols-2')}>
                 {challengeTask && challengeTask.challenge && (
-                  <div className="flex flex-col justify-between gap-4 rounded-xl border border-cyan/40 bg-cyan/[0.05] p-5">
+                  <div className="flex flex-col justify-between gap-4 rounded-none border border-cyan/40 bg-cyan/[0.05] p-5">
                     <div>
                       <Badge variant="outline" className="mb-2 border-cyan/40 bg-cyan/15 font-code text-[10px] uppercase text-cyan">
                         Code Challenge
@@ -546,7 +533,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                     <Button
                       onClick={() => setActiveChallengeTask(challengeTask)}
                       size="sm"
-                      className="w-full justify-center gap-2 rounded-xl bg-cyan font-code font-bold text-navy hover:bg-cyan/90"
+                      className="w-full justify-center gap-2 rounded-none bg-cyan font-code font-bold text-navy hover:bg-cyan/90"
                     >
                       <Terminal className="h-3.5 w-3.5" /> Open Coding Panel
                     </Button>
@@ -554,7 +541,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                 )}
 
                 {quizTask && quizTask.quiz && (
-                  <div className="flex flex-col justify-between gap-4 rounded-xl border border-secondary/40 bg-secondary/[0.05] p-5">
+                  <div className="flex flex-col justify-between gap-4 rounded-none border border-secondary/40 bg-secondary/[0.05] p-5">
                     <div>
                       <Badge variant="outline" className="mb-2 border-secondary/40 bg-secondary/15 font-code text-[10px] uppercase text-secondary">
                         Knowledge Check
@@ -565,7 +552,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                     <Button
                       onClick={() => setActiveQuizTask(quizTask)}
                       size="sm"
-                      className="w-full justify-center gap-2 rounded-xl bg-secondary font-code font-bold text-white hover:bg-secondary/90"
+                      className="w-full justify-center gap-2 rounded-none bg-secondary font-code font-bold text-white hover:bg-secondary/90"
                     >
                       <Code2 className="h-3.5 w-3.5" /> Take Quiz
                     </Button>
@@ -609,7 +596,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
         {prevNode ? (
           <Link
             href={`/roadmap/${prevNode.slug}`}
-            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-outline-variant bg-surface-card px-3 py-2 font-code text-xs font-semibold text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan"
+            className="flex shrink-0 items-center gap-1.5 rounded-none border border-outline-variant bg-surface-card px-3 py-2 font-code text-xs font-semibold text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan"
           >
             <ChevronLeft className="h-4 w-4" />
             <span className="hidden sm:inline">Prev</span>
@@ -629,12 +616,12 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
               <div
                 key={t.id}
                 className={cn(
-                  'h-full flex-1 rounded-full transition-all duration-500',
+                  'h-full flex-1 rounded-none transition-all duration-500',
                   data.progress.completedTasks.includes(t.id) ? 'bg-secondary' : 'bg-surface-container-high',
                 )}
               />
             )) : (
-              <div className="h-full w-full rounded-full bg-surface-container-high" />
+              <div className="h-full w-full rounded-none bg-surface-container-high" />
             )}
           </div>
         </div>
@@ -643,7 +630,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
         {allDone && nextNode ? (
           <Link
             href={`/roadmap/${nextNode.slug}`}
-            className="flex shrink-0 items-center gap-2 rounded-xl bg-secondary px-5 py-2 font-code text-sm font-bold text-white shadow-lg transition-all hover:bg-secondary/90"
+            className="flex shrink-0 items-center gap-2 rounded-none bg-secondary px-5 py-2 font-code text-sm font-bold text-white shadow-lg transition-all hover:bg-secondary/90"
           >
             Next Lesson <ArrowRight className="h-4 w-4" />
           </Link>
@@ -652,7 +639,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             onClick={handleGotIt}
             disabled={allDone && !nextNode}
             className={cn(
-              'shrink-0 gap-2 rounded-xl px-5 py-2 font-code text-sm font-bold shadow-lg',
+              'shrink-0 gap-2 rounded-none px-5 py-2 font-code text-sm font-bold shadow-lg',
               allDone
                 ? 'border border-secondary bg-surface-card text-secondary cursor-default'
                 : 'bg-secondary text-white hover:bg-secondary/90',
