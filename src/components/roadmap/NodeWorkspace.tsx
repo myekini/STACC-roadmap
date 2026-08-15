@@ -13,6 +13,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import {
   ArrowLeft,
   ArrowRight,
@@ -200,6 +201,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
       await data.completeTask({ task, evidenceUrl });
     } catch (err) {
       console.error('Task completion failed:', err);
+      toast.error(err instanceof Error ? err.message : 'Could not save your progress — try again.');
     }
   };
 

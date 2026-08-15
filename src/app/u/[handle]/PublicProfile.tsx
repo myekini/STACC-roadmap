@@ -14,6 +14,7 @@ import type { PublicProfilePayload } from '@/lib/database.types';
 import { AppIcon } from '@/components/ui/app-icon';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { StaccMark } from '@/components/brand/StaccMark';
 
 function useProfilePayload(handle: string) {
@@ -98,7 +99,7 @@ export default function PublicProfile({ handle }: { handle: string }) {
         {isLoading ? (
           <div className="space-y-4">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-24 animate-pulse border border-outline-variant/40 bg-surface/50" />
+              <Skeleton key={i} className="h-24" />
             ))}
           </div>
         ) : !payload ? (

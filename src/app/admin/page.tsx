@@ -23,6 +23,7 @@ import { ModuleChart } from '@/components/admin/ModuleChart';
 import { MembersTable } from '@/components/admin/MembersTable';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { StatusMarker } from '@/components/roadmap/bits';
 import { StaccMark } from '@/components/brand/StaccMark';
@@ -231,9 +232,9 @@ export default function AdminPage() {
       {overview.isLoading ? (
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {[0, 1, 2, 3].map((i) => <div key={i} className="h-24 animate-pulse border border-outline-variant/40 bg-surface/50" />)}
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}
           </div>
-          <div className="h-14 animate-pulse border border-outline-variant/40 bg-surface/50" />
+          <Skeleton className="h-14" />
         </div>
       ) : (
         <>

@@ -2,6 +2,7 @@
 
 /** Full-screen checkpoint workspace: a short set of harder, interview-style questions per node. */
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Check, CircleHelp, TerminalSquare, X } from 'lucide-react';
 import { AnimatedStaccMark } from '@/components/brand/AnimatedStaccMark';
 import type { QuizPayload } from '@/lib/database.types';
@@ -23,7 +24,6 @@ export function QuizWorkspace({
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const total = quiz.questions.length;
   const question = quiz.questions[index];
@@ -44,14 +44,13 @@ export function QuizWorkspace({
       return;
     }
     setSaving(true);
-    setError(null);
     try {
       await onPass();
       setSaving(false);
       onClose();
     } catch (err) {
       setSaving(false);
-      setError(err instanceof Error ? err.message : 'Could not save your completion.');
+      toast.error(err instanceof Error ? err.message : 'Could not save your completion.');
     }
   };
 
@@ -132,7 +131,6 @@ export function QuizWorkspace({
                 )}
               </div>
             )}
-            {error && <p role="alert" className="mt-4 font-code text-xs leading-5 text-error">{error}</p>}
           </div>
         </main>
 

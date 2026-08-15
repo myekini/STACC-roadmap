@@ -8,6 +8,7 @@ import SkillTree from '@/components/roadmap/SkillTree';
 import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 export default function RoadmapPage() {
@@ -108,7 +109,7 @@ export default function RoadmapPage() {
           {isLoading ? (
             <div className="mx-auto max-w-5xl space-y-4 px-4 py-10 sm:px-6">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="h-28 animate-pulse border border-outline-variant/40 bg-surface/50" />
+                <Skeleton key={i} className="h-28" />
               ))}
             </div>
           ) : (

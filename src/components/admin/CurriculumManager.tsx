@@ -15,6 +15,7 @@
  */
 
 import { useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertTriangle,
   BookOpen,
@@ -24,7 +25,6 @@ import {
   FileCode,
   GripVertical,
   Layers,
-  Loader2,
   Plus,
   Trash2,
   Video,
@@ -84,7 +84,7 @@ function ResourceRow({
       setEditing(false);
       setPending({});
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Could not save resource.');
+      toast.error(err instanceof Error ? err.message : 'Could not save resource.');
     } finally {
       setSaving(false);
     }
@@ -109,7 +109,7 @@ function ResourceRow({
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" onClick={save} disabled={saving || !((pending.name ?? res.name) && (pending.url ?? res.url))} className="h-7 px-3 font-code text-xs gap-1 bg-cyan text-navy hover:bg-cyan/90">
-            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : null} Save
+            {saving ? <AnimatedStaccMark className="h-3 w-3" /> : null} Save
           </Button>
           <button type="button" onClick={() => { setEditing(false); setPending({}); }} className="text-on-surface-variant hover:text-on-surface">
             <X className="h-4 w-4" />
@@ -173,7 +173,7 @@ function TaskEditor({
     try {
       await onSave(draft);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Could not save task.');
+      toast.error(err instanceof Error ? err.message : 'Could not save task.');
     } finally {
       setSaving(false);
     }
@@ -347,7 +347,7 @@ function TaskEditor({
                     const expectedRows = JSON.parse(e.target.value);
                     setDraft((d) => (d.challenge?.language === 'sql' ? { ...d, challenge: { ...d.challenge, expectedRows } } : d));
                   } catch {
-                    alert('Expected rows must be valid JSON.');
+                    toast.error('Expected rows must be valid JSON.');
                   }
                 }}
                 className={cn(fieldCls, 'w-full min-h-[50px] resize-y font-mono')}
@@ -379,7 +379,7 @@ function TaskEditor({
 
       <div className="flex items-center gap-2 pt-1">
         <Button size="sm" onClick={save} disabled={disabled || saving || !draft.description} className="h-7 px-3 font-code text-xs gap-1 bg-cyan text-navy hover:bg-cyan/90">
-          {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : null} Save task
+          {saving ? <AnimatedStaccMark className="h-3 w-3" /> : null} Save task
         </Button>
         <button type="button" onClick={onCancel} className="text-on-surface-variant hover:text-on-surface">
           <X className="h-4 w-4" />
@@ -410,7 +410,6 @@ export function CurriculumManager() {
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [editingPrereqs, setEditingPrereqs] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<DeleteTarget | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const dragItem = useRef<number | null>(null);
   const dragOver = useRef<number | null>(null);
@@ -426,12 +425,10 @@ export function CurriculumManager() {
   const nodeTasks = activeNode ? tasks.filter((t) => t.node_id === activeNode.id).sort((a, b) => a.order - b.order) : [];
 
   const runMutation = async (fn: () => Promise<unknown>) => {
-    setErrorMsg(null);
     try {
       await fn();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Something went wrong.';
-      setErrorMsg(message);
+      toast.error(err instanceof Error ? err.message : 'Something went wrong.');
       throw err;
     }
   };
@@ -463,7 +460,7 @@ export function CurriculumManager() {
         setSelectedNodeId(null);
       }
     } catch {
-      // error surfaced via errorMsg banner
+      // error surfaced via toast
     } finally {
       setConfirmDelete(null);
     }
@@ -484,7 +481,7 @@ export function CurriculumManager() {
         </div>
         {admin.isMutating && (
           <span className="flex items-center gap-1.5 rounded-xl border border-cyan/40 bg-cyan/10 px-3 py-1.5 font-code text-[11px] font-bold text-cyan">
-            <Loader2 className="h-3 w-3 animate-spin" /> Saving…
+            <AnimatedStaccMark className="h-3 w-3" /> Saving…
           </span>
         )}
       </div>
@@ -493,12 +490,6 @@ export function CurriculumManager() {
         <div className="flex items-center gap-2 border-b border-amber-500/40 bg-amber-500/10 px-5 py-2.5 text-xs text-amber-600 dark:text-amber-400">
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
           Read-only preview — curriculum content lives in the app bundle in local demo mode. Connect a Supabase project to edit it.
-        </div>
-      )}
-      {errorMsg && (
-        <div className="flex items-center justify-between gap-2 border-b border-red-500/40 bg-red-500/10 px-5 py-2.5 text-xs text-red-500">
-          <span className="flex items-center gap-2"><AlertTriangle className="h-3.5 w-3.5 shrink-0" /> {errorMsg}</span>
-          <button type="button" onClick={() => setErrorMsg(null)}><X className="h-3.5 w-3.5" /></button>
         </div>
       )}
 
@@ -753,7 +744,7 @@ function NewNodeForm({
       <Input placeholder="Module name" value={name} onChange={(e) => setName(e.target.value)} className="h-7 text-xs" />
       <div className="flex items-center gap-2">
         <Button size="sm" onClick={create} disabled={saving || !slug.trim() || !name.trim()} className="h-6 px-2.5 font-code text-[11px] gap-1 bg-cyan text-navy hover:bg-cyan/90">
-          {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />} Create
+          {saving ? <AnimatedStaccMark className="h-3 w-3" /> : <Plus className="h-3 w-3" />} Create
         </Button>
         <button type="button" onClick={onCancel} className="text-on-surface-variant hover:text-on-surface"><X className="h-3.5 w-3.5" /></button>
       </div>
@@ -829,7 +820,7 @@ function PathFormDialog({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <Button onClick={save} disabled={saving || !id.trim() || !title.trim()} className="font-code text-xs rounded-xl bg-cyan text-navy hover:bg-cyan/90">
-            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Save track
+            {saving ? <AnimatedStaccMark className="h-3.5 w-3.5" /> : null} Save track
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
