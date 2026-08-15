@@ -2,6 +2,15 @@
 
 import { CalendarDays } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { localDateKey } from '@/lib/utils';
+
+/** Parses a "YYYY-MM-DD" key as a local-midnight Date — `new Date(str)`
+ * parses date-only strings as UTC per spec, which can shift the displayed
+ * day/month by one once rendered in a non-UTC locale. */
+function parseLocalDateKey(key: string): Date {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
 
 /** activity: map of YYYY-MM-DD -> modules completed that day */
 export default function ActivityHeatmap({ activity }: { activity: Record<string, number> }) {
@@ -20,7 +29,7 @@ export default function ActivityHeatmap({ activity }: { activity: Record<string,
     const tempDate = new Date(startDate);
 
     while (tempDate <= today || data.length < 371) {
-      const dateString = tempDate.toISOString().split('T')[0];
+      const dateString = localDateKey(tempDate);
       data.push({ date: dateString, count: heatmapData[dateString] || 0, dayOfWeek: tempDate.getDay() });
       tempDate.setDate(tempDate.getDate() + 1);
     }
@@ -47,7 +56,7 @@ export default function ActivityHeatmap({ activity }: { activity: Record<string,
     let colCount = 0;
 
     weeks.forEach((week) => {
-      const midDay = new Date(week[3].date);
+      const midDay = parseLocalDateKey(week[3].date);
       const monthName = midDay.toLocaleString('default', { month: 'short' });
       if (monthName !== currentMonth) {
         if (currentMonth !== '') labels.push({ text: currentMonth, colSpan: colCount });
@@ -107,7 +116,7 @@ export default function ActivityHeatmap({ activity }: { activity: Record<string,
                     <div
                       key={day.date}
                       className={`w-[8px] h-[8px] sm:w-[9px] sm:h-[9px] rounded-none transition-colors duration-200 cursor-pointer ${getCellColor(day.count)}`}
-                      title={`${day.count} activity on ${new Date(day.date).toLocaleDateString()}`}
+                      title={`${day.count} activity on ${parseLocalDateKey(day.date).toLocaleDateString()}`}
                     />
                   ))}
                 </div>

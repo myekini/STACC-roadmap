@@ -34,7 +34,6 @@ export default function DashboardPage() {
   if (!hasSelectedPath) return null;
 
   const completedCount = Object.keys(progress.completedNodes).length;
-  const overallPct = nodes.length ? Math.round((completedCount / nodes.length) * 100) : 0;
   const hoursInvested = nodes.filter((n) => progress.completedNodes[n.id]).reduce((sum, n) => sum + n.est_hours, 0);
   const skillsPracticed = nodes.filter((n) => progress.completedNodes[n.id]).reduce((sum, n) => sum + n.skills.length, 0);
 
@@ -49,6 +48,25 @@ export default function DashboardPage() {
   const foundationsDone =
     (nodesByPath['foundations'] ?? []).length > 0 &&
     (nodesByPath['foundations'] ?? []).every((n) => progress.completedNodes[n.id]);
+
+  // "Track" here means whatever the learner is actually working through right
+  // now — Foundations until it's done, then their chosen specialization.
+  // `nodes`/`completedCount` above cover the *entire* curriculum (all 6
+  // paths); using that for a metric labelled "Track Progress" understates
+  // progress badly (e.g. finishing Foundations reads as ~16% of 38 modules
+  // instead of 100% of the 6 modules actually done).
+  const currentTrackLabel = foundationsDone ? activePathInfo?.title ?? 'Roadmap' : 'Foundations';
+  const currentTrackNodes = foundationsDone ? nodesByPath[activePath ?? ''] ?? [] : nodesByPath['foundations'] ?? [];
+  const trackCompletedCount = currentTrackNodes.filter((n) => progress.completedNodes[n.id]).length;
+  const trackPct = currentTrackNodes.length ? Math.round((trackCompletedCount / currentTrackNodes.length) * 100) : 0;
+
+  // Module list widget: incomplete nodes first so it always surfaces what's
+  // actually next, instead of always showing Foundations' first 5 modules
+  // regardless of how far the learner has actually gotten.
+  const railNodesToShow = [...railNodes]
+    .sort((a, b) => Number(Boolean(progress.completedNodes[a.id])) - Number(Boolean(progress.completedNodes[b.id])))
+    .slice(0, 5);
+
   const anyPathComplete = paths.some(
     (p) =>
       p.id !== 'foundations' &&
@@ -65,7 +83,7 @@ export default function DashboardPage() {
   const unlockedCount = milestones.filter((m) => m.unlocked).length;
 
   const metrics = [
-    { label: 'modules complete', value: `${completedCount}/${nodes.length}`, icon: CircleCheck, tone: 'text-secondary border-secondary/40 bg-secondary/10' },
+    { label: 'modules complete', value: `${trackCompletedCount}/${currentTrackNodes.length}`, icon: CircleCheck, tone: 'text-secondary border-secondary/40 bg-secondary/10' },
     { label: 'current streak', value: `${streak} days`, icon: Flame, tone: 'text-orange border-orange/40 bg-orange/10' },
     { label: 'hours invested', value: `${hoursInvested}h`, icon: Hourglass, tone: 'text-on-surface-variant border-outline-variant bg-surface-card' },
     { label: 'skills practiced', value: String(skillsPracticed), icon: Brain, tone: 'text-cyan border-cyan/40 bg-cyan/10' },
@@ -73,51 +91,51 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 py-6 md:py-10 max-w-7xl mx-auto px-4">
-      {/* ── DataCamp Style De-Duplicated Hero Banner ── */}
+      {/* ── Theme-aware progress hero ── */}
       <motion.section
         initial={reduceMotion ? false : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="relative overflow-hidden rounded-2xl border border-outline-variant/80 bg-gradient-to-r from-navy via-slate-900 to-navy-2 p-6 md:p-8 shadow-xl"
+        className="relative overflow-hidden rounded-none border border-cyan/25 bg-gradient-to-r from-surface-card via-surface-container-low to-surface-container-high p-6 md:p-8 shadow-xl"
       >
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2 font-code text-xs">
-              <span className="rounded-md bg-cyan/20 px-3 py-0.5 font-bold text-cyan uppercase tracking-wider">
+              <span className="rounded-none bg-cyan/20 px-3 py-0.5 font-bold text-cyan uppercase tracking-wider">
                 Active Track
               </span>
-              <span className="text-slate-400">·</span>
-              <span className="text-slate-200 font-semibold">{activePathInfo?.title ?? 'Foundations'}</span>
+              <span className="text-outline">·</span>
+              <span className="font-semibold text-on-surface">{currentTrackLabel}</span>
             </div>
 
-            <h1 className="font-display text-2xl sm:text-4xl font-bold text-white tracking-tight">
+            <h1 className="font-display text-2xl sm:text-4xl font-bold text-on-surface tracking-tight">
               {currentNode ? `Resume: ${currentNode.name}` : 'Roadmap Overview'}
             </h1>
 
-            <p className="text-xs sm:text-sm text-slate-300 leading-6 line-clamp-2">
+            <p className="text-xs sm:text-sm text-on-surface-variant leading-6 line-clamp-2">
               {currentNode?.subtitle ?? 'Keep pushing forward. Every completed module moves you closer to job-ready deliverables.'}
             </p>
 
             {/* Track Progress Bar */}
             <div className="pt-2 max-w-md space-y-1.5 font-code text-xs">
-              <div className="flex justify-between text-slate-300">
+              <div className="flex justify-between text-on-surface-variant">
                 <span>Overall Track Progress</span>
-                <span className="font-bold text-cyan">{overallPct}%</span>
+                <span className="font-bold text-cyan">{trackPct}%</span>
               </div>
-              <Progress value={overallPct} className="h-2 rounded-full bg-slate-800 [&>div]:bg-cyan" />
+              <Progress value={trackPct} className="h-2 bg-surface-container-high [&>div]:bg-cyan" />
             </div>
           </div>
 
           {/* Single Unified Primary CTA Button */}
           <div className="flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end gap-3 w-full lg:w-auto shrink-0">
-            <Button asChild size="lg" className="rounded-xl bg-cyan text-navy font-bold font-code text-xs uppercase tracking-wider hover:bg-cyan/90 shadow-lg px-8 py-3.5 gap-2">
+            <Button asChild size="lg" className="rounded-none bg-cyan text-navy font-bold font-code text-xs uppercase tracking-wider hover:bg-cyan/90 shadow-lg px-8 py-3.5 gap-2">
               <Link href={currentNode ? `/roadmap/${currentNode.slug}` : '/roadmap'}>
                 <Play className="h-4 w-4 fill-navy" />
                 {currentNode ? 'Resume Learning' : 'Review Roadmap'}
               </Link>
             </Button>
 
-            <Link href="/paths" className="font-code text-xs text-slate-400 hover:text-cyan text-center">
+            <Link href="/paths" className="font-code text-xs text-on-surface-variant hover:text-cyan text-center">
               Switch Track ↗
             </Link>
           </div>
@@ -127,8 +145,8 @@ export default function DashboardPage() {
       {/* ── Key Metrics Grid ── */}
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {metrics.map((metric) => (
-          <div key={metric.label} className="flex items-center gap-3.5 rounded-xl border border-outline-variant/80 bg-surface-card p-4 shadow-sm">
-            <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border', metric.tone)}>
+          <div key={metric.label} className="flex items-center gap-3.5 rounded-none border border-outline-variant/80 bg-surface-card p-4 shadow-sm">
+            <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-none border', metric.tone)}>
               <metric.icon className="h-5 w-5" />
             </div>
             <div className="min-w-0">
@@ -144,13 +162,13 @@ export default function DashboardPage() {
         {/* Left Column: Activity & Next Steps */}
         <div className="lg:col-span-2 space-y-8">
           {/* GitHub Style Activity Heatmap */}
-          <div className="rounded-2xl border border-outline-variant/80 bg-surface-card p-6 shadow-sm">
+          <div className="rounded-none border border-outline-variant/80 bg-surface-card p-6 shadow-sm">
             <h3 className="font-display text-lg font-bold text-on-surface mb-4">Learning Activity</h3>
             <ActivityHeatmap activity={activity} />
           </div>
 
           {/* Current Track Module List Breakdown */}
-          <div className="rounded-2xl border border-outline-variant/80 bg-surface-card p-6 shadow-sm space-y-4">
+          <div className="rounded-none border border-outline-variant/80 bg-surface-card p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-display text-lg font-bold text-on-surface">Track Modules</h3>
               <Link href="/roadmap" className="font-code text-xs text-cyan hover:underline flex items-center gap-1">
@@ -159,7 +177,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-2">
-              {railNodes.slice(0, 5).map((node) => {
+              {railNodesToShow.map((node) => {
                 const nodeStatus = data.nodeStatus(node.id);
                 const isDone = nodeStatus === 'complete';
                 const isAvailable = nodeStatus === 'available' || nodeStatus === 'in_progress';
@@ -168,7 +186,7 @@ export default function DashboardPage() {
                   <div
                     key={node.id}
                     className={cn(
-                      'flex items-center justify-between p-3.5 rounded-xl border text-xs transition-all',
+                      'flex items-center justify-between p-3.5 rounded-none border text-xs transition-all',
                       isDone
                         ? 'border-secondary/30 bg-secondary/[0.05] text-on-surface'
                         : isAvailable
@@ -178,7 +196,7 @@ export default function DashboardPage() {
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={cn(
-                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border font-bold text-xs',
+                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-none border font-bold text-xs',
                         isDone ? 'border-secondary bg-secondary text-white' : isAvailable ? 'border-cyan bg-cyan/20 text-cyan' : 'border-outline-variant text-outline',
                       )}>
                         {isDone ? <CheckCircle2 className="h-4 w-4" /> : <AppIcon name={node.icon} className="h-4 w-4" />}
@@ -190,7 +208,7 @@ export default function DashboardPage() {
                     </div>
 
                     {isAvailable && !isDone && (
-                      <Button asChild size="sm" className="rounded-lg font-code text-xs">
+                      <Button asChild size="sm" className="rounded-none font-code text-xs">
                         <Link href={`/roadmap/${node.slug}`}>Open</Link>
                       </Button>
                     )}
@@ -203,7 +221,7 @@ export default function DashboardPage() {
 
         {/* Right Column: Achievements & Milestones */}
         <div className="space-y-8">
-          <div className="rounded-2xl border border-outline-variant/80 bg-surface-card p-6 shadow-sm space-y-4">
+          <div className="rounded-none border border-outline-variant/80 bg-surface-card p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="flex items-center gap-2 font-display text-base font-bold text-on-surface">
                 <Trophy className="h-5 w-5 text-orange" />
@@ -217,7 +235,7 @@ export default function DashboardPage() {
                 <li
                   key={m.id}
                   className={cn(
-                    'flex items-center gap-3 rounded-xl border p-3.5 transition-all',
+                    'flex items-center gap-3 rounded-none border p-3.5 transition-all',
                     m.unlocked
                       ? 'border-orange/40 bg-orange/[0.06]'
                       : 'border-outline-variant/60 bg-surface/50 opacity-60',
@@ -225,7 +243,7 @@ export default function DashboardPage() {
                 >
                   <div
                     className={cn(
-                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border',
+                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-none border',
                       m.unlocked ? 'border-orange bg-orange/15 text-orange' : 'border-outline-variant text-outline',
                     )}
                   >

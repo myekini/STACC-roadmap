@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import type { Session } from '@supabase/supabase-js';
 import { hasSupabaseEnv, supabase } from '@/utils/supabase/client';
+import { localDateKey } from '@/lib/utils';
 import {
   NODES as LOCAL_NODES,
   PATHS as LOCAL_PATHS,
@@ -299,7 +300,7 @@ export function useUserData() {
     const byDay: Record<string, number> = {};
     for (const when of Object.values(prog.completedNodes)) {
       if (!when) continue;
-      const day = when.slice(0, 10);
+      const day = localDateKey(new Date(when));
       byDay[day] = (byDay[day] ?? 0) + 1;
     }
     return byDay;
@@ -309,8 +310,8 @@ export function useUserData() {
   const streak = useMemo(() => {
     let days = 0;
     const cursor = new Date();
-    if (!activity[cursor.toISOString().slice(0, 10)]) cursor.setDate(cursor.getDate() - 1);
-    while (activity[cursor.toISOString().slice(0, 10)]) {
+    if (!activity[localDateKey(cursor)]) cursor.setDate(cursor.getDate() - 1);
+    while (activity[localDateKey(cursor)]) {
       days += 1;
       cursor.setDate(cursor.getDate() - 1);
     }
