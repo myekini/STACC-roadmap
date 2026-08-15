@@ -4,7 +4,7 @@
  * Admin panel (spec §1.3/§1.11). Built from free shadcn dashboard primitives,
  * restyled to Stacc and wired to real roadmap data via useAdminData.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ChevronLeft, ChevronRight, Download, LogIn } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
@@ -19,7 +19,6 @@ import {
 } from '@/hooks/useAdminData';
 import { AdminShell, type AdminSection } from '@/components/admin/AdminShell';
 import { StatCards } from '@/components/admin/StatCards';
-import { ModuleChart } from '@/components/admin/ModuleChart';
 import { MembersTable } from '@/components/admin/MembersTable';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -153,12 +152,23 @@ export default function AdminPage() {
   const [cohort, setCohort] = useState<string | null>(null);
   const [section, setSection] = useState<AdminSection>('overview');
   const [memberFilter, setMemberFilter] = useState<'all' | 'attention'>('all');
+  const [memberSearchInput, setMemberSearchInput] = useState('');
   const [memberSearch, setMemberSearch] = useState('');
   const [memberPage, setMemberPage] = useState(0);
   const [selected, setSelected] = useState<MemberRow | null>(null);
   const [exporting, setExporting] = useState(false);
 
   const { paths, nodes, isAdmin, isLoading, isAuthenticated, isSupabaseConnected, user, signOut } = userData;
+
+  // Debounce search input into the query — typing shouldn't fire a fresh
+  // paginated RPC call on every keystroke.
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setMemberSearch(memberSearchInput);
+      setMemberPage(0);
+    }, 300);
+    return () => clearTimeout(id);
+  }, [memberSearchInput]);
 
   const overview = useAdminOverview(userData);
   const cohortsQuery = useAdminCohorts(userData);
@@ -199,6 +209,7 @@ export default function AdminPage() {
   }
 
   const pathTitles = Object.fromEntries(paths.filter((p) => p.id !== 'foundations').map((p) => [p.id, p.title] as const));
+  const allPathTitles = Object.fromEntries(paths.map((p) => [p.id, p.title] as const));
   const nodePathById = Object.fromEntries(nodes.map((n) => [n.id, n.path_id] as const));
   const nodeById = Object.fromEntries(nodes.map((n) => [n.id, n] as const));
   const stuckCount = overview.data?.stuckCount ?? 0;
@@ -271,8 +282,8 @@ export default function AdminPage() {
                   {CohortFilter}
                   <Input
                     placeholder="Search username…"
-                    value={memberSearch}
-                    onChange={(e) => { setMemberSearch(e.target.value); setMemberPage(0); }}
+                    value={memberSearchInput}
+                    onChange={(e) => setMemberSearchInput(e.target.value)}
                     className="h-8 w-40 text-xs"
                   />
                 </div>
@@ -312,12 +323,11 @@ export default function AdminPage() {
           {section === 'curriculum' && (
             <div className="space-y-8">
               {/* 3-panel CurriculumManager — needs a fixed height to enable internal scroll */}
-              <div className="overflow-hidden rounded-2xl border border-outline-variant bg-surface" style={{ height: '70vh', minHeight: 520 }}>
+              <div className="overflow-hidden rounded-none border border-outline-variant bg-surface" style={{ height: '70vh', minHeight: 520 }}>
                 <CurriculumManager />
               </div>
               <div className="pt-2 border-t border-outline-variant/60">
                 <h3 className="font-display text-lg font-bold text-on-surface mb-4">Module Completion Analytics</h3>
-                <ModuleChart analytics={nodeAnalytics.data ?? []} nodeById={nodeById} />
               </div>
               <div className="overflow-x-auto border border-outline-variant bg-surface">
                 <table className="w-full min-w-[560px] text-left">
@@ -338,7 +348,7 @@ export default function AdminPage() {
                         return (
                           <tr key={a.nodeId} className="hover:bg-surface-container-low/50">
                             <td className="px-4 py-3 text-xs font-semibold text-on-surface">{node?.name ?? a.nodeId}</td>
-                            <td className="px-4 py-3 font-code text-[10px] uppercase text-on-surface-variant">{pathTitles[node?.path_id ?? ''] ?? node?.path_id}</td>
+                            <td className="px-4 py-3 font-code text-[10px] uppercase text-on-surface-variant">{allPathTitles[node?.path_id ?? ''] ?? node?.path_id}</td>
                             <td className="px-4 py-3 font-code text-xs text-on-surface-variant">{a.starts}</td>
                             <td className="px-4 py-3 font-code text-xs text-on-surface-variant">{a.completions}</td>
                             <td className="px-4 py-3">
