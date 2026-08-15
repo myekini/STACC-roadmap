@@ -215,10 +215,10 @@ const CHIP_PITCH = CHIP_H + CHIP_GAP;
 const MAX_CHIPS = 3;
 
 const STROKE = {
-  done: 'rgba(0, 217, 255, 1)',
-  next: 'rgba(0, 217, 255, 0.55)',
-  todo: 'rgba(131, 149, 172, 0.4)',
-  locked: 'rgba(82, 97, 116, 0.35)',
+  done: 'var(--cyan)',
+  next: 'var(--cyan-dim)',
+  todo: 'var(--fg-muted)',
+  locked: 'var(--border-subtle)',
 };
 
 /**

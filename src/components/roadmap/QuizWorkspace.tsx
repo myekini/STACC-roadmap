@@ -87,12 +87,12 @@ export function QuizWorkspace({
           ))}
         </div>
 
-        <main className="min-h-0 flex-1 overflow-y-auto bg-[#0d1117] px-4 py-8 sm:px-8">
+        <main className="min-h-0 flex-1 overflow-y-auto bg-background px-4 py-8 sm:px-8">
           <div className="mx-auto max-w-2xl">
             <p className="flex items-center gap-2 font-code text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">
               <TerminalSquare className="h-4 w-4" /> {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
             </p>
-            <h1 className="mt-4 text-balance font-display text-xl font-bold leading-snug text-[#e0e3e5] sm:text-2xl">{question.question}</h1>
+            <h1 className="mt-4 text-balance font-display text-xl font-bold leading-snug text-on-surface sm:text-2xl">{question.question}</h1>
 
             <div className="mt-6 space-y-2.5">
               {question.options.map((option, i) => {
@@ -106,14 +106,14 @@ export function QuizWorkspace({
                     onClick={() => handlePick(i)}
                     className={cn(
                       'flex w-full items-center justify-between gap-3 border px-4 py-3 text-left text-sm transition-colors',
-                      !answered && 'border-[#2a3547] bg-[#101b2c] text-[#e0e3e5] hover:border-cyan/50 hover:bg-cyan/5',
+                      !answered && 'border-outline-variant bg-surface-container-low text-on-surface hover:border-cyan/50 hover:bg-cyan/5',
                       answered && isCorrect && 'border-secondary bg-secondary/10 text-secondary',
                       answered && isPicked && !isCorrect && 'border-error bg-error/10 text-error',
-                      answered && !isPicked && !isCorrect && 'border-[#2a3547] text-[#8395ac] opacity-60',
+                      answered && !isPicked && !isCorrect && 'border-outline-variant text-on-surface-variant opacity-60',
                     )}
                   >
                     <span className="flex items-center gap-3">
-                      <span className="font-code text-[10px] font-bold text-[#8395ac]">{String.fromCharCode(65 + i)}</span>
+                      <span className="font-code text-[10px] font-bold text-on-surface-variant">{String.fromCharCode(65 + i)}</span>
                       {option}
                     </span>
                     {answered && isCorrect && <Check className="h-4 w-4 shrink-0" />}
@@ -123,10 +123,10 @@ export function QuizWorkspace({
             </div>
 
             {answered && (
-              <div className={cn('mt-5 border-l-2 pl-4 font-code text-xs leading-6 text-[#8395ac]', correct ? 'border-secondary' : 'border-error')}>
+              <div className={cn('mt-5 border-l-2 pl-4 font-code text-xs leading-6 text-on-surface-variant', correct ? 'border-secondary' : 'border-error')}>
                 {correct ? question.explanation : 'Not quite — think it through and try again.'}
                 {!correct && (
-                  <Button size="sm" variant="ghost" className="ml-2 h-auto min-h-0 px-2 py-1 text-[#e0e3e5]" onClick={() => setPicked(null)}>
+                  <Button size="sm" variant="ghost" className="ml-2 h-auto min-h-0 px-2 py-1 text-on-surface" onClick={() => setPicked(null)}>
                     retry
                   </Button>
                 )}
