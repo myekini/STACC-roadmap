@@ -338,8 +338,14 @@ function SpineRow({ data, node, index, status, isCurrent, side }: { data: UserDa
   );
 }
 
-function SpineView({ data, pathId }: { data: UserData; pathId: string }) {
-  const reduceMotion = useReducedMotion();
+/** Shared derivation for both tree variants — Foundations section, the
+ * active specialization's nodes, the "current" (resume-here) node, and
+ * progress fractions. Previously duplicated near-verbatim in SpineView and
+ * RailView, which had already drifted: SpineView row-centers its spine fill
+ * (`fillPct`), RailView used a cruder raw fraction for the visually
+ * equivalent line. One source now, so both variants render off the same
+ * numbers. */
+function getTreeSections(data: UserData, pathId: string) {
   const foundations = data.nodesByPath['foundations'] ?? [];
   const pathNodes = pathId === 'foundations' ? [] : (data.nodesByPath[pathId] ?? []);
   const path = data.paths.find((p) => p.id === pathId);
@@ -350,9 +356,16 @@ function SpineView({ data, pathId }: { data: UserData; pathId: string }) {
   const foundationsDone = foundations.filter((n) => statusOf(n) === 'complete').length;
   const gateOpen = foundations.length > 0 && foundationsDone === foundations.length;
   const pathDone = pathNodes.filter((n) => statusOf(n) === 'complete').length;
-  const railProgress = pathNodes.length ? pathDone / pathNodes.length : 0;
+  const pathProgress = pathNodes.length ? pathDone / pathNodes.length : 0;
   // Fill to the last completed junction (row centers sit at (i + 0.5) / n), not mid-gap.
   const fillPct = pathNodes.length === 0 || pathDone === 0 ? 0 : pathDone === pathNodes.length ? 100 : ((pathDone - 0.5) / pathNodes.length) * 100;
+
+  return { foundations, pathNodes, path, statusOf, current, foundationsDone, gateOpen, pathDone, pathProgress, fillPct };
+}
+
+function SpineView({ data, pathId }: { data: UserData; pathId: string }) {
+  const reduceMotion = useReducedMotion();
+  const { foundations, pathNodes, path, statusOf, current, foundationsDone, gateOpen, pathDone, pathProgress, fillPct } = getTreeSections(data, pathId);
 
   const entrance = reduceMotion ? {} : { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 } };
 
@@ -420,12 +433,12 @@ function SpineView({ data, pathId }: { data: UserData; pathId: string }) {
               <span
                 className={cn(
                   'z-10 border px-3 py-1 font-code text-[9px] font-bold uppercase tracking-[0.16em] transition-colors duration-500',
-                  railProgress === 1
+                  pathProgress === 1
                     ? 'border-secondary/50 bg-secondary/10 text-secondary shadow-[0_0_15px_rgba(16,185,129,0.2)]'
                     : 'border-outline-variant bg-surface-container-low text-outline',
                 )}
               >
-                {railProgress === 1 ? '▪ path complete' : '▫ ship it'}
+                {pathProgress === 1 ? '▪ path complete' : '▫ ship it'}
               </span>
             </div>
           </div>
@@ -438,17 +451,7 @@ function SpineView({ data, pathId }: { data: UserData; pathId: string }) {
 // ── Rail view (mobile / compact) ─────────────────────────────
 function RailView({ data, pathId }: { data: UserData; pathId: string }) {
   const reduceMotion = useReducedMotion();
-  const foundations = data.nodesByPath['foundations'] ?? [];
-  const pathNodes = pathId === 'foundations' ? [] : (data.nodesByPath[pathId] ?? []);
-  const path = data.paths.find((p) => p.id === pathId);
-
-  const statusOf = (n: NodeRow) => data.nodeStatus(n.id);
-  const allOrdered = [...foundations, ...pathNodes];
-  const current = allOrdered.find((n) => ['available', 'in_progress'].includes(statusOf(n)));
-
-  const foundationsDone = foundations.filter((n) => statusOf(n) === 'complete').length;
-  const pathDone = pathNodes.filter((n) => statusOf(n) === 'complete').length;
-  const railProgress = pathNodes.length ? pathDone / pathNodes.length : 0;
+  const { foundations, pathNodes, path, statusOf, current, foundationsDone, pathDone, fillPct } = getTreeSections(data, pathId);
 
   const entrance = reduceMotion ? {} : { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 } };
 
@@ -481,7 +484,7 @@ function RailView({ data, pathId }: { data: UserData; pathId: string }) {
             <div
               aria-hidden
               className="absolute left-[26px] top-6 w-px bg-cyan shadow-[0_0_12px_rgba(0,217,255,0.6)] transition-all duration-700 sm:left-[34px]"
-              style={{ height: `calc(${Math.min(railProgress * 100, 100)}% - 24px)` }}
+              style={{ height: `calc(${fillPct}% - 24px)` }}
             />
             <div className="space-y-4">
               {pathNodes.map((node, i) => (

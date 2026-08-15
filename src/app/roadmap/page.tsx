@@ -13,13 +13,18 @@ import { cn } from '@/lib/utils';
 export default function RoadmapPage() {
   const data = useUserData();
   const reduceMotion = useReducedMotion();
-  const { paths, nodes, nodesByPath, progress, activePath, hasSelectedPath, isLoading } = data;
+  const { paths, nodesByPath, progress, activePath, hasSelectedPath, isLoading } = data;
 
   const specializations = paths.filter((p) => p.id !== 'foundations');
   const pathId = activePath && activePath !== 'foundations' ? activePath : specializations[0]?.id;
 
-  const completedCount = Object.keys(progress.completedNodes).length;
-  const overallPct = nodes.length ? Math.round((completedCount / nodes.length) * 100) : 0;
+  // Scoped to exactly what's rendered below (Foundations + the selected
+  // track) rather than every module across all 6 paths — an unlabeled,
+  // curriculum-wide % here never matched the per-tab or in-tree numbers
+  // sitting right next to it.
+  const visibleNodes = [...(nodesByPath['foundations'] ?? []), ...(pathId ? nodesByPath[pathId] ?? [] : [])];
+  const visibleDone = visibleNodes.filter((n) => progress.completedNodes[n.id]).length;
+  const trackPct = visibleNodes.length ? Math.round((visibleDone / visibleNodes.length) * 100) : 0;
 
   if (!isLoading && !hasSelectedPath && !data.isAdmin) {
     return (
@@ -57,11 +62,12 @@ export default function RoadmapPage() {
               </h1>
               <div className="h-4 w-px bg-outline-variant/60" />
               <div className="flex items-center gap-2">
+                <span className="hidden font-code text-[10px] uppercase tracking-wider text-outline sm:inline">This track</span>
                 <Progress
-                  value={overallPct}
+                  value={trackPct}
                   className="h-1.5 w-16 rounded-none bg-surface-container-high sm:w-24 [&>div]:rounded-none [&>div]:bg-cyan"
                 />
-                <span className="font-code text-xs font-bold text-cyan">{overallPct}%</span>
+                <span className="font-code text-xs font-bold text-cyan">{trackPct}%</span>
               </div>
             </div>
           </div>
