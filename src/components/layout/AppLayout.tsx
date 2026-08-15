@@ -13,7 +13,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isLoading } = useUserData();
   const { sidebarCollapsed } = useUiStore();
-  const isRoadmap = pathname === '/roadmap' || pathname?.startsWith('/roadmap/');
+  const isRoadmap = pathname === '/roadmap';
+  const isNodeWorkspace = pathname?.startsWith('/roadmap/');
 
   // Landing, the public SEO tree, public portfolios, and admin (its own dedicated shell) render
   // without the member app shell. /auth/callback is a server Route Handler (no React render
@@ -24,6 +25,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return <AppLoader />;
+  }
+
+  // Lesson workspaces own their complete viewport: breadcrumb, outline,
+  // scroll region, and action footer. Nesting them inside the member shell
+  // creates duplicate navigation and an unavoidable extra viewport of height.
+  if (isNodeWorkspace) {
+    return <>{children}</>;
   }
 
   return (

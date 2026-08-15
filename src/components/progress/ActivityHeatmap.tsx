@@ -1,142 +1,134 @@
 'use client';
 
 import { CalendarDays } from 'lucide-react';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { localDateKey } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
-/** Parses a "YYYY-MM-DD" key as a local-midnight Date — `new Date(str)`
- * parses date-only strings as UTC per spec, which can shift the displayed
- * day/month by one once rendered in a non-UTC locale. */
+type ActivityDay = { date: string; count: number; isFuture: boolean };
+type ActivityWeek = ActivityDay[];
+
 function parseLocalDateKey(key: string): Date {
-  const [y, m, d] = key.split('-').map(Number);
-  return new Date(y, m - 1, d);
+  const [year, month, day] = key.split('-').map(Number);
+  return new Date(year, month - 1, day);
 }
 
-/** activity: map of YYYY-MM-DD -> modules completed that day */
-export default function ActivityHeatmap({ activity }: { activity: Record<string, number> }) {
-  const heatmapData = activity;
+function buildWeeks(activity: Record<string, number>, weekCount: number): ActivityWeek[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const start = new Date(today);
+  start.setDate(today.getDate() - ((weekCount - 1) * 7 + today.getDay()));
 
-  // Generate the last 365 days (53 weeks)
-  const getGridData = () => {
-    const data: { date: string; count: number; dayOfWeek: number }[] = [];
-    const today = new Date();
+  return Array.from({ length: weekCount }, (_, weekIndex) =>
+    Array.from({ length: 7 }, (_, dayIndex) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + weekIndex * 7 + dayIndex);
+      const key = localDateKey(date);
+      return { date: key, count: activity[key] ?? 0, isFuture: date > today };
+    }),
+  );
+}
 
-    // Start on a Sunday ~365 days ago
-    const startDate = new Date();
-    startDate.setDate(today.getDate() - 364);
-    startDate.setDate(startDate.getDate() - startDate.getDay());
+function cellTone(count: number) {
+  if (count === 0) return 'bg-surface-container-high';
+  if (count === 1) return 'bg-cyan/20';
+  if (count === 2) return 'bg-cyan/40';
+  if (count === 3) return 'bg-cyan/65';
+  return 'bg-cyan';
+}
 
-    const tempDate = new Date(startDate);
+function monthLabels(weeks: ActivityWeek[]) {
+  const labels: { text: string; span: number }[] = [];
+  let activeMonth = '';
 
-    while (tempDate <= today || data.length < 371) {
-      const dateString = localDateKey(tempDate);
-      data.push({ date: dateString, count: heatmapData[dateString] || 0, dayOfWeek: tempDate.getDay() });
-      tempDate.setDate(tempDate.getDate() + 1);
+  weeks.forEach((week) => {
+    const month = parseLocalDateKey(week[3].date).toLocaleString('default', { month: 'short' });
+    const previous = labels.at(-1);
+    if (month === activeMonth && previous) previous.span += 1;
+    else {
+      activeMonth = month;
+      labels.push({ text: month, span: 1 });
     }
+  });
 
-    const weeks: typeof data[] = [];
-    for (let i = 0; i < data.length; i += 7) weeks.push(data.slice(i, i + 7));
-    return weeks;
-  };
+  return labels;
+}
 
-  const weeks = getGridData();
-
-  // Cyan = signal/focus/progress energy (design DNA)
-  const getCellColor = (count: number) => {
-    if (count === 0) return 'bg-surface-container-high';
-    if (count === 1) return 'bg-cyan/15';
-    if (count === 2) return 'bg-cyan/35';
-    if (count === 3) return 'bg-cyan/60';
-    return 'bg-cyan';
-  };
-
-  const getMonthLabels = () => {
-    const labels: { text: string; colSpan: number }[] = [];
-    let currentMonth = '';
-    let colCount = 0;
-
-    weeks.forEach((week) => {
-      const midDay = parseLocalDateKey(week[3].date);
-      const monthName = midDay.toLocaleString('default', { month: 'short' });
-      if (monthName !== currentMonth) {
-        if (currentMonth !== '') labels.push({ text: currentMonth, colSpan: colCount });
-        currentMonth = monthName;
-        colCount = 1;
-      } else {
-        colCount++;
-      }
-    });
-
-    labels.push({ text: currentMonth, colSpan: colCount });
-    return labels;
-  };
-
-  const monthLabels = getMonthLabels();
+function HeatmapGrid({ weeks }: { weeks: ActivityWeek[] }) {
+  const labels = monthLabels(weeks);
 
   return (
-    <div className="border border-outline-variant bg-surface p-4 sm:p-5">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-headline-md text-base font-bold text-on-surface flex items-center gap-2">
-          <CalendarDays className="h-5 w-5 text-cyan" />
-          Study Consistency
-        </h3>
-        <span className="micro-label text-outline">Last 12 Months</span>
+    <div>
+      <div className="mb-2 grid pl-7 font-code text-[10px] font-semibold text-on-surface-variant" style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}>
+        {labels.map((label, index) => (
+          <span key={`${label.text}-${index}`} className="truncate" style={{ gridColumn: `span ${label.span}` }}>
+            {label.text}
+          </span>
+        ))}
       </div>
 
-      {/* ScrollArea for consistent cross-browser scrollbar styling */}
-      <ScrollArea className="w-full pb-2">
-        <div className="min-w-[620px] flex flex-col">
-          {/* Month Labels */}
-          <div className="flex text-[10px] text-outline mb-1.5 font-code pl-6">
-            {monthLabels.map((label, idx) => (
-              <div
-                key={idx}
-                style={{ width: `${(label.colSpan / weeks.length) * 100}%` }}
-                className="truncate pr-1 text-left font-semibold"
-              >
-                {label.text}
-              </div>
-            ))}
-          </div>
-
-          <div className="flex gap-2">
-            {/* Day-of-week labels */}
-            <div className="flex flex-col justify-between text-[9px] text-outline font-code pr-1 h-[76px] py-0.5 select-none">
-              <span>Sun</span>
-              <span>Tue</span>
-              <span>Thu</span>
-              <span>Sat</span>
-            </div>
-
-            {/* Week columns */}
-            <div className="flex-1 grid grid-flow-col auto-cols-max gap-[3px]">
-              {weeks.map((week, weekIdx) => (
-                <div key={weekIdx} className="grid grid-rows-7 gap-[3px]">
-                  {week.map((day) => (
-                    <div
-                      key={day.date}
-                      className={`w-[8px] h-[8px] sm:w-[9px] sm:h-[9px] rounded-none transition-colors duration-200 cursor-pointer ${getCellColor(day.count)}`}
-                      title={`${day.count} activity on ${parseLocalDateKey(day.date).toLocaleDateString()}`}
-                    />
-                  ))}
-                </div>
+      <div className="flex gap-2">
+        <div className="flex w-5 shrink-0 flex-col justify-between py-0.5 font-code text-[9px] text-on-surface-variant" aria-hidden>
+          <span>Sun</span>
+          <span>Tue</span>
+          <span>Thu</span>
+          <span>Sat</span>
+        </div>
+        <div className="grid min-w-0 flex-1 grid-flow-col gap-[3px]" style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}>
+          {weeks.map((week, weekIndex) => (
+            <div key={weekIndex} className="grid min-w-0 grid-rows-7 gap-[3px]">
+              {week.map((day) => (
+                <div
+                  key={day.date}
+                  title={day.isFuture ? undefined : `${day.count} activities on ${parseLocalDateKey(day.date).toLocaleDateString()}`}
+                  aria-hidden
+                  className={cn(
+                    'aspect-square min-w-0 border border-transparent',
+                    day.isFuture ? 'bg-transparent' : cellTone(day.count),
+                  )}
+                />
               ))}
             </div>
-          </div>
+          ))}
         </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
-
-      {/* Legend */}
-      <div className="flex justify-end items-center gap-1.5 mt-3 text-[10px] text-on-surface-variant font-code select-none">
-        <span>Less</span>
-        <div className="w-2.5 h-2.5 rounded-none bg-surface-container-high" />
-        <div className="w-2.5 h-2.5 rounded-none bg-cyan/15" />
-        <div className="w-2.5 h-2.5 rounded-none bg-cyan/35" />
-        <div className="w-2.5 h-2.5 rounded-none bg-cyan/60" />
-        <div className="w-2.5 h-2.5 rounded-none bg-cyan" />
-        <span>More</span>
       </div>
     </div>
+  );
+}
+
+export default function ActivityHeatmap({ activity }: { activity: Record<string, number> }) {
+  const recentWeeks = buildWeeks(activity, 16);
+  const yearWeeks = buildWeeks(activity, 53);
+  const activeDays = Object.values(activity).filter((count) => count > 0).length;
+
+  return (
+    <section aria-labelledby="activity-heading" className="border border-outline-variant bg-surface-card p-4 sm:p-5">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 id="activity-heading" className="flex items-center gap-2 font-display text-lg font-bold text-on-surface">
+            <CalendarDays className="h-5 w-5 text-cyan" aria-hidden /> Learning activity
+          </h2>
+          <p className="mt-1 text-xs text-on-surface-variant">{activeDays} active {activeDays === 1 ? 'day' : 'days'} recorded.</p>
+        </div>
+        <span className="font-code text-[10px] font-semibold uppercase tracking-[0.1em] text-on-surface-variant">
+          <span className="md:hidden">Last 16 weeks</span>
+          <span className="hidden md:inline">Last 12 months</span>
+        </span>
+      </div>
+
+      <div className="md:hidden">
+        <HeatmapGrid weeks={recentWeeks} />
+      </div>
+      <div className="hidden md:block">
+        <HeatmapGrid weeks={yearWeeks} />
+      </div>
+
+      <div className="mt-5 flex items-center justify-end gap-1.5 font-code text-[10px] text-on-surface-variant" aria-label="Activity intensity from less to more">
+        <span>Less</span>
+        {[0, 1, 2, 3, 4].map((count) => (
+          <span key={count} className={cn('h-2.5 w-2.5', cellTone(count))} aria-hidden />
+        ))}
+        <span>More</span>
+      </div>
+    </section>
   );
 }
