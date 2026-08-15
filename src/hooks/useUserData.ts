@@ -482,7 +482,12 @@ export function useUserData() {
     // mode
     isSupabaseConnected: connected,
     isAuthenticated: connected ? !!session : true,
-    isLoading: content.isLoading || progress.isLoading || profile.isLoading || projectsQuery.isLoading,
+    // Includes activePathQuery: pages that redirect on !hasSelectedPath (e.g.
+    // /dashboard, /roadmap) must wait for it to resolve first, or a user who
+    // *does* have an active path gets bounced to /paths while it's still
+    // in flight — activePath keys on userId, so it restarts as a fresh,
+    // loading query once auth resolves from anonymous to the real user.
+    isLoading: content.isLoading || progress.isLoading || profile.isLoading || projectsQuery.isLoading || activePathQuery.isLoading,
     // identity
     user: profile.data ?? GUEST,
     // Demo mode is admin (offline preview); connected mode requires a real admin profile.
