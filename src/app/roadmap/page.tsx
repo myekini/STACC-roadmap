@@ -1,10 +1,12 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Lock, Route } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 import SkillTree from '@/components/roadmap/SkillTree';
+import { GithubStatusToast } from '@/components/roadmap/GithubStatusToast';
 import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -47,6 +49,9 @@ export default function RoadmapPage() {
 
   return (
     <div className="w-full pb-16 pt-3 md:pb-6">
+      <Suspense fallback={null}>
+        <GithubStatusToast />
+      </Suspense>
       {/* Course navigation */}
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <motion.header

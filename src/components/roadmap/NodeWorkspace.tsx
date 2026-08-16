@@ -60,6 +60,7 @@ function ProjectMilestone({
   disabled: boolean;
 }) {
   const [busy, setBusy] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [verified, setVerified] = useState<{ url: string; sha: string } | null>(null);
   const project = data.projectConnections[pathId];
@@ -84,10 +85,13 @@ function ProjectMilestone({
         <p className="mt-1 leading-5 text-on-surface-variant">
           Choose one GitHub repository. Stacc reads commits from that repo only to verify your work.
         </p>
-        <Button asChild size="sm" className="mt-3 rounded-none font-code gap-2 bg-surface-card border border-outline-variant hover:border-cyan text-on-surface">
-          <a href={`/api/github/install?path=${encodeURIComponent(pathId)}&returnTo=${encodeURIComponent(`/roadmap/${nodeSlug}`)}`}>
-            <GithubLogo className="h-4 w-4 text-on-surface" />
-            <span>{project ? 'Reconnect GitHub' : 'Connect GitHub'}</span>
+        <Button asChild size="sm" className={cn('mt-3 rounded-none font-code gap-2 bg-surface-card border border-outline-variant hover:border-cyan text-on-surface', connecting && 'pointer-events-none opacity-60')}>
+          <a
+            href={`/api/github/install?path=${encodeURIComponent(pathId)}&returnTo=${encodeURIComponent(`/roadmap/${nodeSlug}`)}`}
+            onClick={(e) => { if (connecting) { e.preventDefault(); return; } setConnecting(true); }}
+          >
+            {connecting ? <AnimatedStaccMark className="h-4 w-4" /> : <GithubLogo className="h-4 w-4 text-on-surface" />}
+            <span>{connecting ? 'Connecting…' : project ? 'Reconnect GitHub' : 'Connect GitHub'}</span>
           </a>
         </Button>
       </div>
@@ -158,6 +162,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
   const [activeResourceIndex, setActiveResourceIndex] = useState(0);
   const [activeQuizTask, setActiveQuizTask] = useState<TaskRow | null>(null);
   const [activeChallengeTask, setActiveChallengeTask] = useState<TaskRow | null>(null);
+  const [connectingRepo, setConnectingRepo] = useState(false);
 
   /* ── Data derived from slug ── */
   const node = data.nodes.find((n) => n.slug === slug) ?? null;
@@ -317,10 +322,14 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
               <a
                 href={`/api/github/install?path=${encodeURIComponent(path.id)}&returnTo=${encodeURIComponent(`/roadmap/${slug}`)}`}
                 title="Connect a GitHub repo for this track"
-                className="hidden items-center gap-1.5 rounded-none border border-dashed border-outline-variant bg-surface-card px-2.5 py-1.5 font-code text-xs text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan md:flex"
+                onClick={(e) => { if (connectingRepo) { e.preventDefault(); return; } setConnectingRepo(true); }}
+                className={cn(
+                  'hidden items-center gap-1.5 rounded-none border border-dashed border-outline-variant bg-surface-card px-2.5 py-1.5 font-code text-xs text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan md:flex',
+                  connectingRepo && 'pointer-events-none opacity-60',
+                )}
               >
-                <GithubLogo className="h-3.5 w-3.5" />
-                <span>Connect repo</span>
+                {connectingRepo ? <AnimatedStaccMark className="h-3.5 w-3.5" /> : <GithubLogo className="h-3.5 w-3.5" />}
+                <span>{connectingRepo ? 'Connecting…' : 'Connect repo'}</span>
               </a>
             )
           )}

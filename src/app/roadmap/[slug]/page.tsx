@@ -1,9 +1,18 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useUserData } from '@/hooks/useUserData';
 import NodeWorkspace from '@/components/roadmap/NodeWorkspace';
+import { GithubStatusToast } from '@/components/roadmap/GithubStatusToast';
 
 export default function NodeWorkspacePage({ params }: { params: { slug: string } }) {
   const data = useUserData();
-  return <NodeWorkspace data={data} slug={decodeURIComponent(params.slug)} />;
+  return (
+    <>
+      <Suspense fallback={null}>
+        <GithubStatusToast />
+      </Suspense>
+      <NodeWorkspace data={data} slug={decodeURIComponent(params.slug)} />
+    </>
+  );
 }
