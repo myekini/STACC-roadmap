@@ -111,7 +111,7 @@ export function QuizWorkspace({
                       answered && !isPicked && !isCorrect && 'border-outline-variant text-on-surface-variant opacity-60',
                     )}
                   >
-                    <span className="flex items-center gap-3">
+                    <span className="flex min-w-0 items-center gap-3">
                       <span className="font-code text-[10px] font-bold text-on-surface-variant">{String.fromCharCode(65 + i)}</span>
                       {option}
                     </span>

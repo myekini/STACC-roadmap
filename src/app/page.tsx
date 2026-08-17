@@ -262,18 +262,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Technology Strip ── */}
-      <section className="border-b border-outline-variant bg-surface-container-low/60 py-4">
+      {/* ── Curriculum toolkit ── */}
+      <section className="border-b border-outline-variant bg-surface-container-low/60 py-5">
         <div className="mx-auto max-w-7xl px-5 md:px-8">
-          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1.5 font-code text-xs text-on-surface-variant">
-            <Code2 className="h-3.5 w-3.5 shrink-0 text-cyan" />
-            <span className="text-outline">Across all tracks:</span>
-            {techStack.map((tech, i) => (
-              <span key={tech}>
-                {tech}
-                {i < techStack.length - 1 && <span className="text-outline"> ·</span>}
-              </span>
-            ))}
+          <div className="mx-auto flex max-w-4xl items-start gap-3 text-left sm:items-center sm:text-center">
+            <Code2 className="mt-0.5 size-4 shrink-0 text-cyan sm:mt-0" aria-hidden="true" />
+            <p className="text-sm leading-6 text-on-surface-variant">
+              <span className="font-semibold text-on-surface">Tools you will use:</span>{' '}
+              {techStack.join(', ')}.
+            </p>
           </div>
         </div>
       </section>
@@ -335,8 +332,12 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Category Tabs */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+          {/* Category navigation */}
+          <div
+            role="tablist"
+            aria-label="Filter career tracks"
+            className="no-scrollbar mx-auto mt-8 flex max-w-max overflow-x-auto border-b border-outline-variant px-1"
+          >
             {[
               { id: 'all', label: 'All Tracks' },
               { id: 'foundations', label: 'Foundations' },
@@ -345,13 +346,17 @@ export default function LandingPage() {
             ].map((tab) => (
               <button
                 key={tab.id}
+                id={`track-tab-${tab.id}`}
                 type="button"
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls="career-track-results"
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
                 className={cn(
-                  'px-3.5 py-1.5 font-code text-xs font-semibold uppercase tracking-[0.1em] border transition-all rounded-none',
+                  '-mb-px min-h-11 shrink-0 border-b-2 px-4 py-2 font-code text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors',
                   activeTab === tab.id
-                    ? 'border-cyan bg-cyan/15 text-cyan shadow-sm'
-                    : 'border-outline-variant/60 bg-surface-card text-on-surface-variant hover:border-cyan/40 hover:text-on-surface',
+                    ? 'border-cyan text-cyan'
+                    : 'border-transparent text-on-surface-variant hover:border-outline hover:text-on-surface',
                 )}
               >
                 {tab.label}
@@ -360,21 +365,25 @@ export default function LandingPage() {
           </div>
 
           {/* Grid */}
-          <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div
+            id="career-track-results"
+            role="tabpanel"
+            aria-labelledby={`track-tab-${activeTab}`}
+            className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+          >
             {featuredPaths.map((path) => (
               <article
                 key={path.id}
                 className="group flex flex-col justify-between border border-outline-variant bg-surface-card rounded-none p-6 transition-all hover:-translate-y-1 hover:border-cyan/40 hover:shadow-xl"
               >
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-code text-[10px] font-semibold uppercase tracking-wider text-cyan">
+                  <p className="font-code text-[11px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
+                    <span className="text-cyan">
                       {path.id === 'foundations' ? 'Prerequisite' : path.requires_paths.length > 0 ? 'Advanced' : 'Specialization'}
                     </span>
-                    <Badge variant="outline" className="border-cyan/30 bg-cyan/10 font-code text-[10px] text-cyan rounded-none">
-                      {path.tags[0] ?? 'Data'}
-                    </Badge>
-                  </div>
+                    <span className="mx-2 text-outline" aria-hidden="true">/</span>
+                    {path.tags[0] ?? 'Data'}
+                  </p>
 
                   <h3 className="font-display text-xl font-bold text-on-surface group-hover:text-cyan transition-colors">
                     {path.title}

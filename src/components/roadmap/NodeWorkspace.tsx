@@ -271,6 +271,8 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
   const primaryBtnLabel = allDone
     ? nextNode ? 'Next Lesson' : 'Complete!'
+    : status === 'locked'
+      ? 'Complete prerequisites'
     : completingTaskId
       ? 'Saving progress…'
     : nextPendingTask?.type === 'build'
@@ -292,7 +294,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
           Left:  ← Back to Roadmap  /  Path  /  Node Name
           Right: [< Course Outline >]  [XP chip]
       ────────────────────────────────────────────────── */}
-      <header className="z-30 flex min-h-16 shrink-0 items-center justify-between border-b border-outline-variant bg-surface px-3 py-2 sm:px-6">
+      <header className="z-30 flex min-h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-outline-variant bg-surface pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] sm:min-h-16 sm:px-6 sm:py-2">
         {/* Back + breadcrumb */}
         <div className="flex min-w-0 items-center gap-2 text-xs">
           <Link
@@ -383,14 +385,14 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             onClick={() => setShowPanel(false)}
             className="absolute inset-0 z-10 bg-background/70 backdrop-blur-sm md:hidden"
           />
-          <aside id="lesson-outline" className="absolute inset-y-0 left-0 z-20 flex w-[min(22rem,calc(100vw-2rem))] shrink-0 flex-col border-r border-outline-variant bg-surface shadow-2xl md:static md:w-72 md:shadow-none">
+          <aside id="lesson-outline" className="absolute inset-y-0 left-0 z-20 flex w-[min(22rem,calc(100vw-1rem))] shrink-0 flex-col border-r border-outline-variant bg-surface shadow-[12px_0_32px_rgba(2,8,23,0.24)] md:static md:w-72 md:shadow-none">
             {/* Panel header */}
             <div className="flex items-center justify-between border-b border-outline-variant px-4 py-3">
               <span className="font-code text-xs font-bold text-on-surface">Lesson Outline</span>
               <button
                 type="button"
                 onClick={() => setShowPanel(false)}
-                className="rounded-none p-1 text-on-surface-variant hover:text-on-surface"
+                className="flex size-10 items-center justify-center text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface"
                 title="Hide outline"
                 aria-label="Hide lesson outline"
               >
@@ -418,7 +420,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                             onClick={() => setActiveResourceIndex(idx)}
                             aria-pressed={isActive}
                             className={cn(
-                              'flex w-full items-start gap-2.5 rounded-none border p-2.5 text-left text-xs transition-all',
+                              'flex w-full items-start gap-2.5 border p-3 text-left text-[13px] transition-colors',
                               isActive
                                 ? 'border-cyan bg-cyan/10 text-on-surface font-semibold'
                                 : 'border-transparent bg-surface-card text-on-surface-variant hover:border-outline-variant hover:text-on-surface',
@@ -456,7 +458,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                       return (
                         <li
                           key={task.id}
-                          className="flex items-center gap-2 rounded-none border border-outline-variant/50 bg-surface-card p-2.5 text-[11px]"
+                          className="flex items-center gap-2.5 border border-outline-variant/50 bg-surface-card p-3 text-[13px]"
                         >
                           {/* Completion checkbox / icon */}
                           <span className={cn(
@@ -490,7 +492,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
         {/* ─── MAIN CANVAS ─────────────────────────────── */}
         <main className="min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background">
-          <div className="mx-auto max-w-4xl space-y-5 px-4 py-5 sm:space-y-6 sm:px-8 sm:py-8">
+          <div className="mx-auto max-w-4xl space-y-4 px-4 py-5 sm:space-y-6 sm:px-8 sm:py-8 lg:px-10">
 
             {!data.isAuthenticated && data.isSupabaseConnected && (
               <Alert>
@@ -554,7 +556,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                   {activeYouTubeRef ? (
                     <YouTubeEmbed source={activeYouTubeRef} title={activeResource.name} />
                   ) : (
-                    <div className="flex flex-col items-center gap-4 rounded-none border border-outline-variant bg-surface py-12 text-center">
+                    <div className="flex flex-col items-center gap-4 border border-outline-variant bg-surface px-4 py-8 text-center sm:py-12">
                       <p className="text-sm text-on-surface-variant">External reading resource — opens in a new tab.</p>
                       <Button asChild className="gap-2 rounded-none bg-cyan font-bold text-on-primary-fixed hover:bg-cyan/90">
                         <a href={activeResource.url} target="_blank" rel="noreferrer">
@@ -602,7 +604,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             {(challengeTask || quizTask) && (
               <div className={cn('grid grid-cols-1 gap-4', challengeTask && quizTask && 'sm:grid-cols-2')}>
                 {challengeTask && challengeTask.challenge && (
-                  <div className="flex flex-col justify-between gap-4 rounded-none border border-cyan/40 bg-cyan/[0.05] p-5">
+                  <div className="flex flex-col justify-between gap-4 border border-cyan/40 bg-cyan/[0.05] p-4 sm:p-5">
                     <div>
                       <Badge variant="outline" className="mb-2 border-cyan/40 bg-cyan/15 font-code text-[10px] uppercase text-on-surface">
                         Code Challenge
@@ -622,7 +624,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                 )}
 
                 {quizTask && quizTask.quiz && (
-                  <div className="flex flex-col justify-between gap-4 rounded-none border border-secondary/40 bg-secondary/[0.05] p-5">
+                  <div className="flex flex-col justify-between gap-4 border border-secondary/40 bg-secondary/[0.05] p-4 sm:p-5">
                     <div>
                       <Badge variant="outline" className="mb-2 border-secondary/40 bg-secondary/15 font-code text-[10px] uppercase text-on-surface">
                         Knowledge Check
@@ -672,7 +674,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
           Center: segmented progress bar
           Right:  Got It! / Next lesson →
       ────────────────────────────────────────────────── */}
-      <footer className="z-30 flex shrink-0 items-center gap-2 border-t border-outline-variant bg-surface px-3 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:gap-4 sm:px-6 sm:py-3 sm:pb-3">
+      <footer className="z-30 grid shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-t border-outline-variant bg-surface pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:flex sm:gap-4 sm:px-6 sm:py-3 sm:pb-3">
 
         {/* Previous lesson button */}
         {prevNode ? (
@@ -708,11 +710,18 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
           </div>
         </div>
 
+        <div className="min-w-0 text-center sm:hidden" aria-label={`${stepPct}% of this lesson complete`}>
+          <span className="block font-code text-[10px] font-bold text-on-surface">{stepPct}%</span>
+          <span className="mt-1 block h-1 overflow-hidden bg-surface-container-high">
+            <span className="block h-full bg-secondary transition-[width] duration-300" style={{ width: `${stepPct}%` }} />
+          </span>
+        </div>
+
         {/* Primary CTA */}
         {allDone && nextNode ? (
           <Link
             href={`/roadmap/${nextNode.slug}`}
-            className="ml-auto flex min-w-0 shrink-0 items-center gap-2 rounded-none bg-secondary px-3 py-2 font-code text-xs font-bold text-on-secondary-fixed shadow-lg transition-all hover:bg-secondary/90 sm:px-5 sm:text-sm"
+            className="flex min-w-0 shrink-0 items-center gap-2 bg-secondary px-3 py-2 font-code text-xs font-bold text-on-secondary-fixed transition-colors hover:bg-secondary/90 sm:ml-auto sm:px-5 sm:text-sm"
           >
             Next Lesson <ArrowRight className="h-4 w-4" />
           </Link>
@@ -721,7 +730,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             onClick={data.isSupabaseConnected && !data.isAuthenticated ? data.signInWithGithub : handleGotIt}
             disabled={(status === 'locked') || Boolean(completingTaskId) || (allDone && !nextNode)}
             className={cn(
-              'ml-auto min-w-0 shrink-0 gap-2 rounded-none px-3 py-2 font-code text-[11px] font-bold shadow-lg sm:px-5 sm:text-sm',
+              'min-w-0 shrink-0 gap-2 px-3 py-2 font-code text-[11px] font-bold sm:ml-auto sm:px-5 sm:text-sm',
               allDone
                 ? 'border border-secondary bg-surface-card text-secondary cursor-default'
                 : 'bg-secondary text-on-secondary-fixed hover:bg-secondary/90',
