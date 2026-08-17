@@ -1,8 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, CircleCheck, Flame, Hourglass, Trophy } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
@@ -13,15 +11,8 @@ import { cn } from '@/lib/utils';
 
 export default function DashboardPage() {
   const data = useUserData();
-  const router = useRouter();
   const reduceMotion = useReducedMotion();
-  const { paths, nodes, nodesByPath, progress, activity, streak, activePath, hasSelectedPath, isLoading } = data;
-
-  useEffect(() => {
-    if (!isLoading && !hasSelectedPath) router.replace('/paths');
-  }, [hasSelectedPath, isLoading, router]);
-
-  if (!hasSelectedPath) return null;
+  const { paths, nodes, nodesByPath, progress, activity, streak, activePath } = data;
 
   const completedCount = Object.keys(progress.completedNodes).length;
   const estimatedHoursCompleted = nodes
@@ -32,7 +23,9 @@ export default function DashboardPage() {
     (nodesByPath.foundations ?? []).length > 0 &&
     (nodesByPath.foundations ?? []).every((node) => progress.completedNodes[node.id]);
   const activePathInfo = paths.find((path) => path.id === activePath);
-  const currentTrackLabel = foundationsDone ? activePathInfo?.title ?? 'Roadmap' : 'Foundations';
+  const currentTrackLabel = foundationsDone
+    ? activePathInfo?.title ?? 'Choose your next path'
+    : 'Foundations';
   const currentTrackNodes = foundationsDone
     ? nodesByPath[activePath ?? ''] ?? []
     : nodesByPath.foundations ?? [];
@@ -105,8 +98,8 @@ export default function DashboardPage() {
           </p>
         </div>
         <Button asChild className="w-full justify-center min-[1000px]:w-auto">
-          <Link href={currentNode ? `/roadmap/${currentNode.slug}` : '/roadmap'}>
-            {currentNode ? 'Continue learning' : 'Review roadmap'}
+          <Link href={currentNode ? `/roadmap/${currentNode.slug}` : activePath ? '/roadmap' : '/paths'}>
+            {currentNode ? 'Continue learning' : activePath ? 'Review roadmap' : 'Choose a path'}
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </Button>

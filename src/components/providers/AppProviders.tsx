@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { Toaster } from 'sonner';
+import { Toaster } from '@/components/ui/toast';
 import { useUiStore } from '@/store/useUiStore';
 import PwaRegistrar from './PwaRegistrar';
 
@@ -51,9 +51,9 @@ export default function AppProviders({ children }: { children: React.ReactNode }
           unstyled: true,
           classNames: {
             toast:
-              'flex items-start gap-2.5 w-full border bg-surface-card px-4 py-3 font-code text-xs shadow-lg border-outline-variant',
+              'flex items-start gap-3 w-[min(24rem,calc(100vw-2rem))] border bg-surface-card px-4 py-3.5 text-sm shadow-[0_12px_30px_rgba(2,8,23,0.22)] border-outline-variant',
             title: 'text-on-surface font-semibold',
-            description: 'text-on-surface-variant mt-0.5',
+            description: 'text-on-surface-variant mt-1 leading-5',
             success: '!border-secondary/40 [&_[data-icon]]:text-secondary',
             error: '!border-error/40 [&_[data-icon]]:text-error',
             closeButton: 'bg-surface-card border-outline-variant text-on-surface-variant',

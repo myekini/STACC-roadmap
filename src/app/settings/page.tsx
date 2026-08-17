@@ -111,9 +111,9 @@ export default function MemberSettingsPage() {
             </h2>
 
             <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
-              <Avatar className="h-20 w-20 rounded-none border-2 border-cyan/40 shrink-0">
+              <Avatar size="xl" className="shrink-0 border-cyan/40 ring-cyan/10">
                 <AvatarImage src={user.avatar_url ?? undefined} alt={user.username} className="object-cover" />
-                <AvatarFallback className="rounded-none bg-surface-container-high font-display text-2xl font-bold text-cyan">
+                <AvatarFallback className="font-display text-2xl">
                   {user.username.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>

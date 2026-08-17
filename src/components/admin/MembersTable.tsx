@@ -1,5 +1,6 @@
 import { AlertTriangle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { MemberRow } from '@/hooks/useAdminData';
 import { cn } from '@/lib/utils';
 
@@ -19,12 +20,11 @@ export function MembersTable({ members, emptyLabel, onSelect }: { members: Membe
             className={cn('block w-full p-4 text-left transition-colors active:bg-surface-container-low', m.isStuck && 'bg-error/[0.04]')}
           >
             <span className="flex items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden border border-outline-variant bg-surface-container-low font-code text-[10px] font-bold uppercase text-on-surface-variant">
-                {m.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={m.avatar_url} alt="" className="h-full w-full object-cover" />
-                ) : m.username.slice(0, 2)}
-              </span>
+              <Avatar className={cn(m.isStuck && 'border-error/50 ring-error/10')}>
+                <AvatarImage src={m.avatar_url ?? undefined} alt={m.username} />
+                <AvatarFallback className="text-[10px]">{m.username.slice(0, 2)}</AvatarFallback>
+                {m.isStuck && <AvatarBadge className="bg-error" aria-label="Needs attention" />}
+              </Avatar>
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-2">
                   <span className="truncate text-sm font-semibold text-on-surface">{m.username}</span>
@@ -60,14 +60,11 @@ export function MembersTable({ members, emptyLabel, onSelect }: { members: Membe
             >
               <TableCell>
                 <span className="flex items-center gap-2.5">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden border border-outline-variant bg-surface-container-low font-code text-[10px] font-bold uppercase text-on-surface-variant">
-                    {m.avatar_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={m.avatar_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      m.username.slice(0, 2)
-                    )}
-                  </span>
+                  <Avatar size="sm" className={cn(m.isStuck && 'border-error/50 ring-error/10')}>
+                    <AvatarImage src={m.avatar_url ?? undefined} alt={m.username} />
+                    <AvatarFallback className="text-[9px]">{m.username.slice(0, 2)}</AvatarFallback>
+                    {m.isStuck && <AvatarBadge className="h-3 w-3 bg-error" aria-label="Needs attention" />}
+                  </Avatar>
                   <span className="text-xs font-semibold text-on-surface">{m.username}</span>
                   {m.isStuck && <AlertTriangle className="h-3.5 w-3.5 text-error" />}
                 </span>

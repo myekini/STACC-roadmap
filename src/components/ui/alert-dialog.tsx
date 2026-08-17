@@ -17,7 +17,7 @@ const AlertDialogOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     className={cn(
-      'fixed inset-0 z-50 bg-black/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+      'fixed inset-0 z-50 bg-navy/75 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
       className
     )}
     {...props}
@@ -39,7 +39,7 @@ const AlertDialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 border border-outline-variant bg-surface-card p-6 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-2xl',
+        'fixed left-1/2 top-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 overflow-y-auto border border-outline-variant bg-surface-card p-5 shadow-[0_18px_50px_rgba(2,8,23,0.3)] duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:p-6',
         size === 'sm' ? 'max-w-sm' : 'max-w-lg',
         className
       )}
@@ -69,7 +69,7 @@ const AlertDialogMedia = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'flex h-12 w-12 items-center justify-center rounded-xl bg-cyan/15 text-cyan mb-2 self-center sm:self-start',
+      'mb-1 flex size-11 items-center justify-center border border-cyan/30 bg-cyan/10 text-cyan self-center sm:self-start',
       className
     )}
     {...props}
@@ -83,7 +83,7 @@ const AlertDialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2 sm:gap-0 mt-2',
+      'mt-1 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end',
       className
     )}
     {...props}
@@ -109,7 +109,7 @@ const AlertDialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn('text-xs leading-relaxed text-on-surface-variant', className)}
+    className={cn('text-sm leading-6 text-on-surface-variant', className)}
     {...props}
   />
 ));
@@ -122,7 +122,7 @@ const AlertDialogAction = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Close
     ref={ref}
-    className={cn(buttonVariants({ variant: 'default' }), 'rounded-xl font-code text-xs font-bold bg-cyan text-navy hover:bg-cyan/90', className)}
+    className={cn(buttonVariants({ variant: 'default' }), 'w-full sm:w-auto', className)}
     {...props}
   />
 ));
@@ -136,7 +136,7 @@ const AlertDialogCancel = React.forwardRef<
     ref={ref}
     className={cn(
       buttonVariants({ variant: 'outline' }),
-      'mt-2 sm:mt-0 rounded-xl font-code text-xs text-on-surface-variant hover:text-on-surface border-outline-variant',
+      'w-full text-on-surface-variant hover:text-on-surface sm:w-auto',
       className
     )}
     {...props}

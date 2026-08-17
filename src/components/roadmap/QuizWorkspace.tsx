@@ -2,9 +2,9 @@
 
 /** Full-screen checkpoint workspace: a short set of harder, interview-style questions per node. */
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/toast';
 import { Check, CircleHelp, TerminalSquare, X } from 'lucide-react';
-import { AnimatedStaccMark } from '@/components/brand/AnimatedStaccMark';
+import { Spinner } from '@/components/ui/spinner';
 import type { QuizPayload } from '@/lib/database.types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -137,7 +137,7 @@ export function QuizWorkspace({
         <footer className="flex shrink-0 items-center gap-2 border-t border-outline-variant bg-surface px-3 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:px-5">
           <div className="flex-1" />
           <Button type="button" disabled={!answered || !correct || disabled || saving} onClick={handleNext} className="h-11 min-w-40 bg-primary px-5 text-on-primary">
-            {saving ? <AnimatedStaccMark className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+            {saving ? <Spinner /> : <Check className="h-4 w-4" />}
             {saving ? 'Saving…' : isLast ? 'Finish checkpoint' : 'Next question'}
           </Button>
         </footer>

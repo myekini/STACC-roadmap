@@ -15,7 +15,7 @@
  */
 
 import { useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/toast';
 import {
   AlertTriangle,
   BookOpen,
@@ -45,7 +45,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { AnimatedStaccMark } from '@/components/brand/AnimatedStaccMark';
+import { Spinner } from '@/components/ui/spinner';
 import type { ChallengePayload, NodeRow, PathRow, QuizPayload, ResourceRow, TaskRow, TaskType } from '@/lib/database.types';
 import { cn } from '@/lib/utils';
 
@@ -109,7 +109,7 @@ function ResourceRow({
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" onClick={save} disabled={saving || !((pending.name ?? res.name) && (pending.url ?? res.url))} className="h-7 px-3 font-code text-xs gap-1 bg-cyan text-navy hover:bg-cyan/90">
-            {saving ? <AnimatedStaccMark className="h-3 w-3" /> : null} Save
+            {saving ? <Spinner className="size-3" /> : null} Save
           </Button>
           <button type="button" onClick={() => { setEditing(false); setPending({}); }} className="text-on-surface-variant hover:text-on-surface">
             <X className="h-4 w-4" />
@@ -379,7 +379,7 @@ function TaskEditor({
 
       <div className="flex items-center gap-2 pt-1">
         <Button size="sm" onClick={save} disabled={disabled || saving || !draft.description} className="h-7 px-3 font-code text-xs gap-1 bg-cyan text-navy hover:bg-cyan/90">
-          {saving ? <AnimatedStaccMark className="h-3 w-3" /> : null} Save task
+          {saving ? <Spinner className="size-3" /> : null} Save task
         </Button>
         <button type="button" onClick={onCancel} className="text-on-surface-variant hover:text-on-surface">
           <X className="h-4 w-4" />
@@ -481,7 +481,7 @@ export function CurriculumManager() {
         </div>
         {admin.isMutating && (
           <span className="flex items-center gap-1.5 rounded-xl border border-cyan/40 bg-cyan/10 px-3 py-1.5 font-code text-[11px] font-bold text-cyan">
-            <AnimatedStaccMark className="h-3 w-3" /> Saving…
+            <Spinner className="size-3" /> Saving…
           </span>
         )}
       </div>
@@ -660,7 +660,7 @@ export function CurriculumManager() {
           ) : (
             <div className="flex h-full items-center justify-center text-center p-12">
               <div>
-                <AnimatedStaccMark className="h-10 w-10 mx-auto opacity-30" />
+                <Spinner className="mx-auto size-8 text-on-surface-variant" />
                 <p className="mt-4 text-sm text-on-surface-variant">
                   {activePath ? 'Select a module to view and edit its content' : 'Create a track to get started'}
                 </p>
@@ -699,7 +699,7 @@ export function CurriculumManager() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmAndDelete} className="bg-red-500 text-white hover:bg-red-600 font-code text-xs rounded-xl">
+            <AlertDialogAction onClick={confirmAndDelete} className="bg-error text-white hover:bg-error/90">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -744,7 +744,7 @@ function NewNodeForm({
       <Input placeholder="Module name" value={name} onChange={(e) => setName(e.target.value)} className="h-7 text-xs" />
       <div className="flex items-center gap-2">
         <Button size="sm" onClick={create} disabled={saving || !slug.trim() || !name.trim()} className="h-6 px-2.5 font-code text-[11px] gap-1 bg-cyan text-navy hover:bg-cyan/90">
-          {saving ? <AnimatedStaccMark className="h-3 w-3" /> : <Plus className="h-3 w-3" />} Create
+          {saving ? <Spinner className="size-3" /> : <Plus className="h-3 w-3" />} Create
         </Button>
         <button type="button" onClick={onCancel} className="text-on-surface-variant hover:text-on-surface"><X className="h-3.5 w-3.5" /></button>
       </div>
@@ -820,7 +820,7 @@ function PathFormDialog({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <Button onClick={save} disabled={saving || !id.trim() || !title.trim()} className="font-code text-xs rounded-xl bg-cyan text-navy hover:bg-cyan/90">
-            {saving ? <AnimatedStaccMark className="h-3.5 w-3.5" /> : null} Save track
+            {saving ? <Spinner className="size-3.5" /> : null} Save track
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

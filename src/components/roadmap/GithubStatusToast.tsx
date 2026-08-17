@@ -6,7 +6,7 @@
  * toast, then strips the param so a refresh/back-nav doesn't re-fire it. */
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/toast';
 
 export function GithubStatusToast() {
   const router = useRouter();

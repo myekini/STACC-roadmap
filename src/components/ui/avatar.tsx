@@ -5,16 +5,20 @@ import { Avatar as AvatarPrimitive } from '@base-ui/react/avatar';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
-const avatarVariants = cva('relative flex shrink-0 overflow-hidden rounded-full', {
+const avatarVariants = cva(
+  'relative isolate flex shrink-0 rounded-full border border-outline-variant bg-surface-container-low ring-2 ring-background transition-[border-color,box-shadow] duration-200',
+  {
   variants: {
     size: {
       default: 'h-10 w-10',
       sm: 'h-8 w-8',
       lg: 'h-14 w-14',
+      xl: 'h-20 w-20',
     },
   },
   defaultVariants: { size: 'default' },
-});
+  },
+);
 
 function Avatar({
   className,
@@ -25,14 +29,14 @@ function Avatar({
 }
 
 function AvatarImage({ className, ...props }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
-  return <AvatarPrimitive.Image data-slot="avatar-image" className={cn('aspect-square h-full w-full object-cover', className)} {...props} />;
+  return <AvatarPrimitive.Image data-slot="avatar-image" className={cn('aspect-square h-full w-full rounded-[inherit] object-cover', className)} {...props} />;
 }
 
 function AvatarFallback({ className, ...props }: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
-      className={cn('flex h-full w-full items-center justify-center rounded-[inherit] bg-surface-container-high text-on-surface-variant', className)}
+      className={cn('flex h-full w-full items-center justify-center rounded-[inherit] bg-cyan/10 font-code font-bold uppercase text-on-surface', className)}
       {...props}
     />
   );
@@ -44,7 +48,7 @@ function AvatarBadge({ className, ...props }: React.ComponentProps<'span'>) {
     <span
       data-slot="avatar-badge"
       className={cn(
-        'absolute bottom-0 right-0 flex h-3 w-3 items-center justify-center rounded-full border-2 border-background bg-secondary',
+        'absolute bottom-0 right-0 z-10 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-background bg-secondary shadow-sm',
         className,
       )}
       {...props}

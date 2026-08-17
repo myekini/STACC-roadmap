@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ArrowRight, Flame, LogOut, Moon, Settings, ShieldCheck, Sun, UserRound, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarBadge, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,14 +84,15 @@ export default function TopBar() {
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="group flex items-center gap-2 rounded-none outline-none focus:ring-1 focus:ring-cyan"
+              className="group flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               aria-label="User account menu"
             >
-              <Avatar className="h-8 w-8 rounded-none border border-outline-variant transition-colors group-hover:border-cyan">
+              <Avatar size="sm" className="group-hover:border-cyan group-hover:ring-cyan/15">
                 <AvatarImage src={user.avatar_url ?? undefined} alt={user.username} className="object-cover" />
-                <AvatarFallback className="rounded-none bg-surface-container-high font-code text-[10px] font-bold uppercase text-cyan">
+                <AvatarFallback className="text-[10px]">
                   {user.username.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
+                <AvatarBadge aria-label="Online" />
               </Avatar>
             </button>
           </DropdownMenuTrigger>
@@ -101,11 +102,12 @@ export default function TopBar() {
           >
             {/* Profile Info Header */}
             <div className="flex items-center gap-3 border-b border-outline-variant/50 p-2.5">
-              <Avatar className="h-10 w-10 rounded-none border border-cyan/40 shrink-0">
+              <Avatar className="shrink-0 border-cyan/40 ring-cyan/10">
                 <AvatarImage src={user.avatar_url ?? undefined} alt={user.username} className="object-cover" />
-                <AvatarFallback className="rounded-none bg-surface-container-high font-code text-xs font-bold uppercase text-cyan">
+                <AvatarFallback className="text-xs">
                   {user.username.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
+                <AvatarBadge aria-label="Online" />
               </Avatar>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-bold text-on-surface">{user.username}</p>

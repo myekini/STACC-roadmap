@@ -13,10 +13,11 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/toast';
 import {
   ArrowLeft,
   ArrowRight,
+  AlertTriangle,
   BookOpen,
   Check,
   ChevronLeft,
@@ -34,7 +35,8 @@ import type { TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AnimatedStaccMark } from '@/components/brand/AnimatedStaccMark';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Spinner } from '@/components/ui/spinner';
 import { GithubLogo } from '@/components/icons/GithubLogo';
 import { getYouTubeRef, YouTubeEmbed } from './bits';
 import { ChallengeBlock } from './ChallengeBlock';
@@ -90,7 +92,7 @@ function ProjectMilestone({
             href={`/api/github/install?path=${encodeURIComponent(pathId)}&returnTo=${encodeURIComponent(`/roadmap/${nodeSlug}`)}`}
             onClick={(e) => { if (connecting) { e.preventDefault(); return; } setConnecting(true); }}
           >
-            {connecting ? <AnimatedStaccMark className="h-4 w-4" /> : <GithubLogo className="h-4 w-4 text-on-surface" />}
+            {connecting ? <Spinner /> : <GithubLogo className="h-4 w-4 text-on-surface" />}
             <span>{connecting ? 'Connecting…' : project ? 'Reconnect GitHub' : 'Connect GitHub'}</span>
           </a>
         </Button>
@@ -138,7 +140,7 @@ function ProjectMilestone({
             }
           }}
         >
-          {busy ? <AnimatedStaccMark className="h-4 w-4" /> : verified ? <Check className="h-3.5 w-3.5" /> : <GitBranch className="h-3.5 w-3.5" />}
+          {busy ? <Spinner /> : verified ? <Check className="h-3.5 w-3.5" /> : <GitBranch className="h-3.5 w-3.5" />}
           {busy ? 'Checking…' : verified ? 'Verified' : 'Check my work'}
         </Button>
 
@@ -149,7 +151,13 @@ function ProjectMilestone({
         )}
       </div>
 
-      {errorMsg && <p role="alert" className="mt-2 leading-5 text-red-500">{errorMsg}</p>}
+      {errorMsg && (
+        <Alert variant="destructive" className="mt-3">
+          <AlertTriangle />
+          <AlertTitle>We could not verify this project</AlertTitle>
+          <AlertDescription>{errorMsg}</AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }
@@ -336,7 +344,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                   connectingRepo && 'pointer-events-none opacity-60',
                 )}
               >
-                {connectingRepo ? <AnimatedStaccMark className="h-3.5 w-3.5" /> : <GithubLogo className="h-3.5 w-3.5" />}
+                {connectingRepo ? <Spinner className="size-3.5" /> : <GithubLogo className="h-3.5 w-3.5" />}
                 <span>{connectingRepo ? 'Connecting…' : 'Connect repo'}</span>
               </a>
             )

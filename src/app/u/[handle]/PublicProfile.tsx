@@ -115,9 +115,9 @@ export default function PublicProfile({ handle }: { handle: string }) {
             <header className="border border-outline-variant bg-surface/80 p-6 sm:p-8">
               <div className="mt-4 flex items-center gap-4">
                 {/* Avatar — shadcn primitive, rounded-none for brutalist aesthetic */}
-                <Avatar className="h-16 w-16 rounded-none border border-outline-variant">
+                <Avatar className="h-16 w-16 border-cyan/35 ring-cyan/10">
                   <AvatarImage src={payload.profile.avatar_url ?? undefined} alt={payload.profile.username} className="object-cover" />
-                  <AvatarFallback className="rounded-none border border-cyan/30 bg-cyan/10 font-display text-2xl font-bold text-cyan">
+                  <AvatarFallback className="font-display text-2xl">
                     {payload.profile.username.slice(0, 1).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
