@@ -5,7 +5,7 @@
  * restyled to Stacc's Modern Technical Brutalism and wired to real sections.
  */
 import Link from 'next/link';
-import { BookOpen, LayoutDashboard, LogOut, Moon, Route, ShieldCheck, Sun, Users } from 'lucide-react';
+import { BookOpen, LayoutDashboard, LogOut, Route, ShieldCheck, Users } from 'lucide-react';
 import { StaccMark } from '@/components/brand/StaccMark';
 import {
   Sidebar,
@@ -22,9 +22,8 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
-import { useUiStore } from '@/store/useUiStore';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 export type AdminSection = 'overview' | 'members' | 'curriculum';
 
@@ -45,7 +44,6 @@ interface AdminShellProps {
 
 export function AdminShell({ section, onSectionChange, stuckCount, username, onSignOut, children }: AdminShellProps) {
   const activeLabel = NAV.find((n) => n.id === section)?.label ?? 'Overview';
-  const { theme, toggleTheme } = useUiStore();
 
   return (
     <SidebarProvider className="min-h-screen bg-background text-on-background">
@@ -123,17 +121,7 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
             <h1 className="text-sm font-semibold text-on-surface">{activeLabel}</h1>
             <p className="font-code text-[10px] text-outline">Stacc administration</p>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={toggleTheme}
-            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            className="h-9 w-9 rounded-none border-outline-variant bg-surface text-on-surface-variant hover:text-cyan"
-          >
-            {theme === 'dark' ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-cyan" />}
-          </Button>
+          <ThemeToggle />
         </header>
         <div className="flex flex-1 flex-col gap-5 p-3 sm:p-4 md:gap-6 md:p-6">{children}</div>
       </SidebarInset>

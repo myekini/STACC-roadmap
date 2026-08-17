@@ -26,6 +26,7 @@ import {
   ExternalLink,
   GitBranch,
   ListChecks,
+  LockKeyhole,
   PanelLeftClose,
   PanelLeftOpen,
   Play,
@@ -37,6 +38,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Spinner } from '@/components/ui/spinner';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { GithubLogo } from '@/components/icons/GithubLogo';
 import { getYouTubeRef, YouTubeEmbed } from './bits';
 import { ChallengeBlock } from './ChallengeBlock';
@@ -171,6 +173,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
   const [activeQuizTask, setActiveQuizTask] = useState<TaskRow | null>(null);
   const [activeChallengeTask, setActiveChallengeTask] = useState<TaskRow | null>(null);
   const [connectingRepo, setConnectingRepo] = useState(false);
+  const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
 
   /* ── Data derived from slug ── */
   const node = data.nodes.find((n) => n.slug === slug) ?? null;
@@ -214,23 +217,31 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
   }, []);
 
   const handleCompleteTask = async (task: TaskRow, evidenceUrl?: string) => {
+    if (completingTaskId) return false;
+    setCompletingTaskId(task.id);
     try {
       await data.completeTask({ task, evidenceUrl });
+      return true;
     } catch (err) {
       console.error('Task completion failed:', err);
       toast.error(err instanceof Error ? err.message : 'Could not save your progress — try again.');
+      return false;
+    } finally {
+      setCompletingTaskId(null);
     }
   };
 
   const handleGotIt = async () => {
     if (nextPendingTask) {
       if (nextPendingTask.type === 'watch' || nextPendingTask.type === 'read') {
-        await handleCompleteTask(nextPendingTask);
-        if (activeResourceIndex < resources.length - 1) setActiveResourceIndex((i) => i + 1);
+        const saved = await handleCompleteTask(nextPendingTask);
+        if (saved && activeResourceIndex < resources.length - 1) setActiveResourceIndex((i) => i + 1);
       } else if (nextPendingTask.type === 'quiz' && nextPendingTask.quiz) {
         setActiveQuizTask(nextPendingTask);
       } else if (nextPendingTask.type === 'challenge' && nextPendingTask.challenge) {
         setActiveChallengeTask(nextPendingTask);
+      } else if (nextPendingTask.type === 'build') {
+        document.getElementById('project-milestone')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } else {
         await handleCompleteTask(nextPendingTask);
       }
@@ -260,6 +271,10 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
   const primaryBtnLabel = allDone
     ? nextNode ? 'Next Lesson' : 'Complete!'
+    : completingTaskId
+      ? 'Saving progress…'
+    : nextPendingTask?.type === 'build'
+      ? 'Verify milestone'
     : nextPendingTask?.type === 'quiz'
       ? 'Take Quiz'
       : nextPendingTask?.type === 'challenge'
@@ -277,7 +292,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
           Left:  ← Back to Roadmap  /  Path  /  Node Name
           Right: [< Course Outline >]  [XP chip]
       ────────────────────────────────────────────────── */}
-      <header className="z-30 flex shrink-0 items-center justify-between border-b border-outline-variant bg-surface px-4 py-2.5 sm:px-6">
+      <header className="z-30 flex min-h-16 shrink-0 items-center justify-between border-b border-outline-variant bg-surface px-3 py-2 sm:px-6">
         {/* Back + breadcrumb */}
         <div className="flex min-w-0 items-center gap-2 text-xs">
           <Link
@@ -288,16 +303,17 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             <span className="hidden sm:inline">Roadmap</span>
           </Link>
 
-          <span className="text-outline">/</span>
+          <span className="hidden text-outline sm:inline">/</span>
           <span className="hidden max-w-[120px] truncate font-medium text-on-surface-variant sm:inline">
             {path?.title ?? 'Course'}
           </span>
           <span className="text-outline hidden sm:inline">/</span>
-          <span className="max-w-[160px] truncate font-bold text-on-surface">{node.name}</span>
+          <span className="hidden max-w-[160px] truncate font-bold text-on-surface sm:inline">{node.name}</span>
         </div>
 
         {/* Right controls */}
         <div className="flex shrink-0 items-center gap-2">
+          <ThemeToggle />
           {/* Sidebar toggle — always labelled and visibly "on" when open, so
               it stays obvious as the way back in after closing the panel
               (previously icon-only on mobile with no active state). */}
@@ -315,7 +331,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             )}
           >
             {showPanel ? <PanelLeftClose className="h-3.5 w-3.5" /> : <PanelLeftOpen className="h-3.5 w-3.5" />}
-            <span>Outline</span>
+            <span className="hidden min-[480px]:inline">Outline</span>
           </button>
 
           {/* Connected project repo — persistent across every node in this
@@ -476,6 +492,26 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
         <main className="min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background">
           <div className="mx-auto max-w-4xl space-y-5 px-4 py-5 sm:space-y-6 sm:px-8 sm:py-8">
 
+            {!data.isAuthenticated && data.isSupabaseConnected && (
+              <Alert>
+                <LockKeyhole />
+                <AlertTitle>Sign in to save your progress</AlertTitle>
+                <AlertDescription>
+                  You can review this lesson now. Sign in with GitHub before completing tasks or verifying project work.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {status === 'locked' && !(data.isSupabaseConnected && !data.isAuthenticated) && (
+              <Alert>
+                <LockKeyhole />
+                <AlertTitle>This lesson is locked</AlertTitle>
+                <AlertDescription>
+                  Complete its prerequisites on the roadmap first. Your work here remains available to preview.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Module meta + title */}
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 font-code text-xs text-on-surface-variant">
@@ -576,6 +612,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                     </div>
                     <Button
                       onClick={() => setActiveChallengeTask(challengeTask)}
+                      disabled={!canWork}
                       size="sm"
                       className="w-full justify-center gap-2 rounded-none bg-cyan font-code font-bold text-on-primary-fixed hover:bg-cyan/90"
                     >
@@ -595,6 +632,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                     </div>
                     <Button
                       onClick={() => setActiveQuizTask(quizTask)}
+                      disabled={!canWork}
                       size="sm"
                       className="w-full justify-center gap-2 rounded-none bg-secondary font-code font-bold text-on-secondary-fixed hover:bg-secondary/90"
                     >
@@ -607,7 +645,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
             {/* ── GitHub milestone card ── */}
             {buildTask && (
-              <div className="space-y-2">
+              <div id="project-milestone" className="scroll-mt-6 space-y-2">
                 <p className="font-code text-[10px] font-bold uppercase tracking-widest text-outline">
                   Project Milestone · GitHub Verification
                 </p>
@@ -680,8 +718,8 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
           </Link>
         ) : (
           <Button
-            onClick={handleGotIt}
-            disabled={allDone && !nextNode}
+            onClick={data.isSupabaseConnected && !data.isAuthenticated ? data.signInWithGithub : handleGotIt}
+            disabled={(status === 'locked') || Boolean(completingTaskId) || (allDone && !nextNode)}
             className={cn(
               'ml-auto min-w-0 shrink-0 gap-2 rounded-none px-3 py-2 font-code text-[11px] font-bold shadow-lg sm:px-5 sm:text-sm',
               allDone
@@ -689,8 +727,8 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                 : 'bg-secondary text-on-secondary-fixed hover:bg-secondary/90',
             )}
           >
-            {primaryBtnLabel}
-            {!allDone && <ArrowRight className="h-4 w-4" />}
+            {data.isSupabaseConnected && !data.isAuthenticated ? 'Sign in to continue' : primaryBtnLabel}
+            {completingTaskId ? <Spinner /> : !allDone && <ArrowRight className="h-4 w-4" />}
           </Button>
         )}
       </footer>
@@ -702,8 +740,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
           disabled={!canWork}
           onClose={() => setActiveQuizTask(null)}
           onPass={async () => {
-            await handleCompleteTask(activeQuizTask);
-            setActiveQuizTask(null);
+            if (await handleCompleteTask(activeQuizTask)) setActiveQuizTask(null);
           }}
         />
       )}
@@ -715,8 +752,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
           disabled={!canWork}
           onClose={() => setActiveChallengeTask(null)}
           onPass={async () => {
-            await handleCompleteTask(activeChallengeTask);
-            setActiveChallengeTask(null);
+            if (await handleCompleteTask(activeChallengeTask)) setActiveChallengeTask(null);
           }}
         />
       )}

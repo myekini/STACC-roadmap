@@ -3,7 +3,7 @@
 import { useUserData } from '@/hooks/useUserData';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ArrowRight, Flame, LogOut, Moon, Settings, ShieldCheck, Sun, UserRound, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Flame, LogOut, Settings, ShieldCheck, UserRound, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarBadge, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -16,6 +16,7 @@ import {
 import { StaccMark } from '@/components/brand/StaccMark';
 import { useUiStore } from '@/store/useUiStore';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard': 'Progress',
@@ -30,7 +31,7 @@ export default function TopBar() {
   const { user, hasSelectedPath, signOut, streak, progress, isAdmin } = userData;
   const pathname = usePathname();
   const router = useRouter();
-  const { sidebarCollapsed, theme, toggleTheme } = useUiStore();
+  const { sidebarCollapsed } = useUiStore();
 
   const pageTitle = PAGE_TITLES[pathname] ?? 'Stacc';
   const completedCount = Object.keys(progress.completedNodes).length;
@@ -68,16 +69,7 @@ export default function TopBar() {
           </Button>
         )}
 
-        {/* Theme toggle button */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={toggleTheme}
-          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          className="h-8 w-8 rounded-none border-outline-variant bg-surface text-on-surface-variant hover:text-cyan"
-        >
-          {theme === 'dark' ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-cyan" />}
-        </Button>
+        <ThemeToggle />
 
         {/* User avatar dropdown menu */}
         <DropdownMenu>

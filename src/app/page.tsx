@@ -12,11 +12,9 @@ import {
   Hourglass,
   Layers,
   Menu,
-  Moon,
   Rocket,
   Route,
   Sparkles,
-  Sun,
   ShieldCheck,
   CheckCircle2,
 } from 'lucide-react';
@@ -29,8 +27,8 @@ import { DiscordLogo } from '@/components/icons/DiscordLogo';
 import { XLogo } from '@/components/icons/XLogo';
 import { LinkedInLogo } from '@/components/icons/LinkedInLogo';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
-import { useUiStore } from '@/store/useUiStore';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 const NAV_LINKS = [
   { href: '/paths', label: 'Explore Paths' },
@@ -55,7 +53,6 @@ export default function LandingPage() {
   const { isAuthenticated, signInWithGithub, isSupabaseConnected, hasSelectedPath, paths, nodes } = useUserData();
   const router = useRouter();
   const reduceMotion = useReducedMotion();
-  const { theme, toggleTheme } = useUiStore();
   const [activeTab, setActiveTab] = useState<'all' | 'foundations' | 'specializations' | 'advanced'>('all');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
@@ -109,15 +106,7 @@ export default function LandingPage() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleTheme}
-              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-              className="h-9 w-9 rounded-none border-outline-variant bg-surface text-on-surface-variant hover:text-cyan"
-            >
-              {theme === 'dark' ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-cyan" />}
-            </Button>
+            <ThemeToggle />
 
             {isSupabaseConnected && !isAuthenticated && (
               <Button
