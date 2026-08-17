@@ -97,7 +97,7 @@ function MemberDrilldown({ member, onClose }: { member: MemberRow | null; onClos
                 href={`https://github.com/${member.githubUsername}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-cyan/40 bg-cyan/10 px-2.5 py-1 font-code text-[10px] font-bold uppercase text-cyan hover:bg-cyan/20"
+                className="inline-flex items-center gap-1.5 rounded-none border border-cyan/40 bg-cyan/10 px-2.5 py-1 font-code text-[10px] font-bold uppercase text-cyan hover:bg-cyan/20"
               >
                 <GithubLogo className="h-3 w-3" /> GitHub
               </a>

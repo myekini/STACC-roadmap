@@ -69,6 +69,10 @@ export interface PathRow {
   tags: string[];
   order: number;
   requires_paths: string[];
+  created_at?: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  updated_at?: string;
 }
 
 export interface NodeRow {
@@ -84,6 +88,9 @@ export interface NodeRow {
   xp_reward: number;
   skills: string[];
   created_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  updated_at?: string;
 }
 
 export interface NodePrerequisiteRow {
@@ -102,6 +109,9 @@ export interface ResourceRow {
   avg_rating: number;
   rating_count: number;
   created_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  updated_at?: string;
 }
 
 export interface TaskRow {
@@ -118,6 +128,10 @@ export interface TaskRow {
     submissionMode?: 'commit' | 'pull_request';
     manualReview?: string[];
   } | null;
+  created_at?: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  updated_at?: string;
 }
 
 export interface UserPathRow {

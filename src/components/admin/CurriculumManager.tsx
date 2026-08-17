@@ -19,7 +19,10 @@ import { toast } from '@/components/ui/toast';
 import {
   AlertTriangle,
   BookOpen,
+  Check,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   Code2,
   Edit3,
   FileCode,
@@ -46,12 +49,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Spinner } from '@/components/ui/spinner';
+import { AnimatedStaccMark } from '@/components/brand/AnimatedStaccMark';
 import type { ChallengePayload, NodeRow, PathRow, QuizPayload, ResourceRow, TaskRow, TaskType } from '@/lib/database.types';
 import { cn } from '@/lib/utils';
 
 /* ─── Shared field styles ────────────────────────────────── */
 
-const fieldCls = 'rounded-xl border border-outline-variant bg-surface-card px-2.5 py-1.5 text-xs text-on-surface focus:outline-none focus:border-cyan disabled:opacity-50';
+const fieldCls = 'rounded-none border border-outline-variant bg-surface-card px-2.5 py-1.5 text-xs text-on-surface focus:outline-none focus:border-cyan disabled:opacity-50';
 
 function toCsv(list: string[] | undefined) {
   return (list ?? []).join(', ');
@@ -92,7 +96,7 @@ function ResourceRow({
 
   if (editing) {
     return (
-      <div className="rounded-xl border border-cyan/40 bg-cyan/[0.04] p-3 space-y-2 text-xs">
+      <div className="rounded-none border border-cyan/40 bg-cyan/[0.04] p-3 space-y-2 text-xs">
         <div className="grid grid-cols-2 gap-2">
           <Input placeholder="Resource name" defaultValue={res.name} onChange={(e) => setPending((p) => ({ ...p, name: e.target.value }))} className="h-7 text-xs" />
           <Input placeholder="Platform (e.g. YouTube)" defaultValue={res.platform} onChange={(e) => setPending((p) => ({ ...p, platform: e.target.value }))} className="h-7 text-xs" />
@@ -120,7 +124,7 @@ function ResourceRow({
   }
 
   return (
-    <div className="flex items-center justify-between gap-2 rounded-xl border border-outline-variant/60 bg-surface/50 px-3 py-2 text-xs group">
+    <div className="flex items-center justify-between gap-2 rounded-none border border-outline-variant/60 bg-surface/50 px-3 py-2 text-xs group">
       <div className="flex items-center gap-2.5 min-w-0">
         {res.type === 'video' ? <Video className="h-3.5 w-3.5 text-cyan shrink-0" /> : <FileCode className="h-3.5 w-3.5 text-secondary shrink-0" />}
         <div className="min-w-0">
@@ -130,10 +134,10 @@ function ResourceRow({
       </div>
       {!disabled && (
         <div className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button type="button" onClick={() => setEditing(true)} className="rounded-md border border-outline-variant p-1 text-on-surface-variant hover:border-cyan hover:text-cyan" title="Edit resource">
+          <button type="button" onClick={() => setEditing(true)} className="rounded-none border border-outline-variant p-1 text-on-surface-variant hover:border-cyan hover:text-cyan" title="Edit resource">
             <Edit3 className="h-3 w-3" />
           </button>
-          <button type="button" onClick={onDelete} className="rounded-md border border-outline-variant p-1 text-on-surface-variant hover:border-red-400 hover:text-red-400" title="Remove resource">
+          <button type="button" onClick={onDelete} className="rounded-none border border-outline-variant p-1 text-on-surface-variant hover:border-red-400 hover:text-red-400" title="Remove resource">
             <Trash2 className="h-3 w-3" />
           </button>
         </div>
@@ -183,7 +187,7 @@ function TaskEditor({
   const updateQuiz = (patch: Partial<QuizPayload>) => setDraft((d) => ({ ...d, quiz: { ...(d.quiz ?? blankQuiz()), ...patch } }));
 
   return (
-    <div className="rounded-xl border border-cyan/40 bg-cyan/[0.04] p-3 space-y-3 text-xs">
+    <div className="rounded-none border border-cyan/40 bg-cyan/[0.04] p-3 space-y-3 text-xs">
       <div className="grid grid-cols-3 gap-2">
         <select
           value={type}
@@ -224,7 +228,7 @@ function TaskEditor({
       {type === 'quiz' && quiz && (
         <div className="space-y-2 border-t border-outline-variant/60 pt-2">
           {quiz.questions.map((q, qi) => (
-            <div key={qi} className="rounded-lg border border-outline-variant/60 p-2 space-y-1.5">
+            <div key={qi} className="rounded-none border border-outline-variant/60 p-2 space-y-1.5">
               <div className="flex items-center gap-1.5">
                 <Input
                   placeholder="Question"
@@ -410,12 +414,16 @@ export function CurriculumManager() {
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [editingPrereqs, setEditingPrereqs] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<DeleteTarget | null>(null);
+  const [justSaved, setJustSaved] = useState(false);
+  const [nodeSearch, setNodeSearch] = useState('');
 
   const dragItem = useRef<number | null>(null);
   const dragOver = useRef<number | null>(null);
+  const savedFlashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activePathId = selectedPathId ?? paths[0]?.id ?? null;
   const activePath = paths.find((p) => p.id === activePathId) ?? null;
+  const orderedPaths = useMemo(() => paths.slice().sort((a, b) => a.order - b.order), [paths]);
   const orderedNodes = useMemo(
     () => (activePathId ? (nodesByPath[activePathId] ?? []).slice().sort((a, b) => a.order - b.order) : []),
     [nodesByPath, activePathId],
@@ -424,13 +432,39 @@ export function CurriculumManager() {
   const nodeResources = activeNode ? resources.filter((r) => r.node_id === activeNode.id) : [];
   const nodeTasks = activeNode ? tasks.filter((t) => t.node_id === activeNode.id).sort((a, b) => a.order - b.order) : [];
 
+  // A field saves silently onBlur — this is the only positive confirmation an
+  // admin gets that it actually persisted, beyond the absence of an error toast.
+  const flashSaved = () => {
+    setJustSaved(true);
+    if (savedFlashTimer.current) clearTimeout(savedFlashTimer.current);
+    savedFlashTimer.current = setTimeout(() => setJustSaved(false), 1600);
+  };
+
   const runMutation = async (fn: () => Promise<unknown>) => {
     try {
       await fn();
+      flashSaved();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Something went wrong.');
       throw err;
     }
+  };
+
+  const movePath = async (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= orderedPaths.length) return;
+    const reordered = [...orderedPaths];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    await runMutation(() => admin.reorderPaths(reordered.map((p) => p.id))).catch(() => {});
+  };
+
+  const moveNode = async (index: number, direction: -1 | 1) => {
+    if (!activePathId) return;
+    const target = index + direction;
+    if (target < 0 || target >= orderedNodes.length) return;
+    const reordered = [...orderedNodes];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    await runMutation(() => admin.reorderNodes({ pathId: activePathId, orderedIds: reordered.map((n) => n.id) })).catch(() => {});
   };
 
   const handleDragEnd = async () => {
@@ -479,11 +513,15 @@ export function CurriculumManager() {
             Every edit here writes straight to the live curriculum — changes are visible to members immediately.
           </p>
         </div>
-        {admin.isMutating && (
-          <span className="flex items-center gap-1.5 rounded-xl border border-cyan/40 bg-cyan/10 px-3 py-1.5 font-code text-[11px] font-bold text-cyan">
+        {admin.isMutating ? (
+          <span className="flex items-center gap-1.5 rounded-none border border-cyan/40 bg-cyan/10 px-3 py-1.5 font-code text-[11px] font-bold text-cyan">
             <Spinner className="size-3" /> Saving…
           </span>
-        )}
+        ) : justSaved ? (
+          <span className="flex items-center gap-1.5 rounded-none border border-secondary/40 bg-secondary/10 px-3 py-1.5 font-code text-[11px] font-bold text-secondary">
+            <Check className="size-3" /> Saved
+          </span>
+        ) : null}
       </div>
 
       {disabled && (
@@ -507,13 +545,13 @@ export function CurriculumManager() {
             )}
           </div>
           <nav className="flex-1 overflow-y-auto px-2 pb-4 space-y-1">
-            {paths.map((p) => (
+            {orderedPaths.map((p, idx) => (
               <div key={p.id} className="group relative">
                 <button
                   type="button"
-                  onClick={() => { setSelectedPathId(p.id); setSelectedNodeId(null); }}
+                  onClick={() => { setSelectedPathId(p.id); setSelectedNodeId(null); setNodeSearch(''); }}
                   className={cn(
-                    'w-full rounded-xl px-3 py-2 text-left text-xs font-semibold transition-all flex items-center justify-between gap-1 pr-12',
+                    'w-full rounded-none px-3 py-2 text-left text-xs font-semibold transition-all flex items-center justify-between gap-1 pr-24',
                     activePathId === p.id ? 'bg-cyan/15 text-cyan border border-cyan/40' : 'text-on-surface-variant hover:bg-surface-card hover:text-on-surface',
                   )}
                 >
@@ -522,13 +560,33 @@ export function CurriculumManager() {
                 </button>
                 {!disabled && (
                   <span className="absolute right-1.5 top-1.5 hidden gap-0.5 group-hover:flex">
-                    <button type="button" onClick={() => setEditingPath(p)} className="rounded-md p-1 text-on-surface-variant hover:text-cyan" title="Edit track">
+                    <button
+                      type="button"
+                      onClick={() => movePath(idx, -1)}
+                      disabled={idx === 0}
+                      className="rounded-none p-1 text-on-surface-variant hover:text-cyan disabled:pointer-events-none disabled:opacity-30"
+                      title="Move track up"
+                      aria-label={`Move ${p.title} up`}
+                    >
+                      <ChevronUp className="h-3 w-3" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => movePath(idx, 1)}
+                      disabled={idx === orderedPaths.length - 1}
+                      className="rounded-none p-1 text-on-surface-variant hover:text-cyan disabled:pointer-events-none disabled:opacity-30"
+                      title="Move track down"
+                      aria-label={`Move ${p.title} down`}
+                    >
+                      <ChevronDown className="h-3 w-3" />
+                    </button>
+                    <button type="button" onClick={() => setEditingPath(p)} className="rounded-none p-1 text-on-surface-variant hover:text-cyan" title="Edit track">
                       <Edit3 className="h-3 w-3" />
                     </button>
                     <button
                       type="button"
                       onClick={() => setConfirmDelete({ type: 'path', id: p.id, label: p.title })}
-                      className="rounded-md p-1 text-on-surface-variant hover:text-red-400"
+                      className="rounded-none p-1 text-on-surface-variant hover:text-red-400"
                       title="Delete track"
                     >
                       <Trash2 className="h-3 w-3" />
@@ -554,6 +612,17 @@ export function CurriculumManager() {
             )}
           </div>
 
+          {orderedNodes.length > 6 && (
+            <div className="border-b border-outline-variant px-2 py-2">
+              <Input
+                placeholder="Filter modules…"
+                value={nodeSearch}
+                onChange={(e) => setNodeSearch(e.target.value)}
+                className="h-7 text-xs"
+              />
+            </div>
+          )}
+
           <ul className="flex-1 overflow-y-auto p-2 space-y-1.5" onDragOver={(e) => e.preventDefault()}>
             {addingNode && activePath && (
               <NewNodeForm
@@ -569,43 +638,82 @@ export function CurriculumManager() {
                 }}
               />
             )}
-            {orderedNodes.map((node, idx) => {
-              const isSelected = activeNode?.id === node.id;
-              return (
-                <li
-                  key={node.id}
-                  draggable={!disabled}
-                  onDragStart={() => { dragItem.current = idx; }}
-                  onDragEnter={() => { dragOver.current = idx; }}
-                  onDragEnd={handleDragEnd}
-                  className={cn(
-                    'group flex items-start gap-2 rounded-xl border p-2.5 cursor-pointer select-none transition-all text-xs',
-                    isSelected ? 'border-cyan bg-cyan/10 text-on-surface shadow-md' : 'border-outline-variant/40 bg-surface-card text-on-surface-variant hover:border-cyan/40 hover:text-on-surface',
-                  )}
-                  onClick={() => setSelectedNodeId(node.id)}
-                >
-                  {!disabled && <GripVertical className="h-3.5 w-3.5 shrink-0 mt-0.5 text-outline cursor-grab active:cursor-grabbing" />}
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold truncate text-on-surface leading-4">
-                      <span className="text-outline font-normal mr-1">{idx + 1}.</span>
-                      {node.name}
-                    </p>
-                    <p className="text-[10px] text-on-surface-variant mt-0.5 truncate">{node.subtitle}</p>
-                  </div>
-                  <span className="shrink-0 font-code text-[10px] text-outline mt-0.5">{node.est_hours}h</span>
-                  {!disabled && (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); setConfirmDelete({ type: 'node', id: node.id, label: node.name }); }}
-                      className="hidden shrink-0 text-on-surface-variant hover:text-red-400 group-hover:block"
-                      title="Delete module"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </li>
-              );
-            })}
+            {(() => {
+              const query = nodeSearch.trim().toLowerCase();
+              const filtering = query.length > 0;
+              const visibleNodes = filtering
+                ? orderedNodes.filter((n) => n.name.toLowerCase().includes(query) || n.subtitle.toLowerCase().includes(query))
+                : orderedNodes;
+
+              if (filtering && visibleNodes.length === 0) {
+                return <li className="px-2 py-6 text-center text-xs text-on-surface-variant">No modules match &ldquo;{nodeSearch}&rdquo;.</li>;
+              }
+
+              return visibleNodes.map((node) => {
+                const idx = orderedNodes.findIndex((n) => n.id === node.id);
+                const isSelected = activeNode?.id === node.id;
+                return (
+                  <li
+                    key={node.id}
+                    draggable={!disabled && !filtering}
+                    onDragStart={() => { dragItem.current = idx; }}
+                    onDragEnter={() => { dragOver.current = idx; }}
+                    onDragEnd={handleDragEnd}
+                    className={cn(
+                      'group flex items-start gap-2 rounded-none border p-2.5 cursor-pointer select-none transition-all text-xs',
+                      isSelected ? 'border-cyan bg-cyan/10 text-on-surface shadow-md' : 'border-outline-variant/40 bg-surface-card text-on-surface-variant hover:border-cyan/40 hover:text-on-surface',
+                    )}
+                    onClick={() => setSelectedNodeId(node.id)}
+                  >
+                    {!disabled && !filtering && <GripVertical className="h-3.5 w-3.5 shrink-0 mt-0.5 text-outline cursor-grab active:cursor-grabbing" />}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold truncate text-on-surface leading-4">
+                        <span className="text-outline font-normal mr-1">{idx + 1}.</span>
+                        {node.name}
+                      </p>
+                      <p className="text-[10px] text-on-surface-variant mt-0.5 truncate">{node.subtitle}</p>
+                    </div>
+                    <span className="shrink-0 font-code text-[10px] text-outline mt-0.5">{node.est_hours}h</span>
+                    {!disabled && (
+                      <span className="hidden shrink-0 items-start gap-0.5 group-hover:flex">
+                        {!filtering && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); moveNode(idx, -1); }}
+                              disabled={idx === 0}
+                              className="p-0.5 text-on-surface-variant hover:text-cyan disabled:pointer-events-none disabled:opacity-30"
+                              title="Move module up"
+                              aria-label={`Move ${node.name} up`}
+                            >
+                              <ChevronUp className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); moveNode(idx, 1); }}
+                              disabled={idx === orderedNodes.length - 1}
+                              className="p-0.5 text-on-surface-variant hover:text-cyan disabled:pointer-events-none disabled:opacity-30"
+                              title="Move module down"
+                              aria-label={`Move ${node.name} down`}
+                            >
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            </button>
+                          </>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setConfirmDelete({ type: 'node', id: node.id, label: node.name }); }}
+                          className="p-0.5 text-on-surface-variant hover:text-red-400"
+                          title="Delete module"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </span>
+                    )}
+                  </li>
+                );
+              });
+            })()}
           </ul>
         </div>
 
@@ -660,7 +768,7 @@ export function CurriculumManager() {
           ) : (
             <div className="flex h-full items-center justify-center text-center p-12">
               <div>
-                <Spinner className="mx-auto size-8 text-on-surface-variant" />
+                <AnimatedStaccMark className="mx-auto h-10 w-10 opacity-30" />
                 <p className="mt-4 text-sm text-on-surface-variant">
                   {activePath ? 'Select a module to view and edit its content' : 'Create a track to get started'}
                 </p>
@@ -739,7 +847,7 @@ function NewNodeForm({
   };
 
   return (
-    <li className="rounded-xl border border-cyan/40 bg-cyan/[0.04] p-2.5 space-y-1.5 text-xs">
+    <li className="rounded-none border border-cyan/40 bg-cyan/[0.04] p-2.5 space-y-1.5 text-xs">
       <Input placeholder="Module slug (e.g. de-etl)" value={slug} onChange={(e) => setSlug(e.target.value)} className="h-7 text-xs" />
       <Input placeholder="Module name" value={name} onChange={(e) => setName(e.target.value)} className="h-7 text-xs" />
       <div className="flex items-center gap-2">
@@ -819,7 +927,7 @@ function PathFormDialog({
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button onClick={save} disabled={saving || !id.trim() || !title.trim()} className="font-code text-xs rounded-xl bg-cyan text-navy hover:bg-cyan/90">
+          <Button onClick={save} disabled={saving || !id.trim() || !title.trim()} className="font-code text-xs rounded-none bg-cyan text-navy hover:bg-cyan/90">
             {saving ? <Spinner className="size-3.5" /> : null} Save track
           </Button>
         </AlertDialogFooter>
@@ -881,12 +989,18 @@ function ModuleEditor({
     <div className="mx-auto max-w-3xl space-y-6 px-5 py-6">
       {/* Module metadata header */}
       <div className="space-y-3 border-b border-outline-variant pb-5">
-        <div className="flex items-center gap-2 font-code text-xs text-cyan">
+        <div className="flex flex-wrap items-center gap-2 font-code text-xs text-cyan">
           <span>Module {node.order}</span>
           <span className="text-outline">·</span>
           <span>{node.path_id}</span>
           <span className="text-outline">·</span>
           <span className="text-outline">{node.slug}</span>
+          {node.updated_at && (
+            <>
+              <span className="text-outline">·</span>
+              <span className="text-outline">edited {new Date(node.updated_at).toLocaleDateString('en', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+            </>
+          )}
         </div>
 
         <input
@@ -912,7 +1026,7 @@ function ModuleEditor({
             <input
               key={`${node.id}-hrs`}
               type="number" min="1" max="100" disabled={disabled}
-              className="w-14 rounded-lg border border-outline-variant bg-surface-card px-2 py-1 font-code text-xs text-on-surface focus:outline-none focus:border-cyan disabled:opacity-60"
+              className="w-14 rounded-none border border-outline-variant bg-surface-card px-2 py-1 font-code text-xs text-on-surface focus:outline-none focus:border-cyan disabled:opacity-60"
               defaultValue={node.est_hours}
               onBlur={(e) => { const v = parseInt(e.target.value, 10); if (!isNaN(v) && v !== node.est_hours) onSaveMeta({ est_hours: v }); }}
             />
@@ -952,7 +1066,7 @@ function ModuleEditor({
           )}
         </div>
         {editingPrereqs ? (
-          <div className="space-y-2 rounded-xl border border-cyan/40 bg-cyan/[0.04] p-3">
+          <div className="space-y-2 rounded-none border border-cyan/40 bg-cyan/[0.04] p-3">
             <div className="max-h-48 overflow-y-auto space-y-1">
               {allNodes.filter((n) => n.id !== node.id).map((n) => (
                 <label key={n.id} className="flex items-center gap-2 text-xs">
@@ -992,14 +1106,14 @@ function ModuleEditor({
             <span className="font-code text-xs text-outline font-normal">({resources.length}/2)</span>
           </h4>
           {!disabled && (
-            <Button size="sm" variant="outline" onClick={onAddResource} disabled={resources.length >= 2} className="h-7 gap-1.5 px-3 font-code text-xs rounded-xl border-outline-variant hover:border-cyan">
+            <Button size="sm" variant="outline" onClick={onAddResource} disabled={resources.length >= 2} className="h-7 gap-1.5 px-3 font-code text-xs rounded-none border-outline-variant hover:border-cyan">
               <Plus className="h-3 w-3" /> Add Resource
             </Button>
           )}
         </div>
         <div className="space-y-2">
           {resources.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-outline-variant/60 py-6 text-center">
+            <div className="rounded-none border border-dashed border-outline-variant/60 py-6 text-center">
               <p className="text-xs text-on-surface-variant">No resources yet.</p>
             </div>
           ) : (
@@ -1018,7 +1132,7 @@ function ModuleEditor({
             <span className="font-code text-xs text-outline font-normal">({tasks.length})</span>
           </h4>
           {!disabled && !addingTask && (
-            <Button size="sm" variant="outline" onClick={onStartAddTask} className="h-7 gap-1.5 px-3 font-code text-xs rounded-xl border-outline-variant hover:border-cyan">
+            <Button size="sm" variant="outline" onClick={onStartAddTask} className="h-7 gap-1.5 px-3 font-code text-xs rounded-none border-outline-variant hover:border-cyan">
               <Plus className="h-3 w-3" /> Add Task
             </Button>
           )}
@@ -1026,7 +1140,7 @@ function ModuleEditor({
 
         <div className="space-y-2">
           {tasks.length === 0 && !addingTask && (
-            <div className="rounded-xl border border-dashed border-outline-variant/60 py-6 text-center">
+            <div className="rounded-none border border-dashed border-outline-variant/60 py-6 text-center">
               <p className="text-xs text-on-surface-variant">No tasks yet.</p>
             </div>
           )}
@@ -1034,7 +1148,7 @@ function ModuleEditor({
             editingTaskId === task.id ? (
               <TaskEditor key={task.id} task={task} disabled={disabled} onCancel={onStopEditTask} onSave={(t) => onSaveTask(t).then(() => {})} />
             ) : (
-              <div key={task.id} className="flex items-center justify-between gap-2 rounded-xl border border-outline-variant/60 bg-surface/50 px-3 py-2 text-xs group">
+              <div key={task.id} className="flex items-center justify-between gap-2 rounded-none border border-outline-variant/60 bg-surface/50 px-3 py-2 text-xs group">
                 <div className="min-w-0">
                   <p className="font-semibold text-on-surface truncate">
                     <Badge variant="outline" className="mr-1.5 text-[9px] font-code uppercase">{task.type}</Badge>
@@ -1043,8 +1157,8 @@ function ModuleEditor({
                 </div>
                 {!disabled && (
                   <div className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button type="button" onClick={() => onStartEditTask(task.id)} className="rounded-md border border-outline-variant p-1 text-on-surface-variant hover:border-cyan hover:text-cyan"><Edit3 className="h-3 w-3" /></button>
-                    <button type="button" onClick={() => onDeleteTask(task.id, task.description)} className="rounded-md border border-outline-variant p-1 text-on-surface-variant hover:border-red-400 hover:text-red-400"><Trash2 className="h-3 w-3" /></button>
+                    <button type="button" onClick={() => onStartEditTask(task.id)} className="rounded-none border border-outline-variant p-1 text-on-surface-variant hover:border-cyan hover:text-cyan"><Edit3 className="h-3 w-3" /></button>
+                    <button type="button" onClick={() => onDeleteTask(task.id, task.description)} className="rounded-none border border-outline-variant p-1 text-on-surface-variant hover:border-red-400 hover:text-red-400"><Trash2 className="h-3 w-3" /></button>
                   </div>
                 )}
               </div>
