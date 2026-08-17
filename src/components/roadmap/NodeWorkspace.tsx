@@ -290,23 +290,31 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
         {/* Right controls */}
         <div className="flex shrink-0 items-center gap-2">
-          {/* Sidebar toggle — labelled exactly like DataCamp */}
+          {/* Sidebar toggle — always labelled and visibly "on" when open, so
+              it stays obvious as the way back in after closing the panel
+              (previously icon-only on mobile with no active state). */}
           <button
             type="button"
             onClick={() => setShowPanel((v) => !v)}
             aria-expanded={showPanel}
             aria-controls="lesson-outline"
             aria-label={showPanel ? 'Hide lesson outline' : 'Show lesson outline'}
-            className="flex items-center gap-1 rounded-none border border-outline-variant bg-surface-card px-2.5 py-1.5 font-code text-xs font-semibold text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan"
+            className={cn(
+              'flex items-center gap-1.5 rounded-none border px-2.5 py-1.5 font-code text-xs font-semibold transition-colors',
+              showPanel
+                ? 'border-cyan/50 bg-cyan/10 text-cyan'
+                : 'border-outline-variant bg-surface-card text-on-surface-variant hover:border-cyan/50 hover:text-cyan',
+            )}
           >
             {showPanel ? <PanelLeftClose className="h-3.5 w-3.5" /> : <PanelLeftOpen className="h-3.5 w-3.5" />}
-            <ChevronLeft className="h-3 w-3 -mr-1 opacity-60" />
-            <span className="hidden sm:inline">Course Outline</span>
-            <ChevronRight className="h-3 w-3 -ml-1 opacity-60" />
+            <span>Outline</span>
           </button>
 
-          {/* Connected project repo — persistent across every node in this track */}
-          {path && path.id !== 'foundations' && data.isSupabaseConnected && (
+          {/* Connected project repo — persistent across every node in this
+              track, EXCEPT the node that already renders the full
+              ProjectMilestone card below (buildTask) — showing "Connect
+              GitHub" in both places at once read as duplicated. */}
+          {path && path.id !== 'foundations' && !buildTask && data.isSupabaseConnected && (
             trackRepoConnected ? (
               <a
                 href={trackProject!.repo_url}
