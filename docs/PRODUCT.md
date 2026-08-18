@@ -31,7 +31,7 @@ only.
 |---|---|
 | Dev | Self-paced structure with visible progress |
 | Stagee | Curriculum path tracking tied to cohort project context |
-| Builder | Advanced paths (AI Engineering, MLOps) |
+| Builder | Advanced paths (MLOps; AI Engineering retained but paused) |
 | Admin | Cohort health monitoring, stuck-member detection |
 
 ---
@@ -104,7 +104,7 @@ Curriculum: starts/completions/completion-rate per node
 | Feature | Status | Notes |
 |---|---|---|
 | Roadmap progression | ✅ Shipped | One responsive list experience: a zigzag center spine on desktop and a compact vertical rail on mobile. The former React Flow canvas was archived to reduce interaction and bundle complexity. Public, structure-only version at `/tree` remains for SEO. |
-| Path selection | ✅ Shipped | Foundations + Data Engineering, Data Analysis, Data Science, AI Engineering, MLOps. AI-Eng and MLOps unlock only after DE + DS are fully complete. |
+| Path selection | ✅ Shipped | Foundations + Data Engineering, Data Analysis, Data Science, AI Engineering, MLOps. MLOps unlocks after DE + DS. AI Engineering remains visible but is paused for members while the core paths are strengthened; admins retain audit access. |
 | Node detail | ✅ Shipped | Description, skills, curated resources (2 per node, community-rated), tasks, estimated hours. |
 | Progress tracking | ✅ Shipped | Per-node and per-path completion; derived status `locked \| available \| in_progress \| complete`. |
 | Prerequisite gates | ✅ Shipped | Node-level (fan-in supported — a node can require several prerequisites) + path-level gates. |

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { PAUSED_PATH_IDS } from '@/config/roadmap';
 import type { PathRow } from '@/lib/database.types';
 
 function TrackFocus({ paths, onFound }: { paths: PathRow[]; onFound: (pathId: string) => void }) {
@@ -76,6 +77,7 @@ export default function PathSelectionPage() {
       .map((id) => paths.find((candidate) => candidate.id === id)?.title)
       .filter(Boolean)
       .join(' + ');
+    const isPaused = PAUSED_PATH_IDS.has(path.id);
 
     return (
       <motion.article
@@ -125,10 +127,14 @@ export default function PathSelectionPage() {
         {locked ? (
           <div className="mt-4 flex flex-1 flex-col justify-end">
             <p className="text-sm leading-6 text-on-surface-variant">
-              Complete <strong className="font-semibold text-on-surface">{gateTitles}</strong> to unlock this path.
+              {isPaused ? (
+                <>This advanced path is paused while we strengthen and validate the core career paths.</>
+              ) : (
+                <>Complete <strong className="font-semibold text-on-surface">{gateTitles}</strong> to unlock this path.</>
+              )}
             </p>
             <Button disabled className="mt-4 w-full justify-center border border-outline-variant bg-surface text-outline">
-              Locked
+              {isPaused ? 'Coming later' : 'Locked'}
             </Button>
           </div>
         ) : (

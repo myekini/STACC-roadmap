@@ -21,6 +21,7 @@ import {
   PREREQUISITES as LOCAL_PREREQS,
   RESOURCES as LOCAL_RESOURCES,
   TASKS as LOCAL_TASKS,
+  PAUSED_PATH_IDS,
 } from '@/config/roadmap';
 import type {
   NodeRow,
@@ -287,6 +288,7 @@ export function useUserData() {
     (pathId: string) => {
       // Admins can audit the complete curriculum from the member experience.
       if (isAdmin) return true;
+      if (PAUSED_PATH_IDS.has(pathId)) return false;
       const path = pathsById.get(pathId);
       return (path?.requires_paths ?? []).every(pathFullyComplete);
     },

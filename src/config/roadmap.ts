@@ -49,6 +49,10 @@ interface PathDef {
   nodes: NodeDef[];
 }
 
+// Product hold: retain the authored curriculum for later review, but do not
+// unlock or expand it while the core career paths are being strengthened.
+export const PAUSED_PATH_IDS = new Set(['ai-engineering']);
+
 const FOUNDATION_SLUGS = ['found-python', 'found-sql', 'found-git', 'found-cli', 'found-stats', 'found-ai'];
 
 const q = (question: string, options: string[], correctIndex: number, explanation: string): QuizQuestion => ({
@@ -86,16 +90,16 @@ const PATH_DEFS: PathDef[] = [
     nodes: [
       {
         slug: 'found-python', name: 'Python Basics', subtitle: 'Variables to pandas',
-        description: 'Write scripts that load, clean, and reshape data. The working language of every path that follows.',
+        description: 'Write a readable Python program that loads, validates, cleans, and exports a tabular dataset.',
         icon: 'code', estHours: 12, xp: 100,
-        skills: ['Python syntax', 'Functions', 'Pandas intro'], prereqs: [],
+        skills: ['Functions & errors', 'Pandas transformations', 'Data validation'], prereqs: [],
         resources: [
-          ['Python for Everybody — Full Course', 'video', 'YouTube (freeCodeCamp)', 'https://www.youtube.com/watch?v=8DvywoWv6fI'],
-          ['Pandas Getting Started Guide', 'documentation', 'pandas.pydata.org', 'https://pandas.pydata.org/docs/getting_started/index.html'],
+          ['Python Tutorial — sections 3–5', 'documentation', 'Python.org', 'https://docs.python.org/3/tutorial/introduction.html'],
+          ['10 minutes to pandas', 'documentation', 'pandas.pydata.org', 'https://pandas.pydata.org/docs/user_guide/10min.html'],
         ],
         tasks: [
-          ['Work through the core Python course modules', 'watch'],
-          ['Build: clean a messy CSV with pandas and export a tidy dataset', 'build'],
+          ['Learn: complete Python Tutorial sections 3–5 and reproduce the examples locally', 'read'],
+          ['Build: create clean_data.py that validates required columns, handles missing values and duplicates, exports a tidy CSV, and documents how to run it', 'build'],
           ['Checkpoint challenge: clean_scores(values)', 'challenge', challenge(
             'Write clean_scores(values): drop every None entry and duplicate value, then return what remains sorted ascending. This exact shape — strip the junk, dedupe, sort — is what you do to real data constantly.',
             'def clean_scores(values):\n    """Remove None entries and duplicates, then return the list sorted ascending."""\n    # your code here\n    pass\n',
@@ -109,16 +113,16 @@ const PATH_DEFS: PathDef[] = [
       },
       {
         slug: 'found-sql', name: 'SQL Basics', subtitle: 'Query like you mean it',
-        description: 'SELECT, JOIN, GROUP BY, and window-function fundamentals against a real database.',
+        description: 'Answer business questions with correct joins, aggregations, CTEs, and window functions, then validate the result.',
         icon: 'database', estHours: 10, xp: 100,
-        skills: ['SELECT & joins', 'Aggregation', 'Window functions'], prereqs: [],
+        skills: ['Joins & CTEs', 'Aggregation & windows', 'Query validation'], prereqs: [],
         resources: [
-          ['Kaggle: Intro to SQL', 'course', 'Kaggle', 'https://www.kaggle.com/learn/intro-to-sql'],
-          ['SQLBolt Interactive Lessons', 'article', 'SQLBolt', 'https://sqlbolt.com/'],
+          ['SQLBolt — lessons 1–18', 'course', 'SQLBolt', 'https://sqlbolt.com/'],
+          ['PostgreSQL Window Functions Tutorial', 'documentation', 'PostgreSQL', 'https://www.postgresql.org/docs/current/tutorial-window.html'],
         ],
         tasks: [
-          ['Complete the interactive SQL lessons', 'read'],
-          ['Build: answer 5 business questions against a sample database', 'build'],
+          ['Learn: complete SQLBolt lessons 1–18 and the PostgreSQL window-functions tutorial', 'read'],
+          ['Build: submit five labelled business queries using joins, aggregation, a CTE and a window function, with row-count or total checks for every answer', 'build'],
           ['Checkpoint challenge: paying customers over $50', 'challenge', sqlChallenge(
             "Table orders(id, customer, amount, status). Write a query that returns each customer's total spend from status = 'paid' orders only, as columns customer and total — only customers with total > 50, ordered by total descending.",
             '-- orders(id, customer, amount, status)\n-- customer, total (sum of paid amounts) where total > 50, ordered by total desc\nSELECT\n',
@@ -140,16 +144,16 @@ const PATH_DEFS: PathDef[] = [
       },
       {
         slug: 'found-git', name: 'Git & GitHub', subtitle: 'Version everything',
-        description: 'Branch, commit, merge, and collaborate through pull requests without fear.',
+        description: 'Create a focused branch, review its changes, resolve a conflict, and merge it through a clear pull request.',
         icon: 'account_tree', estHours: 6, xp: 75,
-        skills: ['Commits & branching', 'Pull requests', 'Merge conflicts'], prereqs: [],
+        skills: ['Focused commits', 'Pull-request review', 'Conflict recovery'], prereqs: [],
         resources: [
-          ['Pro Git Book (ch. 1–3)', 'documentation', 'git-scm.com', 'https://git-scm.com/book/en/v2'],
-          ['GitHub Skills', 'course', 'GitHub', 'https://skills.github.com/'],
+          ['Pro Git — Git Basics and Branching', 'documentation', 'git-scm.com', 'https://git-scm.com/book/en/v2'],
+          ['Review pull requests', 'course', 'GitHub Skills', 'https://github.com/skills/review-pull-requests'],
         ],
         tasks: [
-          ['Read Pro Git chapters 1–3', 'read'],
-          ['Build: open a pull request with a reviewed change on your own repo', 'build'],
+          ['Learn: read Pro Git chapters 2–3 and complete GitHub Skills: Review pull requests', 'read'],
+          ['Build: create a branch with focused commits, open a pull request that explains the change and test evidence, resolve one deliberate conflict, and merge it', 'build'],
           ['Checkpoint quiz', 'quiz', quiz(
             q('Per Pro Git, what does git rebase do compared to merge?', ['Deletes the branch', 'Replays commits onto a new base for linear history', 'Creates a merge commit', 'Pushes to remote'], 1, 'Rebase replays your commits on top of another base commit, producing a linear history; merge preserves both histories with a merge commit.'),
             q('You rebased a feature branch onto main and force-pushed. A teammate who already pulled the old branch now sees duplicate commits and conflicts. What is the safe fix?', ['Tell them to git pull again', 'Tell them to force-pull with --rebase or re-clone the branch, since rewritten history diverged from their local copy', 'Revert the rebase on main', 'Delete their local repo'], 1, 'Rebasing rewrites commit SHAs; anyone with the old branch must reset onto the new history (fetch + reset --hard, or a rebase pull) rather than merge the two diverging histories.'),
@@ -159,16 +163,16 @@ const PATH_DEFS: PathDef[] = [
       },
       {
         slug: 'found-cli', name: 'Command Line', subtitle: 'Live in the terminal',
-        description: 'Navigate, inspect, and automate with the shell — the environment every data tool assumes.',
+        description: 'Inspect files and processes, combine commands with pipes, and automate a repeatable file-processing task safely.',
         icon: 'terminal', estHours: 5, xp: 75,
-        skills: ['Navigation & pipes', 'Permissions', 'Shell scripts'], prereqs: [],
+        skills: ['Pipes & redirection', 'Processes & permissions', 'Safe shell scripts'], prereqs: [],
         resources: [
-          ['The Missing Semester: Shell', 'video', 'MIT', 'https://missing.csail.mit.edu/2020/course-shell/'],
-          ['Linux Command Line Basics', 'article', 'Ubuntu', 'https://ubuntu.com/tutorials/command-line-for-beginners'],
+          ['The Missing Semester — The Shell', 'video', 'MIT', 'https://missing.csail.mit.edu/2020/course-shell/'],
+          ['The Linux command line for beginners', 'article', 'Ubuntu', 'https://ubuntu.com/tutorials/command-line-for-beginners'],
         ],
         tasks: [
-          ['Watch the Missing Semester shell lecture', 'watch'],
-          ['Build: write a shell script that organizes files by extension', 'build'],
+          ['Learn: complete The Missing Semester shell lecture and Ubuntu tutorial sections 1–6', 'watch'],
+          ['Build: write an idempotent shell script that validates its input directory, organises files by extension, logs its actions, and handles spaces in filenames', 'build'],
           ['Checkpoint quiz', 'quiz', quiz(
             q('In the Missing Semester shell lecture, which operator sends the output of one command into another?', ['>', '>>', '|', '&'], 2, 'The pipe | streams stdout of one command into stdin of the next; > and >> redirect to files.'),
             q('You need to find every .csv file under a directory tree modified in the last 24 hours and count their lines. Which pipeline does that correctly?', ['cat *.csv | wc -l', 'find . -name "*.csv" -mtime -1 | xargs wc -l', 'ls -R | grep csv | head', 'grep -r csv . | wc -l'], 1, 'find locates files by name/pattern and mtime across a tree; piping to xargs wc -l runs the count over each match — the standard composable shell idiom.'),
@@ -178,16 +182,16 @@ const PATH_DEFS: PathDef[] = [
       },
       {
         slug: 'found-stats', name: 'Statistics Basics', subtitle: 'Think in distributions',
-        description: 'Descriptive stats, distributions, sampling, and the difference between correlation and causation.',
+        description: 'Describe uncertainty in a dataset, choose an appropriate comparison, and communicate what the evidence cannot prove.',
         icon: 'insights', estHours: 10, xp: 100,
-        skills: ['Distributions & sampling', 'Hypothesis testing', 'Correlation vs causation'], prereqs: ['found-python'],
+        skills: ['Sampling & uncertainty', 'Effect size & testing', 'Causal limits'], prereqs: ['found-python'],
         resources: [
-          ['Seeing Theory (Visual Probability)', 'article', 'Brown University', 'https://seeing-theory.brown.edu/'],
-          ['Khan Academy: Statistics', 'course', 'Khan Academy', 'https://www.khanacademy.org/math/statistics-probability'],
+          ['Seeing Theory — distributions and inference', 'article', 'Brown University', 'https://seeing-theory.brown.edu/'],
+          ['OpenIntro Statistics — chapters 2, 4 and 5', 'documentation', 'OpenIntro', 'https://www.openintro.org/book/os/'],
         ],
         tasks: [
-          ['Explore distributions and inference on Seeing Theory', 'read'],
-          ['Build: analyze a dataset and report mean/median skew with plots', 'build'],
+          ['Learn: complete Seeing Theory distributions/inference and OpenIntro chapters 2, 4 and 5', 'read'],
+          ['Build: analyse one comparison with distribution plots, confidence interval, effect size, assumptions, and a plain-language statement of what cannot be concluded', 'build'],
           ['Checkpoint challenge: describe(values)', 'challenge', challenge(
             'Write describe(values): return a (mean, median, population-stdev) tuple. These three numbers are the first thing you compute on any new dataset — mean and median tell you if it is skewed, stdev tells you how spread out it is.',
             'from statistics import mean, median, pstdev\n\ndef describe(values):\n    """Return (mean, median, population-stdev) as a tuple of floats."""\n    # your code here\n    pass\n',
@@ -201,16 +205,16 @@ const PATH_DEFS: PathDef[] = [
       },
       {
         slug: 'found-ai', name: 'AI Literacy', subtitle: 'Work with the machines',
-        description: 'Prompt engineering fundamentals, how LLMs work conceptually, and AI tool fluency for dev work.',
+        description: 'Use an AI assistant on a bounded data task while protecting sensitive data, testing its output, and documenting its contribution.',
         icon: 'auto_awesome', estHours: 6, xp: 75,
-        skills: ['Prompt engineering', 'How LLMs work', 'Cursor/Copilot fluency'], prereqs: ['found-python'],
+        skills: ['Model limitations', 'Output verification', 'Safe AI-assisted work'], prereqs: ['found-python'],
         resources: [
-          ['Prompt Engineering Guide', 'documentation', 'promptingguide.ai', 'https://www.promptingguide.ai/'],
-          ['Intro to Large Language Models', 'video', 'YouTube (Karpathy)', 'https://www.youtube.com/watch?v=zjkBMFhNj_g'],
+          ['Intro to Large Language Models', 'video', 'YouTube (Andrej Karpathy)', 'https://www.youtube.com/watch?v=zjkBMFhNj_g'],
+          ['OWASP Top 10 for LLM Applications — prompt injection', 'documentation', 'OWASP', 'https://genai.owasp.org/llmrisk/llm01-prompt-injection/'],
         ],
         tasks: [
-          ['Read the prompt engineering fundamentals guide', 'read'],
-          ['Build: solve a coding task end-to-end with an AI assistant, documenting prompts', 'build'],
+          ['Learn: watch Intro to LLMs and read the OWASP prompt-injection guidance', 'watch'],
+          ['Build: complete one bounded data task with AI assistance, remove sensitive inputs, test every generated claim or code path, and add an AI_USE.md log of prompts, changes, failures, and verification', 'build'],
           ['Checkpoint quiz', 'quiz', quiz(
             q("Per Karpathy's Intro to Large Language Models, LLMs generate text by…", ['Querying a database of answers', 'Predicting the next token', 'Running rule-based grammar', 'Searching the web'], 1, 'LLMs are next-token predictors trained on large corpora; they do not look up answers in a database.'),
             q('A model confidently cites a specific statistic that does not appear anywhere in your source documents. What is this failure mode called, and why does it happen?', ['A bug — it should be reported', 'Hallucination — the model generates plausible-sounding tokens even without grounding, since it optimizes for likely continuations, not truth', 'Overfitting on your prompt', 'A tokenizer error'], 1, 'Hallucination is a direct consequence of next-token prediction: the model produces statistically plausible text, which is not the same as verified fact — this is why grounding (RAG) and validation matter.'),
@@ -229,115 +233,115 @@ const PATH_DEFS: PathDef[] = [
     requiresPaths: [],
     nodes: [
       {
-        slug: 'de-etl', name: 'ETL Concepts', subtitle: 'Extract, Transform, Load',
-        description: 'Design batch pipelines: ingestion patterns, idempotency, and data quality checks.',
+        slug: 'de-etl', name: 'Reproducible Ingestion', subtitle: 'Docker, APIs, and safe reruns',
+        description: 'Containerise an API-to-PostgreSQL pipeline that validates inputs and can be rerun without duplicating data.',
         icon: 'transform', estHours: 10, xp: 150,
-        skills: ['Batch vs streaming', 'Idempotency', 'Data quality'], prereqs: FOUNDATION_SLUGS,
+        skills: ['Docker & environments', 'Incremental ingestion', 'Idempotency & quality'], prereqs: FOUNDATION_SLUGS,
         resources: [
-          ['Data Engineering Zoomcamp — Lecture Playlist', 'video', 'YouTube (DataTalksClub)', 'https://www.youtube.com/playlist?list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb'],
-          ['The Data Engineering Cookbook', 'documentation', 'Andreas Kretz (GitHub)', 'https://github.com/andkret/Cookbook'],
+          ['DE Zoomcamp — Docker and Terraform', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/01-docker-terraform'],
+          ['dlt — incremental loading', 'documentation', 'dltHub', 'https://dlthub.com/docs/general-usage/incremental-loading'],
         ],
         tasks: [
-          ['Study the ingestion + ETL weeks of the DE Zoomcamp', 'watch'],
-          ['Build: a pipeline that ingests a public API into a database daily', 'build'],
+          ['Learn: complete the Docker, PostgreSQL and Terraform sections, then study cursor-based incremental loading', 'read'],
+          ['Build: add a containerised API-to-PostgreSQL pipeline with configuration outside source control, pagination, schema checks, an incremental cursor, duplicate-safe reruns and a documented local setup', 'build'],
         ],
       },
       {
         slug: 'de-modeling', name: 'Data Modeling', subtitle: 'Dimensional modeling',
-        description: 'Star schemas, slowly changing dimensions, and the tradeoffs of normalization.',
+        description: 'Design an analytics-ready star schema with declared grain, dependable keys, and a justified history strategy.',
         icon: 'schema', estHours: 12, xp: 150,
-        skills: ['Star schema', 'SCDs', 'Normalization tradeoffs'], prereqs: ['de-etl'],
+        skills: ['Grain & dimensional models', 'Keys & SCDs', 'Warehouse performance'], prereqs: ['de-etl'],
         resources: [
-          ['Kimball Dimensional Modeling Resources', 'documentation', 'Kimball Group', 'https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/'],
-          ['dbt: How We Structure Our dbt Projects', 'documentation', 'dbt Labs', 'https://docs.getdbt.com/best-practices/how-we-structure/1-guide-overview'],
+          ['Kimball dimensional modelling techniques', 'documentation', 'Kimball Group', 'https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/'],
+          ['BigQuery — partitioned tables', 'documentation', 'Google Cloud', 'https://cloud.google.com/bigquery/docs/partitioned-tables'],
         ],
         tasks: [
-          ["Read Kimball's dimensional modeling essentials", 'read'],
-          ['Build: design a star schema for an e-commerce domain', 'build'],
+          ['Learn: study grain, facts, dimensions, surrogate keys, SCDs, partitioning and clustering', 'read'],
+          ['Build: add a grain statement, bus matrix, fact table, conformed dimensions, one SCD Type 2 dimension and a partition choice with cost/query justification', 'build'],
         ],
       },
       {
         slug: 'de-dbt', name: 'dbt', subtitle: 'Data build tool',
-        description: 'Transformations as code: models, tests, docs, and environments with dbt.',
+        description: 'Build layered dbt transformations with tested sources, documented lineage, and separate development and production targets.',
         icon: 'code_blocks', estHours: 12, xp: 200,
-        skills: ['Models & tests', 'Jinja macros', 'Environments'], prereqs: ['de-modeling'],
+        skills: ['Layered dbt models', 'Tests & lineage', 'Environment discipline'], prereqs: ['de-modeling'],
         resources: [
-          ['dbt Fundamentals Course', 'course', 'dbt Labs', 'https://courses.getdbt.com/courses/fundamentals'],
-          ['Official dbt Docs', 'documentation', 'getdbt.com', 'https://docs.getdbt.com/'],
+          ['dbt — structure a project', 'documentation', 'dbt Labs', 'https://docs.getdbt.com/best-practices/how-we-structure/1-guide-overview'],
+          ['dbt data tests', 'documentation', 'dbt Labs', 'https://docs.getdbt.com/docs/build/data-tests'],
         ],
         tasks: [
-          ['Complete dbt Fundamentals', 'watch'],
-          ['Build: a dbt project with staging/marts models and tests', 'build'],
+          ['Learn: complete the staging, intermediate, marts and data-tests guidance', 'read'],
+          ['Build: add sources, staging/intermediate/mart layers, key and relationship tests, one business-rule test, generated docs and separate development/production targets', 'build'],
         ],
       },
       {
-        slug: 'de-orchestration', name: 'Workflow Orchestration', subtitle: 'Airflow / Prefect',
-        description: 'Schedule, retry, and monitor DAGs of work that run production pipelines.',
+        slug: 'de-orchestration', name: 'Workflow Orchestration', subtitle: 'Airflow operations',
+        description: 'Schedule the platform as an observable Airflow DAG that retries safely, backfills correctly, and exposes failures.',
         icon: 'published_with_changes', estHours: 12, xp: 200,
-        skills: ['DAGs & scheduling', 'Retries', 'Backfills'], prereqs: ['de-dbt'],
+        skills: ['DAGs & data intervals', 'Retries & alerts', 'Safe backfills'], prereqs: ['de-dbt'],
         resources: [
-          ['Astronomer Airflow Academy', 'course', 'Astronomer', 'https://academy.astronomer.io/'],
-          ['Airflow Documentation: Core Concepts', 'documentation', 'Apache Airflow', 'https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/overview.html'],
+          ['Airflow — first workflow', 'documentation', 'Apache Airflow', 'https://airflow.apache.org/docs/apache-airflow/stable/tutorial/fundamentals.html'],
+          ['Airflow — backfill', 'documentation', 'Apache Airflow', 'https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/backfill.html'],
         ],
         tasks: [
-          ['Work through Airflow fundamentals', 'watch'],
-          ['Build: schedule your ETL pipeline as a DAG with retries and alerts', 'build'],
+          ['Learn: complete the Airflow fundamentals tutorial and backfill guide', 'read'],
+          ['Build: orchestrate ingestion, validation and dbt as separate tasks with retries, failure notification, a deliberate failure test and a documented seven-day backfill procedure', 'build'],
         ],
       },
       {
         slug: 'de-cloud', name: 'Cloud Platforms', subtitle: 'AWS / GCP',
-        description: 'Object storage, warehouses, IAM, and the managed services data teams actually use.',
+        description: 'Deploy the batch platform with least-privilege identities, separated environments, and documented storage and query costs.',
         icon: 'deployed_code', estHours: 14, xp: 200,
-        skills: ['Object storage', 'Cloud warehouses', 'IAM & cost basics'], prereqs: ['de-orchestration'],
+        skills: ['Object storage & warehouse', 'IAM & secrets', 'Cost & environment control'], prereqs: ['de-orchestration'],
         resources: [
-          ['AWS Skill Builder: Data Analytics', 'course', 'AWS', 'https://skillbuilder.aws/'],
-          ['Google Cloud Architecture Center', 'documentation', 'Google Cloud', 'https://cloud.google.com/architecture'],
+          ['Google Cloud IAM overview', 'documentation', 'Google Cloud', 'https://cloud.google.com/iam/docs/overview'],
+          ['BigQuery — optimise query computation', 'documentation', 'Google Cloud', 'https://cloud.google.com/bigquery/docs/best-practices-performance-compute'],
         ],
         tasks: [
-          ['Study object storage, warehouse, and IAM basics on one cloud', 'watch'],
-          ['Build: deploy your pipeline to run on cloud infrastructure', 'build'],
+          ['Learn: study IAM identities/policies and BigQuery computation-cost guidance', 'read'],
+          ['Build: deploy the platform with raw/processed storage zones, separate developer and scheduler identities, secrets outside code, least-privilege roles and a before/after query-cost comparison', 'build'],
         ],
       },
       {
         slug: 'de-spark', name: 'Spark — Advanced', subtitle: 'Distributed compute',
-        description: 'Partitioning, shuffles, and writing PySpark that scales past a single machine.',
+        description: 'Use PySpark for a justified large-data workload, inspect its execution plan, and remove avoidable shuffle or skew.',
         icon: 'memory', estHours: 16, xp: 250,
         skills: ['PySpark', 'Partitioning & shuffles', 'Performance tuning'], prereqs: ['de-cloud'],
         resources: [
-          ['Spark SQL Programming Guide', 'documentation', 'Apache Spark', 'https://spark.apache.org/docs/latest/sql-programming-guide.html'],
-          ['Spark Tuning Guide', 'documentation', 'Apache Spark', 'https://spark.apache.org/docs/latest/tuning.html'],
+          ['Spark SQL getting started', 'documentation', 'Apache Spark', 'https://spark.apache.org/docs/latest/sql-getting-started.html'],
+          ['Spark SQL performance tuning', 'documentation', 'Apache Spark', 'https://spark.apache.org/docs/latest/sql-performance-tuning.html'],
         ],
         tasks: [
-          ['Study the Spark SQL programming guide', 'read'],
-          ['Build: process a dataset too large for pandas with PySpark', 'build'],
+          ['Learn: complete Spark SQL getting started and the partitioning, join and adaptive-execution tuning sections', 'read'],
+          ['Build: add a PySpark batch job, compare it with a local baseline, capture the explain plan, demonstrate partition choices and remove one measured shuffle or skew problem', 'build'],
         ],
       },
       {
         slug: 'de-streaming', name: 'Real-time Streaming', subtitle: 'Kafka',
-        description: 'Topics, consumer groups, and exactly-once thinking for event-driven pipelines.',
+        description: 'Build a recoverable Kafka event flow and explain its ordering, replay, consumer-group, and delivery guarantees.',
         icon: 'electric_bolt', estHours: 16, xp: 250,
         skills: ['Topics', 'Consumer groups', 'Delivery semantics'], prereqs: ['de-spark'],
         resources: [
-          ['Kafka 101', 'course', 'Confluent', 'https://developer.confluent.io/courses/apache-kafka/events/'],
-          ['Apache Kafka Documentation', 'documentation', 'Apache Kafka', 'https://kafka.apache.org/documentation/'],
+          ['Apache Kafka 101', 'course', 'Confluent Developer', 'https://developer.confluent.io/courses/apache-kafka/events/'],
+          ['Kafka consumers', 'course', 'Confluent Developer', 'https://developer.confluent.io/courses/apache-kafka/consumers/'],
         ],
         tasks: [
-          ['Complete Kafka 101', 'watch'],
-          ['Build: a producer/consumer pair processing events in real time', 'build'],
+          ['Learn: complete Kafka 101 and the consumers lesson', 'read'],
+          ['Build: add keyed events, multiple partitions and a consumer group, then demonstrate replay from an earlier offset and document ordering scope, rebalancing and chosen delivery semantics', 'build'],
         ],
       },
       {
-        slug: 'de-vectordb', name: 'Vector DBs & LLM Infra', subtitle: 'Data for AI systems',
-        description: 'Embeddings, vector stores, and the infrastructure that feeds LLM applications.',
-        icon: 'biotech', estHours: 12, xp: 250,
-        skills: ['Embeddings', 'Vector search', 'Chunking & indexing'], prereqs: ['de-streaming'],
+        slug: 'de-vectordb', name: 'Reliability & Capstone', subtitle: 'Operate the whole platform',
+        description: 'Ship the cumulative data platform with quality gates, lineage, observability, recovery procedures, and documentation another engineer can use.',
+        icon: 'verified', estHours: 16, xp: 250,
+        skills: ['Data observability', 'Failure recovery', 'Technical documentation'], prereqs: ['de-streaming'],
         resources: [
-          ['Vector Databases Explained', 'article', 'Pinecone Learn', 'https://www.pinecone.io/learn/vector-database/'],
-          ['Faiss Wiki', 'documentation', 'Meta AI Research', 'https://github.com/facebookresearch/faiss/wiki'],
+          ['OpenLineage — getting started', 'documentation', 'OpenLineage', 'https://openlineage.io/docs/guides/'],
+          ['Great Expectations — introduction', 'documentation', 'Great Expectations', 'https://docs.greatexpectations.io/docs/core/introduction/'],
         ],
         tasks: [
-          ['Read the vector database fundamentals guide', 'read'],
-          ['Build: embed a document set and serve similarity search', 'build'],
+          ['Learn: study lineage events and executable data-quality expectations', 'read'],
+          ['Build: finish the cumulative platform with freshness/key/business-rule checks, lineage, architecture diagram, data dictionary, setup guide, cost note, failure alert, backfill runbook and one dashboard or query pack proving the data is usable', 'build'],
         ],
       },
     ],
@@ -352,86 +356,86 @@ const PATH_DEFS: PathDef[] = [
     nodes: [
       {
         slug: 'da-eda', name: 'Exploratory Data Analysis', subtitle: 'Interrogate the data',
-        description: 'Profile datasets, find outliers and patterns, and form hypotheses worth testing.',
+        description: 'Translate a stakeholder question into defined metrics, profile the data, and produce a reproducible analysis plan.',
         icon: 'find_in_page', estHours: 10, xp: 150,
-        skills: ['Profiling', 'Outlier detection', 'Univariate/bivariate analysis'], prereqs: FOUNDATION_SLUGS,
+        skills: ['Question & metric framing', 'Data profiling', 'Analysis planning'], prereqs: FOUNDATION_SLUGS,
         resources: [
-          ['Kaggle: Data Cleaning', 'course', 'Kaggle', 'https://www.kaggle.com/learn/data-cleaning'],
-          ['ydata-profiling Documentation', 'documentation', 'ydata-profiling', 'https://docs.profiling.ydata.ai/'],
+          ['Pandas — working with missing data', 'documentation', 'pandas.pydata.org', 'https://pandas.pydata.org/docs/user_guide/missing_data.html'],
+          ['NIST EDA Handbook — introduction', 'documentation', 'NIST', 'https://www.itl.nist.gov/div898/handbook/eda/section1/eda11.htm'],
         ],
         tasks: [
-          ['Complete the data cleaning course', 'watch'],
-          ['Build: a full EDA notebook on a dataset you have never seen', 'build'],
+          ['Learn: study pandas missing-data handling and the NIST EDA purpose and approach sections', 'read'],
+          ['Build: add brief.md and analysis.ipynb that define the stakeholder, decision, metrics and assumptions, then profile missingness, duplicates, distributions, segments and anomalies with reproducible code', 'build'],
         ],
       },
       {
         slug: 'da-visualization', name: 'Data Visualization', subtitle: 'Matplotlib, Seaborn',
-        description: 'Choose the right chart, encode honestly, and build plots people actually read.',
+        description: 'Choose honest visual encodings and produce accessible charts that make the comparison and uncertainty clear.',
         icon: 'bar_chart', estHours: 10, xp: 150,
-        skills: ['Chart selection', 'Matplotlib & Seaborn', 'Perception principles'], prereqs: ['da-eda'],
+        skills: ['Chart selection', 'Honest encoding', 'Accessible visualisation'], prereqs: ['da-eda'],
         resources: [
-          ['Storytelling with Data (blog)', 'article', 'SWD', 'https://www.storytellingwithdata.com/'],
-          ['Matplotlib Tutorials', 'documentation', 'Matplotlib', 'https://matplotlib.org/stable/tutorials/index.html'],
+          ['Matplotlib — the lifecycle of a plot', 'documentation', 'Matplotlib', 'https://matplotlib.org/stable/tutorials/lifecycle.html'],
+          ['Accessible data visualisation guidance', 'article', 'UK Analysis Function', 'https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-charts/'],
         ],
         tasks: [
-          ['Study chart-choice and perception principles', 'read'],
-          ['Build: remake three bad charts into honest, readable ones', 'build'],
+          ['Learn: complete the Matplotlib lifecycle tutorial and accessibility guidance', 'read'],
+          ['Build: remake three misleading charts with justified chart choices, direct labels, colour-safe palettes, alt text and a written note explaining every correction', 'build'],
         ],
       },
       {
         slug: 'da-dashboards', name: 'Dashboard Design', subtitle: 'Interfaces for decisions',
-        description: 'Layout, hierarchy, and interactivity for dashboards that answer questions at a glance.',
+        description: 'Build a focused dashboard that answers three defined questions on desktop and mobile without hiding context or accessibility.',
         icon: 'dashboard', estHours: 10, xp: 150,
-        skills: ['Layout & hierarchy', 'KPI design', 'Filters & interactivity'], prereqs: ['da-visualization'],
+        skills: ['Decision-led layout', 'KPI definitions', 'Accessible interaction'], prereqs: ['da-visualization'],
         resources: [
-          ['Metabase: Dashboard Best Practices', 'article', 'Metabase Learn', 'https://www.metabase.com/learn/dashboards'],
-          ['Looker Studio Help Center', 'documentation', 'Google', 'https://support.google.com/looker-studio/'],
+          ['Power BI report design tips', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/create-reports/service-dashboards-design-tips'],
+          ['Design Power BI reports for accessibility', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-accessibility-creating-reports'],
         ],
         tasks: [
-          ['Read dashboard design best practices', 'read'],
-          ['Build: a KPI dashboard answering three stakeholder questions', 'build'],
+          ['Learn: study Microsoft report-design and accessibility guidance', 'read'],
+          ['Build: produce desktop and mobile dashboard views for three stakeholder questions, with metric definitions, useful defaults, keyboard order, alt text and a five-person usability checklist', 'build'],
         ],
       },
       {
         slug: 'da-storytelling', name: 'Data Storytelling', subtitle: 'Insight to action',
-        description: 'Structure findings as narratives that move stakeholders to a decision.',
+        description: 'Turn analysis into a concise recommendation that separates evidence, uncertainty, limitations, and the decision required.',
         icon: 'edit_note', estHours: 8, xp: 150,
-        skills: ['Narrative structure', 'Executive summaries', 'Presenting to stakeholders'], prereqs: ['da-dashboards'],
+        skills: ['Executive synthesis', 'Evidence & uncertainty', 'Recommendation delivery'], prereqs: ['da-dashboards'],
         resources: [
-          ['SWD Podcast & Exercises', 'article', 'SWD', 'https://community.storytellingwithdata.com/exercises'],
-          ['Nightingale — The Journal of the Data Visualization Society', 'article', 'Data Visualization Society', 'https://nightingaledvs.com/'],
+          ['Storytelling with Data exercises', 'article', 'Storytelling with Data', 'https://community.storytellingwithdata.com/exercises'],
+          ['Communicating quality, uncertainty and change', 'documentation', 'UK Analysis Function', 'https://analysisfunction.civilservice.gov.uk/policy-store/communicating-quality-uncertainty-and-change/'],
         ],
         tasks: [
-          ['Work through storytelling-with-data exercises', 'read'],
-          ['Build: a 5-slide narrative from one of your analyses', 'build'],
+          ['Learn: complete one Storytelling with Data exercise and study the uncertainty guidance', 'read'],
+          ['Build: create a five-slide decision narrative and one-page executive memo covering context, evidence, recommendation, uncertainty, limitations and next action', 'build'],
         ],
       },
       {
         slug: 'da-bi', name: 'BI Tools', subtitle: 'Looker, Power BI, Metabase',
-        description: 'Model metrics once, serve them everywhere: semantic layers and governed self-serve BI.',
+        description: 'Prepare data with Power Query, model facts and dimensions, write dependable DAX measures, and publish a governed report.',
         icon: 'query_stats', estHours: 12, xp: 200,
-        skills: ['Semantic models', 'Power BI / Metabase', 'Governance'], prereqs: ['da-storytelling'],
+        skills: ['Power Query', 'Semantic models & DAX', 'Security & refresh'], prereqs: ['da-storytelling'],
         resources: [
-          ['Microsoft Learn: Power BI', 'course', 'Microsoft', 'https://learn.microsoft.com/en-us/training/powerplatform/power-bi'],
-          ['Metabase Documentation', 'documentation', 'Metabase', 'https://www.metabase.com/docs/latest/'],
+          ['PL-300 Data Analyst study guide', 'course', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/pl-300'],
+          ['Learn DAX basics in Power BI Desktop', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/transform-model/desktop-quickstart-learn-dax-basics'],
         ],
         tasks: [
-          ['Complete a Power BI (or Metabase) learning path', 'watch'],
-          ['Build: publish a governed dashboard with a shared metric definition', 'build'],
+          ['Learn: cover the PL-300 prepare/model/manage objectives and complete the DAX basics tutorial', 'read'],
+          ['Build: publish a star-schema report with documented Power Query steps, a date table, explicit DAX measures, row-level security, scheduled refresh notes and a shared metric dictionary', 'build'],
         ],
       },
       {
         slug: 'da-ai-analysis', name: 'AI-Assisted Analysis', subtitle: 'Analyst + LLM',
-        description: 'Use LLMs to speed up cleaning, coding, and interpretation without losing rigor.',
+        description: 'Use AI to accelerate an analysis while preserving reproducibility, privacy, source traceability, and human accountability.',
         icon: 'auto_awesome', estHours: 8, xp: 200,
-        skills: ['Prompting for analysis', 'Validation', 'Automation'], prereqs: ['da-bi'],
+        skills: ['AI-assisted workflow', 'Claim verification', 'Audit trail'], prereqs: ['da-bi'],
         resources: [
-          ['Prompt Engineering Guide', 'documentation', 'promptingguide.ai', 'https://www.promptingguide.ai/'],
-          ['Anthropic Cookbook', 'documentation', 'Anthropic', 'https://github.com/anthropics/anthropic-cookbook'],
+          ['NIST AI RMF Generative AI Profile', 'documentation', 'NIST', 'https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence'],
+          ['Generative AI Framework for government', 'documentation', 'UK Government', 'https://www.gov.uk/government/publications/generative-ai-framework-for-hmg/generative-ai-framework-for-hmg-html'],
         ],
         tasks: [
-          ['Study prompting patterns for analysis work', 'read'],
-          ['Build: run an analysis with an LLM assistant and validate every claim', 'build'],
+          ['Learn: review the NIST generative-AI risk profile and one documented AI analysis workflow', 'read'],
+          ['Build: repeat one prior analysis with AI assistance, preserve prompts and generated code, remove sensitive data, independently verify every number and citation, and compare time saved against new risks', 'build'],
         ],
       },
     ],
@@ -446,100 +450,100 @@ const PATH_DEFS: PathDef[] = [
     nodes: [
       {
         slug: 'ds-ml', name: 'ML Fundamentals', subtitle: 'Supervised learning core',
-        description: 'Regression, classification, overfitting, and the bias-variance tradeoff in practice.',
+        description: 'Frame a prediction problem, define its target and cost of error, and build a reproducible baseline before tuning models.',
         icon: 'model_training', estHours: 14, xp: 200,
-        skills: ['Regression & classification', 'Bias-variance tradeoff', 'scikit-learn'], prereqs: FOUNDATION_SLUGS,
+        skills: ['Problem & target framing', 'Baselines', 'Reproducible pipelines'], prereqs: FOUNDATION_SLUGS,
         resources: [
-          ['Kaggle: Intro to Machine Learning', 'course', 'Kaggle', 'https://www.kaggle.com/learn/intro-to-machine-learning'],
-          ['scikit-learn User Guide', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/user_guide.html'],
+          ['Machine Learning Crash Course — linear and logistic regression', 'course', 'Google for Developers', 'https://developers.google.com/machine-learning/crash-course'],
+          ['scikit-learn — pipelines and composite estimators', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/modules/compose.html'],
         ],
         tasks: [
-          ['Complete the intro ML course', 'watch'],
-          ['Build: train and compare two models on a tabular dataset', 'build'],
+          ['Learn: complete the Google linear/logistic regression modules and scikit-learn pipeline guide', 'read'],
+          ['Build: add problem_statement.md with user, target, prediction time, cost of errors and naive baseline, then train two reproducible pipeline-based models without touching the test set', 'build'],
         ],
       },
       {
         slug: 'ds-features', name: 'Feature Engineering', subtitle: 'Signal from raw data',
-        description: 'Encodings, scaling, leakage traps, and features that actually move metrics.',
+        description: 'Create leakage-safe feature transformations and prove that each retained feature improves a cross-validated baseline.',
         icon: 'settings_input_component', estHours: 10, xp: 150,
         skills: ['Encodings & scaling', 'Leakage traps', 'Feature selection'], prereqs: ['ds-ml'],
         resources: [
-          ['Kaggle: Feature Engineering', 'course', 'Kaggle', 'https://www.kaggle.com/learn/feature-engineering'],
-          ['scikit-learn: Preprocessing & Feature Engineering', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/modules/preprocessing.html'],
+          ['scikit-learn — preprocessing data', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/modules/preprocessing.html'],
+          ['scikit-learn — common pitfalls and recommended practices', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/common_pitfalls.html'],
         ],
         tasks: [
-          ['Complete the feature engineering course', 'watch'],
-          ['Build: engineer features that measurably beat the raw baseline', 'build'],
+          ['Learn: study preprocessing pipelines, inconsistent transformation and leakage pitfalls', 'read'],
+          ['Build: add typed preprocessing inside the training pipeline, a leakage audit and an ablation table showing which features improve cross-validation and by how much', 'build'],
         ],
       },
       {
         slug: 'ds-evaluation', name: 'Model Building & Evaluation', subtitle: 'Beyond accuracy',
-        description: 'Cross-validation, metrics that match the business problem, and honest baselines.',
+        description: 'Evaluate errors with business-aligned metrics, calibration, subgroup analysis, and an untouched final test set.',
         icon: 'verified', estHours: 12, xp: 200,
-        skills: ['Cross-validation', 'Metrics & baselines', 'Calibration'], prereqs: ['ds-features'],
+        skills: ['Metrics & thresholds', 'Calibration', 'Error & subgroup analysis'], prereqs: ['ds-features'],
         resources: [
-          ['scikit-learn: Model Evaluation', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/modules/model_evaluation.html'],
-          ['Google: Machine Learning Crash Course', 'course', 'Google', 'https://developers.google.com/machine-learning/crash-course'],
+          ['scikit-learn — model evaluation', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/modules/model_evaluation.html'],
+          ['scikit-learn — probability calibration', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/modules/calibration.html'],
         ],
         tasks: [
-          ['Study evaluation metrics and cross-validation', 'read'],
-          ['Build: an evaluation report with CV, baselines, and the right metric', 'build'],
+          ['Learn: study scoring, cross-validation, threshold metrics and probability calibration', 'read'],
+          ['Build: add evaluation.md with baseline comparison, cross-validation uncertainty, chosen metric and threshold, calibration plot, error slices, subgroup results and one final test-set evaluation', 'build'],
         ],
       },
       {
         slug: 'ds-experiments', name: 'Experimentation & A/B Testing', subtitle: 'Causal by design',
-        description: 'Design experiments, size samples, and read results without fooling yourself.',
+        description: 'Design a powered experiment with a decision rule, guardrail metrics, validity checks, and an honest interpretation of uncertainty.',
         icon: 'biotech', estHours: 12, xp: 200,
-        skills: ['Experiment design', 'Power & significance', 'Common pitfalls'], prereqs: ['ds-evaluation'],
+        skills: ['Experiment design', 'Power & effect size', 'Validity & decision rules'], prereqs: ['ds-evaluation'],
         resources: [
-          ['Trustworthy Online Controlled Experiments (notes)', 'article', 'exp-platform.com', 'https://exp-platform.com/'],
-          ['How Not To Run An A/B Test', 'article', 'Evan Miller', 'https://www.evanmiller.org/how-not-to-run-an-ab-test.html'],
+          ['Online controlled experiments — key concepts', 'article', 'Microsoft Research', 'https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/'],
+          ['statsmodels — power and sample size', 'documentation', 'statsmodels', 'https://www.statsmodels.org/stable/stats.html#power-and-sample-size-calculations'],
         ],
         tasks: [
-          ['Study experiment design and statistical power', 'read'],
-          ['Build: design an A/B test plan with hypothesis, sample size, and decision rule', 'build'],
+          ['Learn: study experiment validity, guardrails, power and sample-size calculations', 'read'],
+          ['Build: add experiment_plan.md with hypothesis, randomisation unit, primary and guardrail metrics, minimum detectable effect, sample size, duration, stopping rule, validity threats and ship/no-ship decision rule', 'build'],
         ],
       },
       {
         slug: 'ds-deployment', name: 'Model Deployment', subtitle: 'Models as services',
-        description: 'Package and serve models behind APIs with versioning and rollback.',
+        description: 'Package the chosen model behind a tested API with versioned artifacts, input validation, latency measurement, and rollback instructions.',
         icon: 'publish', estHours: 12, xp: 200,
-        skills: ['FastAPI serving', 'Serialization', 'Versioning & rollback'], prereqs: ['ds-experiments'],
+        skills: ['Validated inference API', 'Artifact versioning', 'Latency & rollback'], prereqs: ['ds-experiments'],
         resources: [
-          ['FastAPI Docs', 'documentation', 'fastapi.tiangolo.com', 'https://fastapi.tiangolo.com/'],
-          ['ONNX Runtime Documentation', 'documentation', 'ONNX', 'https://onnxruntime.ai/docs/'],
+          ['FastAPI — first steps', 'documentation', 'FastAPI', 'https://fastapi.tiangolo.com/tutorial/first-steps/'],
+          ['MLflow Model Registry', 'documentation', 'MLflow', 'https://mlflow.org/docs/latest/ml/model-registry/'],
         ],
         tasks: [
-          ['Study FastAPI model-serving patterns', 'read'],
-          ['Build: serve a trained model behind a versioned REST endpoint', 'build'],
+          ['Learn: complete FastAPI first steps and the MLflow registry workflow', 'read'],
+          ['Build: add a container-ready prediction API with schema validation, health endpoint, unit/integration tests, versioned model artifact, latency measurement and documented rollback', 'build'],
         ],
       },
       {
         slug: 'ds-deeplearning', name: 'Deep Learning — Advanced', subtitle: 'Neural networks',
-        description: 'Backprop intuition, CNNs/transformers, and training discipline with PyTorch.',
+        description: 'Fine-tune a pretrained neural network only when it beats the simpler baseline enough to justify its added cost and risk.',
         icon: 'psychology', estHours: 18, xp: 250,
-        skills: ['PyTorch', 'CNNs & Transformers', 'Training loops'], prereqs: ['ds-deployment'],
+        skills: ['Transfer learning', 'Training discipline', 'Complexity trade-offs'], prereqs: ['ds-deployment'],
         resources: [
-          ['Practical Deep Learning for Coders', 'course', 'fast.ai', 'https://course.fast.ai/'],
-          ['PyTorch Tutorials', 'documentation', 'PyTorch', 'https://pytorch.org/tutorials/'],
+          ['Practical Deep Learning — lessons 1–3', 'course', 'fast.ai', 'https://course.fast.ai/'],
+          ['PyTorch transfer learning tutorial', 'documentation', 'PyTorch', 'https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html'],
         ],
         tasks: [
-          ['Work through fast.ai practical deep learning', 'watch'],
-          ['Build: fine-tune a pretrained network on your own image/text data', 'build'],
+          ['Learn: complete fast.ai lessons 1–3 and the PyTorch transfer-learning tutorial', 'watch'],
+          ['Build: fine-tune a pretrained model with fixed seeds, tracked runs and error analysis, then compare quality, latency and cost against the simpler baseline and justify whether it should ship', 'build'],
         ],
       },
       {
-        slug: 'ds-llm', name: 'LLM Fine-tuning & RAG', subtitle: 'Adapt foundation models',
-        description: 'Fine-tuning versus retrieval, dataset curation, and evaluating LLM output.',
-        icon: 'smart_toy', estHours: 16, xp: 250,
-        skills: ['Fine-tuning vs RAG', 'Dataset curation', 'Evals'], prereqs: ['ds-deeplearning'],
+        slug: 'ds-llm', name: 'Responsible Production Capstone', subtitle: 'From model to decision system',
+        description: 'Ship the cumulative project with reproducible training, a model card, monitored inference, responsible-use checks, and a stakeholder decision memo.',
+        icon: 'verified', estHours: 16, xp: 250,
+        skills: ['Model documentation', 'Monitoring contract', 'Responsible release'], prereqs: ['ds-deeplearning'],
         resources: [
-          ['Hugging Face NLP Course', 'course', 'Hugging Face', 'https://huggingface.co/learn/nlp-course'],
-          ['LlamaIndex Documentation', 'documentation', 'LlamaIndex', 'https://docs.llamaindex.ai/en/stable/'],
+          ['Production ML systems', 'course', 'Google for Developers', 'https://developers.google.com/machine-learning/crash-course/production-ml-systems'],
+          ['Model Card Toolkit', 'documentation', 'Google Research', 'https://github.com/tensorflow/model-card-toolkit'],
         ],
         tasks: [
-          ['Complete the Hugging Face NLP course core chapters', 'watch'],
-          ['Build: compare a RAG baseline vs fine-tuning on one task, with evals', 'build'],
+          ['Learn: complete Production ML Systems and study the Model Card Toolkit', 'read'],
+          ['Build: finish the cumulative project with reproducible training, data/version lineage, model card, API or batch inference, service/data/model/business monitoring plan, alert thresholds, privacy/fairness review and a plain-language decision memo', 'build'],
         ],
       },
     ],
@@ -786,3 +790,13 @@ export const TASKS: TaskRow[] = PATH_DEFS.flatMap((p) =>
 
 export const PATH_IDS = PATHS.map((p) => p.id);
 export const SPECIALIZATION_PATHS = PATHS.filter((p) => p.id !== 'foundations');
+
+// Keep the lightweight content contract executable. This catches accidental
+// curriculum bloat during development without changing the existing data model.
+for (const path of PATH_DEFS) {
+  for (const node of path.nodes) {
+    if (node.skills.length !== 3) throw new Error(`${node.slug} must define exactly 3 competencies.`);
+    if (node.resources.length !== 2) throw new Error(`${node.slug} must define exactly 2 focused resources.`);
+    if (node.tasks.length < 2) throw new Error(`${node.slug} must include learning and applied work.`);
+  }
+}

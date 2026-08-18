@@ -25,6 +25,7 @@ import {
   ChevronUp,
   Code2,
   Edit3,
+  ExternalLink,
   FileCode,
   GripVertical,
   Layers,
@@ -129,11 +130,20 @@ function ResourceRow({
         {res.type === 'video' ? <Video className="h-3.5 w-3.5 text-cyan shrink-0" /> : <FileCode className="h-3.5 w-3.5 text-secondary shrink-0" />}
         <div className="min-w-0">
           <p className="font-semibold text-on-surface truncate">{res.name || <em className="text-outline">Unnamed</em>}</p>
-          <p className="text-[10px] text-on-surface-variant truncate">{res.platform} · {res.url || '—'}</p>
+          <p className="text-xs text-on-surface-variant truncate">{res.platform} · {res.url || '—'}</p>
+          <p className="mt-0.5 font-code text-[10px] text-outline">
+            {res.rating_count > 0 ? `${res.avg_rating.toFixed(1)} / 5 · ${res.rating_count} rating${res.rating_count === 1 ? '' : 's'}` : 'No ratings'}
+            {res.updated_at ? ` · reviewed ${new Date(res.updated_at).toLocaleDateString('en', { day: '2-digit', month: 'short', year: 'numeric' })}` : ' · review date unavailable'}
+          </p>
         </div>
       </div>
       {!disabled && (
         <div className="flex shrink-0 items-center gap-1.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100">
+          {res.url && (
+            <a href={res.url} target="_blank" rel="noreferrer" className="flex size-9 items-center justify-center border border-outline-variant text-on-surface-variant hover:border-cyan hover:text-cyan" title="Check resource link" aria-label={`Check ${res.name} link`}>
+              <ExternalLink className="size-3.5" />
+            </a>
+          )}
           <button type="button" onClick={() => setEditing(true)} className="flex size-9 items-center justify-center rounded-none border border-outline-variant text-on-surface-variant hover:border-cyan hover:text-cyan" title="Edit resource" aria-label={`Edit ${res.name}`}>
             <Edit3 className="h-3 w-3" />
           </button>

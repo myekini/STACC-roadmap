@@ -30,6 +30,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Play,
+  Star,
   Terminal,
 } from 'lucide-react';
 import type { TaskRow } from '@/lib/database.types';
@@ -104,6 +105,23 @@ function ProjectMilestone({
 
   return (
     <div className="rounded-none border border-outline-variant bg-surface-card p-4 text-xs">
+      <div className="mb-4">
+        <p className="font-code text-[11px] font-bold uppercase tracking-wide text-cyan">Milestone brief</p>
+        <p className="mt-1 text-sm leading-6 text-on-surface">{task.description.replace(/^Build:\s*/i, '')}</p>
+        <div className="mt-3 grid gap-2 border-t border-outline-variant pt-3 sm:grid-cols-2" aria-label="Project quality checklist">
+          {[
+            ['Correct', 'The result works and includes a check, test, or reconciliation.'],
+            ['Reproducible', 'Another person can run it from the repository instructions.'],
+            ['Explained', 'The README records the problem, decisions, and limitations.'],
+            ['Operable', 'Relevant failure, security, cost, or maintenance concerns are addressed.'],
+          ].map(([label, detail]) => (
+            <div key={label} className="flex gap-2 leading-5 text-on-surface-variant">
+              <span className="mt-1 size-3 shrink-0 border border-outline-variant" aria-hidden="true" />
+              <span><strong className="text-on-surface">{label}:</strong> {detail}</span>
+            </div>
+          ))}
+        </div>
+      </div>
       <a
         href={project.repo_url}
         target="_blank"
@@ -388,7 +406,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
           <aside id="lesson-outline" className="absolute inset-y-0 left-0 z-20 flex w-[min(22rem,calc(100vw-1rem))] shrink-0 flex-col border-r border-outline-variant bg-surface shadow-[12px_0_32px_rgba(2,8,23,0.24)] md:static md:w-72 md:shadow-none">
             {/* Panel header */}
             <div className="flex items-center justify-between border-b border-outline-variant px-4 py-3">
-              <span className="font-code text-xs font-bold text-on-surface">Lesson Outline</span>
+              <span className="font-code text-xs font-bold text-on-surface">Module plan</span>
               <button
                 type="button"
                 onClick={() => setShowPanel(false)}
@@ -407,7 +425,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
               {resources.length > 0 && (
                 <section>
                   <p className="mb-2 font-code text-[10px] font-bold uppercase tracking-widest text-outline">
-                    Resources · {resources.length}
+                    Learn · {resources.length} selected
                   </p>
                   <ul className="space-y-1.5">
                     {resources.map((res, idx) => {
@@ -431,8 +449,8 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                             </span>
                             <div className="min-w-0">
                               <p className="truncate font-medium leading-4">{res.name}</p>
-                              <p className="mt-0.5 text-[10px] text-on-surface-variant">
-                                {res.platform} · {yt ? 'Video' : res.type}
+                              <p className="mt-0.5 text-xs text-on-surface-variant">
+                                {idx === 0 ? 'Primary lesson' : 'Reference'} · {res.platform} · {yt ? 'Video' : res.type}
                               </p>
                             </div>
                           </button>
@@ -448,7 +466,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                 <section>
                   <div className="mb-2 flex items-center justify-between font-code text-[10px]">
                     <span className="font-bold uppercase tracking-widest text-outline flex items-center gap-1">
-                      <ListChecks className="h-3 w-3 text-cyan" /> Tasks
+                      <ListChecks className="h-3 w-3 text-cyan" /> Practise · Prove · Ship
                     </span>
                     <span className="font-bold text-on-surface">{doneCount}/{tasks.length}</span>
                   </div>
@@ -469,7 +487,12 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                           </span>
 
                           {/* Description */}
-                          <span className={cn('flex-1 leading-4', done ? 'line-through text-outline' : 'text-on-surface')}>
+                          <span className={cn('min-w-0 flex-1 leading-5', done ? 'line-through text-outline' : 'text-on-surface')}>
+                            <span className="mb-0.5 block font-code text-[10px] font-bold uppercase tracking-wide text-cyan">
+                              {task.type === 'build'
+                                ? node.path_id === 'foundations' ? 'Practise' : 'Ship'
+                                : task.type === 'quiz' || task.type === 'challenge' ? 'Prove' : 'Learn'}
+                            </span>
                             {task.description}
                           </span>
 
@@ -515,7 +538,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             )}
 
             {/* Module meta + title */}
-            <div className="space-y-1.5">
+            <div className="space-y-3">
               <div className="flex items-center gap-2 font-code text-xs text-on-surface-variant">
                 <span>Module {node.order}</span>
                 <span className="text-outline">·</span>
@@ -528,6 +551,19 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
               </div>
               <h1 className="font-display text-2xl font-bold text-on-surface sm:text-4xl">{node.name}</h1>
               {node.subtitle && <p className="text-sm leading-6 text-on-surface-variant">{node.subtitle}</p>}
+              <div className="max-w-3xl border-y border-outline-variant py-4">
+                <p className="font-code text-[11px] font-bold uppercase tracking-wide text-cyan">Outcome</p>
+                <p className="mt-1 text-sm leading-6 text-on-surface">{node.description}</p>
+                {node.skills.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2" aria-label="Competencies practised in this module">
+                    {node.skills.map((skill) => (
+                      <span key={skill} className="border border-outline-variant bg-surface-container-low px-2.5 py-1 font-code text-xs text-on-surface-variant">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* ── Resource viewer ── */}
@@ -557,7 +593,10 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                     <YouTubeEmbed source={activeYouTubeRef} title={activeResource.name} />
                   ) : (
                     <div className="flex flex-col items-center gap-4 border border-outline-variant bg-surface px-4 py-8 text-center sm:py-12">
-                      <p className="text-sm text-on-surface-variant">External reading resource — opens in a new tab.</p>
+                      <div className="max-w-md text-center">
+                        <p className="font-semibold text-on-surface">Study this selected source</p>
+                        <p className="mt-1 text-sm leading-6 text-on-surface-variant">This external lesson opens in a new tab. Return here to practise and prove the outcome; opening a link does not mark the module complete.</p>
+                      </div>
                       <Button asChild className="gap-2 rounded-none bg-cyan font-bold text-on-primary-fixed hover:bg-cyan/90">
                         <a href={activeResource.url} target="_blank" rel="noreferrer">
                           Read on {activeResource.platform} <ExternalLink className="h-4 w-4" />
@@ -591,6 +630,41 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                     </button>
                   </div>
                 )}
+                <div className="flex flex-col gap-2 border-t border-outline-variant px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-code text-[11px] font-semibold text-on-surface">Was this resource useful?</p>
+                    <p className="mt-0.5 text-xs text-on-surface-variant">
+                      {activeResource.rating_count > 0
+                        ? `${activeResource.avg_rating.toFixed(1)} from ${activeResource.rating_count} rating${activeResource.rating_count === 1 ? '' : 's'}`
+                        : 'No ratings yet'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1" role="group" aria-label={`Rate ${activeResource.name}`}>
+                    {[1, 2, 3, 4, 5].map((rating) => {
+                      const selected = (data.progress.ratings[activeResource.id] ?? 0) >= rating;
+                      return (
+                        <button
+                          key={rating}
+                          type="button"
+                          disabled={!canWork}
+                          onClick={async () => {
+                            try {
+                              await data.rateResource({ resourceId: activeResource.id, rating });
+                              toast.success('Resource rating saved.');
+                            } catch (error) {
+                              toast.error(error instanceof Error ? error.message : 'Could not save your rating.');
+                            }
+                          }}
+                          className="flex size-9 items-center justify-center text-outline transition-colors hover:text-secondary disabled:cursor-not-allowed disabled:opacity-40"
+                          aria-label={`${rating} star${rating === 1 ? '' : 's'}`}
+                          aria-pressed={(data.progress.ratings[activeResource.id] ?? 0) === rating}
+                        >
+                          <Star className={cn('size-4', selected && 'fill-secondary text-secondary')} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="rounded-none border border-outline-variant bg-surface-card p-10 text-center">
@@ -646,10 +720,10 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             )}
 
             {/* ── GitHub milestone card ── */}
-            {buildTask && (
+            {buildTask && node.path_id !== 'foundations' && (
               <div id="project-milestone" className="scroll-mt-6 space-y-2">
                 <p className="font-code text-[10px] font-bold uppercase tracking-widest text-outline">
-                  Project Milestone · GitHub Verification
+                  Ship · Project Milestone
                 </p>
                 <ProjectMilestone
                   task={buildTask}
@@ -659,6 +733,17 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                   nodeSlug={node.slug}
                   disabled={!canWork}
                 />
+              </div>
+            )}
+
+            {nextNode && (
+              <div className="flex flex-col gap-2 border-t border-outline-variant pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-code text-[11px] font-bold uppercase tracking-wide text-cyan">What this unlocks</p>
+                  <p className="mt-1 text-sm font-semibold text-on-surface">{nextNode.name}</p>
+                  <p className="mt-0.5 text-xs leading-5 text-on-surface-variant">Complete this module’s required work to continue.</p>
+                </div>
+                <span className="font-code text-xs text-on-surface-variant">Module {nextNode.order}</span>
               </div>
             )}
 
