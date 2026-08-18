@@ -23,7 +23,20 @@ import type {
 type SqlRow = Record<string, unknown>;
 
 type ResourceDef = [name: string, type: ResourceType, platform: string, url: string];
-type TaskDef = [description: string, type: TaskType, payload?: QuizPayload | ChallengePayload];
+interface LessonMeta {
+  resourceIndex: 0 | 1;
+  title: string;
+  durationMinutes: number;
+  startSeconds?: number;
+  endSeconds?: number;
+}
+
+type TaskDef = [
+  description: string,
+  type: TaskType,
+  payload?: QuizPayload | ChallengePayload,
+  lesson?: LessonMeta,
+];
 
 interface NodeDef {
   slug: string;
@@ -98,7 +111,7 @@ const PATH_DEFS: PathDef[] = [
           ['10 minutes to pandas', 'documentation', 'pandas.pydata.org', 'https://pandas.pydata.org/docs/user_guide/10min.html'],
         ],
         tasks: [
-          ['Learn: complete Python Tutorial sections 3–5 and reproduce the examples locally', 'read'],
+          ['Learn: complete Python Tutorial sections 3–5 and reproduce the examples locally', 'read', undefined, { resourceIndex: 0, title: 'Python essentials: values, control flow and functions', durationMinutes: 45 }],
           ['Build: create clean_data.py that validates required columns, handles missing values and duplicates, exports a tidy CSV, and documents how to run it', 'build'],
           ['Checkpoint challenge: clean_scores(values)', 'challenge', challenge(
             'Write clean_scores(values): drop every None entry and duplicate value, then return what remains sorted ascending. This exact shape — strip the junk, dedupe, sort — is what you do to real data constantly.',
@@ -121,7 +134,7 @@ const PATH_DEFS: PathDef[] = [
           ['PostgreSQL Window Functions Tutorial', 'documentation', 'PostgreSQL', 'https://www.postgresql.org/docs/current/tutorial-window.html'],
         ],
         tasks: [
-          ['Learn: complete SQLBolt lessons 1–18 and the PostgreSQL window-functions tutorial', 'read'],
+          ['Learn: complete SQLBolt lessons 1–18 and the PostgreSQL window-functions tutorial', 'read', undefined, { resourceIndex: 0, title: 'SQLBolt core queries and joins', durationMinutes: 75 }],
           ['Build: submit five labelled business queries using joins, aggregation, a CTE and a window function, with row-count or total checks for every answer', 'build'],
           ['Checkpoint challenge: paying customers over $50', 'challenge', sqlChallenge(
             "Table orders(id, customer, amount, status). Write a query that returns each customer's total spend from status = 'paid' orders only, as columns customer and total — only customers with total > 50, ordered by total descending.",
@@ -152,7 +165,7 @@ const PATH_DEFS: PathDef[] = [
           ['Review pull requests', 'course', 'GitHub Skills', 'https://github.com/skills/review-pull-requests'],
         ],
         tasks: [
-          ['Learn: read Pro Git chapters 2–3 and complete GitHub Skills: Review pull requests', 'read'],
+          ['Learn: read Pro Git chapters 2–3 and complete GitHub Skills: Review pull requests', 'read', undefined, { resourceIndex: 0, title: 'Everyday Git: commits, branches and remotes', durationMinutes: 55 }],
           ['Build: create a branch with focused commits, open a pull request that explains the change and test evidence, resolve one deliberate conflict, and merge it', 'build'],
           ['Checkpoint quiz', 'quiz', quiz(
             q('Per Pro Git, what does git rebase do compared to merge?', ['Deletes the branch', 'Replays commits onto a new base for linear history', 'Creates a merge commit', 'Pushes to remote'], 1, 'Rebase replays your commits on top of another base commit, producing a linear history; merge preserves both histories with a merge commit.'),
@@ -171,7 +184,7 @@ const PATH_DEFS: PathDef[] = [
           ['The Linux command line for beginners', 'article', 'Ubuntu', 'https://ubuntu.com/tutorials/command-line-for-beginners'],
         ],
         tasks: [
-          ['Learn: complete The Missing Semester shell lecture and Ubuntu tutorial sections 1–6', 'watch'],
+          ['Learn: complete The Missing Semester shell lecture and Ubuntu tutorial sections 1–6', 'watch', undefined, { resourceIndex: 0, title: 'The shell: navigation, pipes and automation', durationMinutes: 50 }],
           ['Build: write an idempotent shell script that validates its input directory, organises files by extension, logs its actions, and handles spaces in filenames', 'build'],
           ['Checkpoint quiz', 'quiz', quiz(
             q('In the Missing Semester shell lecture, which operator sends the output of one command into another?', ['>', '>>', '|', '&'], 2, 'The pipe | streams stdout of one command into stdin of the next; > and >> redirect to files.'),
@@ -190,7 +203,7 @@ const PATH_DEFS: PathDef[] = [
           ['OpenIntro Statistics — chapters 2, 4 and 5', 'documentation', 'OpenIntro', 'https://www.openintro.org/book/os/'],
         ],
         tasks: [
-          ['Learn: complete Seeing Theory distributions/inference and OpenIntro chapters 2, 4 and 5', 'read'],
+          ['Learn: complete Seeing Theory distributions/inference and OpenIntro chapters 2, 4 and 5', 'read', undefined, { resourceIndex: 0, title: 'Distributions, sampling and inference', durationMinutes: 60 }],
           ['Build: analyse one comparison with distribution plots, confidence interval, effect size, assumptions, and a plain-language statement of what cannot be concluded', 'build'],
           ['Checkpoint challenge: describe(values)', 'challenge', challenge(
             'Write describe(values): return a (mean, median, population-stdev) tuple. These three numbers are the first thing you compute on any new dataset — mean and median tell you if it is skewed, stdev tells you how spread out it is.',
@@ -213,7 +226,7 @@ const PATH_DEFS: PathDef[] = [
           ['OWASP Top 10 for LLM Applications — prompt injection', 'documentation', 'OWASP', 'https://genai.owasp.org/llmrisk/llm01-prompt-injection/'],
         ],
         tasks: [
-          ['Learn: watch Intro to LLMs and read the OWASP prompt-injection guidance', 'watch'],
+          ['Learn: watch Intro to LLMs and read the OWASP prompt-injection guidance', 'watch', undefined, { resourceIndex: 0, title: 'How LLMs work and where they fail', durationMinutes: 60 }],
           ['Build: complete one bounded data task with AI assistance, remove sensitive inputs, test every generated claim or code path, and add an AI_USE.md log of prompts, changes, failures, and verification', 'build'],
           ['Checkpoint quiz', 'quiz', quiz(
             q("Per Karpathy's Intro to Large Language Models, LLMs generate text by…", ['Querying a database of answers', 'Predicting the next token', 'Running rule-based grammar', 'Searching the web'], 1, 'LLMs are next-token predictors trained on large corpora; they do not look up answers in a database.'),
@@ -242,7 +255,7 @@ const PATH_DEFS: PathDef[] = [
           ['dlt — incremental loading', 'documentation', 'dltHub', 'https://dlthub.com/docs/general-usage/incremental-loading'],
         ],
         tasks: [
-          ['Learn: complete the Docker, PostgreSQL and Terraform sections, then study cursor-based incremental loading', 'read'],
+          ['Learn: complete the Docker, PostgreSQL and Terraform sections, then study cursor-based incremental loading', 'read', undefined, { resourceIndex: 0, title: 'Containerised ingestion and safe reruns', durationMinutes: 55 }],
           ['Build: add a containerised API-to-PostgreSQL pipeline with configuration outside source control, pagination, schema checks, an incremental cursor, duplicate-safe reruns and a documented local setup', 'build'],
         ],
       },
@@ -256,7 +269,7 @@ const PATH_DEFS: PathDef[] = [
           ['BigQuery — partitioned tables', 'documentation', 'Google Cloud', 'https://cloud.google.com/bigquery/docs/partitioned-tables'],
         ],
         tasks: [
-          ['Learn: study grain, facts, dimensions, surrogate keys, SCDs, partitioning and clustering', 'read'],
+          ['Learn: study grain, facts, dimensions, surrogate keys, SCDs, partitioning and clustering', 'read', undefined, { resourceIndex: 0, title: 'Grain, facts and dimensional decisions', durationMinutes: 50 }],
           ['Build: add a grain statement, bus matrix, fact table, conformed dimensions, one SCD Type 2 dimension and a partition choice with cost/query justification', 'build'],
         ],
       },
@@ -270,7 +283,7 @@ const PATH_DEFS: PathDef[] = [
           ['dbt data tests', 'documentation', 'dbt Labs', 'https://docs.getdbt.com/docs/build/data-tests'],
         ],
         tasks: [
-          ['Learn: complete the staging, intermediate, marts and data-tests guidance', 'read'],
+          ['Learn: complete the staging, intermediate, marts and data-tests guidance', 'read', undefined, { resourceIndex: 0, title: 'Layered dbt models and trustworthy tests', durationMinutes: 45 }],
           ['Build: add sources, staging/intermediate/mart layers, key and relationship tests, one business-rule test, generated docs and separate development/production targets', 'build'],
         ],
       },
@@ -284,7 +297,7 @@ const PATH_DEFS: PathDef[] = [
           ['Airflow — backfill', 'documentation', 'Apache Airflow', 'https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/backfill.html'],
         ],
         tasks: [
-          ['Learn: complete the Airflow fundamentals tutorial and backfill guide', 'read'],
+          ['Learn: complete the Airflow fundamentals tutorial and backfill guide', 'read', undefined, { resourceIndex: 0, title: 'Airflow DAGs, retries and backfills', durationMinutes: 50 }],
           ['Build: orchestrate ingestion, validation and dbt as separate tasks with retries, failure notification, a deliberate failure test and a documented seven-day backfill procedure', 'build'],
         ],
       },
@@ -298,7 +311,7 @@ const PATH_DEFS: PathDef[] = [
           ['BigQuery — optimise query computation', 'documentation', 'Google Cloud', 'https://cloud.google.com/bigquery/docs/best-practices-performance-compute'],
         ],
         tasks: [
-          ['Learn: study IAM identities/policies and BigQuery computation-cost guidance', 'read'],
+          ['Learn: study IAM identities/policies and BigQuery computation-cost guidance', 'read', undefined, { resourceIndex: 0, title: 'Cloud identity, storage and cost controls', durationMinutes: 45 }],
           ['Build: deploy the platform with raw/processed storage zones, separate developer and scheduler identities, secrets outside code, least-privilege roles and a before/after query-cost comparison', 'build'],
         ],
       },
@@ -312,7 +325,7 @@ const PATH_DEFS: PathDef[] = [
           ['Spark SQL performance tuning', 'documentation', 'Apache Spark', 'https://spark.apache.org/docs/latest/sql-performance-tuning.html'],
         ],
         tasks: [
-          ['Learn: complete Spark SQL getting started and the partitioning, join and adaptive-execution tuning sections', 'read'],
+          ['Learn: complete Spark SQL getting started and the partitioning, join and adaptive-execution tuning sections', 'read', undefined, { resourceIndex: 0, title: 'Spark execution, partitions and joins', durationMinutes: 55 }],
           ['Build: add a PySpark batch job, compare it with a local baseline, capture the explain plan, demonstrate partition choices and remove one measured shuffle or skew problem', 'build'],
         ],
       },
@@ -326,7 +339,7 @@ const PATH_DEFS: PathDef[] = [
           ['Kafka consumers', 'course', 'Confluent Developer', 'https://developer.confluent.io/courses/apache-kafka/consumers/'],
         ],
         tasks: [
-          ['Learn: complete Kafka 101 and the consumers lesson', 'read'],
+          ['Learn: complete Kafka 101 and the consumers lesson', 'read', undefined, { resourceIndex: 0, title: 'Kafka topics, partitions and consumer groups', durationMinutes: 45 }],
           ['Build: add keyed events, multiple partitions and a consumer group, then demonstrate replay from an earlier offset and document ordering scope, rebalancing and chosen delivery semantics', 'build'],
         ],
       },
@@ -340,7 +353,7 @@ const PATH_DEFS: PathDef[] = [
           ['Great Expectations — introduction', 'documentation', 'Great Expectations', 'https://docs.greatexpectations.io/docs/core/introduction/'],
         ],
         tasks: [
-          ['Learn: study lineage events and executable data-quality expectations', 'read'],
+          ['Learn: study lineage events and executable data-quality expectations', 'read', undefined, { resourceIndex: 0, title: 'Lineage, quality checks and recovery', durationMinutes: 45 }],
           ['Build: finish the cumulative platform with freshness/key/business-rule checks, lineage, architecture diagram, data dictionary, setup guide, cost note, failure alert, backfill runbook and one dashboard or query pack proving the data is usable', 'build'],
         ],
       },
@@ -364,7 +377,7 @@ const PATH_DEFS: PathDef[] = [
           ['NIST EDA Handbook — introduction', 'documentation', 'NIST', 'https://www.itl.nist.gov/div898/handbook/eda/section1/eda11.htm'],
         ],
         tasks: [
-          ['Learn: study pandas missing-data handling and the NIST EDA purpose and approach sections', 'read'],
+          ['Learn: study pandas missing-data handling and the NIST EDA purpose and approach sections', 'read', undefined, { resourceIndex: 0, title: 'A disciplined exploratory analysis', durationMinutes: 45 }],
           ['Build: add brief.md and analysis.ipynb that define the stakeholder, decision, metrics and assumptions, then profile missingness, duplicates, distributions, segments and anomalies with reproducible code', 'build'],
         ],
       },
@@ -378,7 +391,7 @@ const PATH_DEFS: PathDef[] = [
           ['Accessible data visualisation guidance', 'article', 'UK Analysis Function', 'https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-charts/'],
         ],
         tasks: [
-          ['Learn: complete the Matplotlib lifecycle tutorial and accessibility guidance', 'read'],
+          ['Learn: complete the Matplotlib lifecycle tutorial and accessibility guidance', 'read', undefined, { resourceIndex: 0, title: 'Chart construction and accessible encoding', durationMinutes: 40 }],
           ['Build: remake three misleading charts with justified chart choices, direct labels, colour-safe palettes, alt text and a written note explaining every correction', 'build'],
         ],
       },
@@ -392,7 +405,7 @@ const PATH_DEFS: PathDef[] = [
           ['Design Power BI reports for accessibility', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-accessibility-creating-reports'],
         ],
         tasks: [
-          ['Learn: study Microsoft report-design and accessibility guidance', 'read'],
+          ['Learn: study Microsoft report-design and accessibility guidance', 'read', undefined, { resourceIndex: 0, title: 'Decision-first dashboard design', durationMinutes: 40 }],
           ['Build: produce desktop and mobile dashboard views for three stakeholder questions, with metric definitions, useful defaults, keyboard order, alt text and a five-person usability checklist', 'build'],
         ],
       },
@@ -406,7 +419,7 @@ const PATH_DEFS: PathDef[] = [
           ['Communicating quality, uncertainty and change', 'documentation', 'UK Analysis Function', 'https://analysisfunction.civilservice.gov.uk/policy-store/communicating-quality-uncertainty-and-change/'],
         ],
         tasks: [
-          ['Learn: complete one Storytelling with Data exercise and study the uncertainty guidance', 'read'],
+          ['Learn: complete one Storytelling with Data exercise and study the uncertainty guidance', 'read', undefined, { resourceIndex: 0, title: 'From evidence to a decision narrative', durationMinutes: 40 }],
           ['Build: create a five-slide decision narrative and one-page executive memo covering context, evidence, recommendation, uncertainty, limitations and next action', 'build'],
         ],
       },
@@ -420,7 +433,7 @@ const PATH_DEFS: PathDef[] = [
           ['Learn DAX basics in Power BI Desktop', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/transform-model/desktop-quickstart-learn-dax-basics'],
         ],
         tasks: [
-          ['Learn: cover the PL-300 prepare/model/manage objectives and complete the DAX basics tutorial', 'read'],
+          ['Learn: cover the PL-300 prepare/model/manage objectives and complete the DAX basics tutorial', 'read', undefined, { resourceIndex: 0, title: 'Semantic models, measures and governed BI', durationMinutes: 55 }],
           ['Build: publish a star-schema report with documented Power Query steps, a date table, explicit DAX measures, row-level security, scheduled refresh notes and a shared metric dictionary', 'build'],
         ],
       },
@@ -434,7 +447,7 @@ const PATH_DEFS: PathDef[] = [
           ['Generative AI Framework for government', 'documentation', 'UK Government', 'https://www.gov.uk/government/publications/generative-ai-framework-for-hmg/generative-ai-framework-for-hmg-html'],
         ],
         tasks: [
-          ['Learn: review the NIST generative-AI risk profile and one documented AI analysis workflow', 'read'],
+          ['Learn: review the NIST generative-AI risk profile and one documented AI analysis workflow', 'read', undefined, { resourceIndex: 0, title: 'Verifiable AI-assisted analysis', durationMinutes: 40 }],
           ['Build: repeat one prior analysis with AI assistance, preserve prompts and generated code, remove sensitive data, independently verify every number and citation, and compare time saved against new risks', 'build'],
         ],
       },
@@ -458,7 +471,7 @@ const PATH_DEFS: PathDef[] = [
           ['scikit-learn — pipelines and composite estimators', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/modules/compose.html'],
         ],
         tasks: [
-          ['Learn: complete the Google linear/logistic regression modules and scikit-learn pipeline guide', 'read'],
+          ['Learn: complete the Google linear/logistic regression modules and scikit-learn pipeline guide', 'read', undefined, { resourceIndex: 0, title: 'Prediction framing and baseline models', durationMinutes: 55 }],
           ['Build: add problem_statement.md with user, target, prediction time, cost of errors and naive baseline, then train two reproducible pipeline-based models without touching the test set', 'build'],
         ],
       },
@@ -472,7 +485,7 @@ const PATH_DEFS: PathDef[] = [
           ['scikit-learn — common pitfalls and recommended practices', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/common_pitfalls.html'],
         ],
         tasks: [
-          ['Learn: study preprocessing pipelines, inconsistent transformation and leakage pitfalls', 'read'],
+          ['Learn: study preprocessing pipelines, inconsistent transformation and leakage pitfalls', 'read', undefined, { resourceIndex: 0, title: 'Leakage-safe feature pipelines', durationMinutes: 45 }],
           ['Build: add typed preprocessing inside the training pipeline, a leakage audit and an ablation table showing which features improve cross-validation and by how much', 'build'],
         ],
       },
@@ -486,7 +499,7 @@ const PATH_DEFS: PathDef[] = [
           ['scikit-learn — probability calibration', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/modules/calibration.html'],
         ],
         tasks: [
-          ['Learn: study scoring, cross-validation, threshold metrics and probability calibration', 'read'],
+          ['Learn: study scoring, cross-validation, threshold metrics and probability calibration', 'read', undefined, { resourceIndex: 0, title: 'Evaluation beyond accuracy', durationMinutes: 50 }],
           ['Build: add evaluation.md with baseline comparison, cross-validation uncertainty, chosen metric and threshold, calibration plot, error slices, subgroup results and one final test-set evaluation', 'build'],
         ],
       },
@@ -500,7 +513,7 @@ const PATH_DEFS: PathDef[] = [
           ['statsmodels — power and sample size', 'documentation', 'statsmodels', 'https://www.statsmodels.org/stable/stats.html#power-and-sample-size-calculations'],
         ],
         tasks: [
-          ['Learn: study experiment validity, guardrails, power and sample-size calculations', 'read'],
+          ['Learn: study experiment validity, guardrails, power and sample-size calculations', 'read', undefined, { resourceIndex: 0, title: 'Experiments that support causal decisions', durationMinutes: 50 }],
           ['Build: add experiment_plan.md with hypothesis, randomisation unit, primary and guardrail metrics, minimum detectable effect, sample size, duration, stopping rule, validity threats and ship/no-ship decision rule', 'build'],
         ],
       },
@@ -514,7 +527,7 @@ const PATH_DEFS: PathDef[] = [
           ['MLflow Model Registry', 'documentation', 'MLflow', 'https://mlflow.org/docs/latest/ml/model-registry/'],
         ],
         tasks: [
-          ['Learn: complete FastAPI first steps and the MLflow registry workflow', 'read'],
+          ['Learn: complete FastAPI first steps and the MLflow registry workflow', 'read', undefined, { resourceIndex: 0, title: 'Serving and versioning a model', durationMinutes: 50 }],
           ['Build: add a container-ready prediction API with schema validation, health endpoint, unit/integration tests, versioned model artifact, latency measurement and documented rollback', 'build'],
         ],
       },
@@ -528,7 +541,7 @@ const PATH_DEFS: PathDef[] = [
           ['PyTorch transfer learning tutorial', 'documentation', 'PyTorch', 'https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html'],
         ],
         tasks: [
-          ['Learn: complete fast.ai lessons 1–3 and the PyTorch transfer-learning tutorial', 'watch'],
+          ['Learn: complete fast.ai lessons 1–3 and the PyTorch transfer-learning tutorial', 'watch', undefined, { resourceIndex: 0, title: 'Transfer learning and disciplined experiments', durationMinutes: 90 }],
           ['Build: fine-tune a pretrained model with fixed seeds, tracked runs and error analysis, then compare quality, latency and cost against the simpler baseline and justify whether it should ship', 'build'],
         ],
       },
@@ -542,7 +555,7 @@ const PATH_DEFS: PathDef[] = [
           ['Model Card Toolkit', 'documentation', 'Google Research', 'https://github.com/tensorflow/model-card-toolkit'],
         ],
         tasks: [
-          ['Learn: complete Production ML Systems and study the Model Card Toolkit', 'read'],
+          ['Learn: complete Production ML Systems and study the Model Card Toolkit', 'read', undefined, { resourceIndex: 0, title: 'Operate, monitor and explain an ML system', durationMinutes: 60 }],
           ['Build: finish the cumulative project with reproducible training, data/version lineage, model card, API or batch inference, service/data/model/business monitoring plan, alert thresholds, privacy/fairness review and a plain-language decision memo', 'build'],
         ],
       },
@@ -776,7 +789,7 @@ export const RESOURCES: ResourceRow[] = PATH_DEFS.flatMap((p) =>
 
 export const TASKS: TaskRow[] = PATH_DEFS.flatMap((p) =>
   p.nodes.flatMap((n) =>
-    n.tasks.map(([description, type, payload], i) => ({
+    n.tasks.map(([description, type, payload, lesson], i) => ({
       id: `${n.slug}::t${i}`,
       node_id: n.slug,
       description,
@@ -784,6 +797,11 @@ export const TASKS: TaskRow[] = PATH_DEFS.flatMap((p) =>
       order: i + 1,
       quiz: type === 'quiz' ? (payload as QuizPayload) ?? null : null,
       challenge: type === 'challenge' ? (payload as ChallengePayload) ?? null : null,
+      resource_id: lesson ? `${n.slug}::r${lesson.resourceIndex}` : null,
+      lesson_title: lesson?.title ?? null,
+      duration_minutes: lesson?.durationMinutes ?? null,
+      start_seconds: lesson?.startSeconds ?? null,
+      end_seconds: lesson?.endSeconds ?? null,
     })),
   ),
 );

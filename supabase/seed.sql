@@ -284,4 +284,9 @@ from (values
 ) as t(node_slug, description, type, "order", quiz, challenge)
 join n on n.slug = t.node_slug;
 
+-- Migrations run before seed data during a local reset. Reapply the idempotent
+-- curriculum enrichments now that the seeded tasks and resources exist.
+select public.apply_core_lesson_segments();
+select public.apply_core_project_milestones();
+
 commit;

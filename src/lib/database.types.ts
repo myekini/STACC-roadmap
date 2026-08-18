@@ -122,6 +122,11 @@ export interface TaskRow {
   order: number;
   quiz: QuizPayload | null;
   challenge: ChallengePayload | null;
+  resource_id?: string | null;
+  lesson_title?: string | null;
+  duration_minutes?: number | null;
+  start_seconds?: number | null;
+  end_seconds?: number | null;
   project_requirements?: {
     requiredPaths?: string[];
     requiredHeadings?: Record<string, string[]>;

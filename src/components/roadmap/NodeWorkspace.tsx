@@ -108,16 +108,29 @@ function ProjectMilestone({
       <div className="mb-4">
         <p className="font-code text-[11px] font-bold uppercase tracking-wide text-cyan">Milestone brief</p>
         <p className="mt-1 text-sm leading-6 text-on-surface">{task.description.replace(/^Build:\s*/i, '')}</p>
+        {task.project_requirements?.requiredPaths?.length ? (
+          <div className="mt-3 border border-outline-variant bg-surface-container-low p-3">
+            <p className="font-code text-[10px] font-bold uppercase tracking-wide text-on-surface">Automated checks</p>
+            <p className="mt-1 text-xs leading-5 text-on-surface-variant">
+              Push a new commit after starting this module. Stacc will confirm that commit is new and these artifacts exist:
+            </p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {task.project_requirements.requiredPaths.map((path) => (
+                <code key={path} className="border border-outline-variant bg-surface px-2 py-1 text-[11px] text-on-surface">{path}</code>
+              ))}
+            </div>
+          </div>
+        ) : null}
         <div className="mt-3 grid gap-2 border-t border-outline-variant pt-3 sm:grid-cols-2" aria-label="Project quality checklist">
-          {[
-            ['Correct', 'The result works and includes a check, test, or reconciliation.'],
-            ['Reproducible', 'Another person can run it from the repository instructions.'],
-            ['Explained', 'The README records the problem, decisions, and limitations.'],
-            ['Operable', 'Relevant failure, security, cost, or maintenance concerns are addressed.'],
-          ].map(([label, detail]) => (
-            <div key={label} className="flex gap-2 leading-5 text-on-surface-variant">
+          {(task.project_requirements?.manualReview?.length
+            ? task.project_requirements.manualReview
+            : [
+                'The result works and includes a check, test, or reconciliation.',
+                'Another person can reproduce it from the repository instructions.',
+              ]).map((detail) => (
+            <div key={detail} className="flex gap-2 leading-5 text-on-surface-variant">
               <span className="mt-1 size-3 shrink-0 border border-outline-variant" aria-hidden="true" />
-              <span><strong className="text-on-surface">{label}:</strong> {detail}</span>
+              <span>{detail}</span>
             </div>
           ))}
         </div>
@@ -207,7 +220,17 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
   /* ── Active resource ── */
   const activeResource = resources[activeResourceIndex] ?? null;
-  const activeYouTubeRef = activeResource ? getYouTubeRef(activeResource.url) : null;
+  const activeLessonTask = activeResource
+    ? tasks.find((task) => task.resource_id === activeResource.id && (task.type === 'read' || task.type === 'watch')) ?? null
+    : null;
+  const parsedYouTubeRef = activeResource ? getYouTubeRef(activeResource.url) : null;
+  const activeYouTubeRef = parsedYouTubeRef?.kind === 'video' && activeLessonTask
+    ? {
+        ...parsedYouTubeRef,
+        startSeconds: activeLessonTask.start_seconds ?? parsedYouTubeRef.startSeconds,
+        endSeconds: activeLessonTask.end_seconds ?? parsedYouTubeRef.endSeconds,
+      }
+    : parsedYouTubeRef;
 
   /* ── Prev / Next module navigation ── */
   const pathNodes = data.nodes.filter((n) => n.path_id === node?.path_id).sort((a, b) => a.order - b.order);
@@ -217,6 +240,9 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
   /* ── Task shortcuts ── */
   const nextPendingTask = tasks.find((t) => !data.progress.completedTasks.includes(t.id));
+  const pendingLessonResourceIndex = nextPendingTask?.resource_id
+    ? resources.findIndex((resource) => resource.id === nextPendingTask.resource_id)
+    : -1;
   const challengeTask = tasks.find((t) => t.type === 'challenge' && t.challenge);
   const quizTask = tasks.find((t) => t.type === 'quiz' && t.quiz);
   const buildTask = tasks.find((t) => t.type === 'build');
@@ -250,6 +276,16 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
   };
 
   const handleGotIt = async () => {
+    if (activeResource && !activeLessonTask && pendingLessonResourceIndex >= 0) {
+      setActiveResourceIndex(pendingLessonResourceIndex);
+      return;
+    }
+    if (activeLessonTask && !data.progress.completedTasks.includes(activeLessonTask.id)) {
+      if (activeLessonTask.type === 'watch' && activeYouTubeRef?.kind === 'video') return;
+      const saved = await handleCompleteTask(activeLessonTask);
+      if (saved && activeResourceIndex < resources.length - 1) setActiveResourceIndex((i) => i + 1);
+      return;
+    }
     if (nextPendingTask) {
       if (nextPendingTask.type === 'watch' || nextPendingTask.type === 'read') {
         const saved = await handleCompleteTask(nextPendingTask);
@@ -299,7 +335,13 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
       ? 'Take Quiz'
       : nextPendingTask?.type === 'challenge'
         ? 'Open Code Challenge'
-        : 'Got It!';
+        : activeResource && !activeLessonTask && pendingLessonResourceIndex >= 0
+          ? 'Return to focused lesson'
+        : activeLessonTask?.type === 'watch' && activeYouTubeRef?.kind === 'video'
+          ? 'Watch lesson to complete'
+          : activeLessonTask?.type === 'read'
+            ? 'Mark lesson read'
+            : 'Continue';
 
   /* ═══════════════════════════════════════════════════════
      RENDER
@@ -431,6 +473,8 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                     {resources.map((res, idx) => {
                       const isActive = idx === activeResourceIndex;
                       const yt = getYouTubeRef(res.url);
+                      const lesson = tasks.find((task) => task.resource_id === res.id && (task.type === 'read' || task.type === 'watch'));
+                      const lessonDone = lesson ? data.progress.completedTasks.includes(lesson.id) : false;
                       return (
                         <li key={res.id}>
                           <button
@@ -445,12 +489,12 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                             )}
                           >
                             <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-none bg-surface-container-high text-cyan">
-                              {yt ? <Play className="h-2.5 w-2.5" /> : <BookOpen className="h-2.5 w-2.5" />}
+                              {lessonDone ? <Check className="h-2.5 w-2.5" /> : yt ? <Play className="h-2.5 w-2.5" /> : <BookOpen className="h-2.5 w-2.5" />}
                             </span>
                             <div className="min-w-0">
-                              <p className="truncate font-medium leading-4">{res.name}</p>
+                              <p className="truncate font-medium leading-4">{lesson?.lesson_title ?? res.name}</p>
                               <p className="mt-0.5 text-xs text-on-surface-variant">
-                                {idx === 0 ? 'Primary lesson' : 'Reference'} · {res.platform} · {yt ? 'Video' : res.type}
+                                {idx === 0 ? 'Primary lesson' : 'Reference'} · {lesson?.duration_minutes ? `${lesson.duration_minutes} min` : res.platform} · {yt ? 'Video' : res.type}
                               </p>
                             </div>
                           </button>
@@ -589,13 +633,34 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
                 {/* Player / reader */}
                 <div className="p-3 sm:p-4">
+                  {activeLessonTask && (
+                    <div className="mb-3 flex flex-col gap-1 border-l-2 border-cyan bg-cyan/5 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="font-code text-[10px] font-bold uppercase tracking-wide text-cyan">Focused lesson</p>
+                        <p className="mt-0.5 text-sm font-semibold text-on-surface">{activeLessonTask.lesson_title}</p>
+                      </div>
+                      {activeLessonTask.duration_minutes && (
+                        <span className="shrink-0 font-code text-xs text-on-surface-variant">{activeLessonTask.duration_minutes} min</span>
+                      )}
+                    </div>
+                  )}
                   {activeYouTubeRef ? (
-                    <YouTubeEmbed source={activeYouTubeRef} title={activeResource.name} />
+                    <YouTubeEmbed
+                      source={activeYouTubeRef}
+                      title={activeLessonTask?.lesson_title ?? activeResource.name}
+                      onWatchThreshold={activeLessonTask?.type === 'watch' && !data.progress.completedTasks.includes(activeLessonTask.id)
+                        ? () => { void handleCompleteTask(activeLessonTask); }
+                        : undefined}
+                    />
                   ) : (
                     <div className="flex flex-col items-center gap-4 border border-outline-variant bg-surface px-4 py-8 text-center sm:py-12">
                       <div className="max-w-md text-center">
                         <p className="font-semibold text-on-surface">Study this selected source</p>
-                        <p className="mt-1 text-sm leading-6 text-on-surface-variant">This external lesson opens in a new tab. Return here to practise and prove the outcome; opening a link does not mark the module complete.</p>
+                        <p className="mt-1 text-sm leading-6 text-on-surface-variant">
+                          {activeLessonTask
+                            ? 'Open only the focused section named above. Return here to mark it read, then practise and prove the outcome.'
+                            : 'Use this as a reference when the focused lesson or project work leaves a question. It is optional and does not block progress.'}
+                        </p>
                       </div>
                       <Button asChild className="gap-2 rounded-none bg-cyan font-bold text-on-primary-fixed hover:bg-cyan/90">
                         <a href={activeResource.url} target="_blank" rel="noreferrer">

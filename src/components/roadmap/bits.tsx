@@ -57,7 +57,20 @@ function loadYouTubeIframeApi(): Promise<YTNamespace> {
   return iframeApiPromise;
 }
 
-export type YouTubeRef = { kind: 'video'; id: string } | { kind: 'playlist'; id: string };
+export type YouTubeRef = {
+  kind: 'video';
+  id: string;
+  startSeconds?: number;
+  endSeconds?: number;
+} | { kind: 'playlist'; id: string };
+
+function parseYouTubeTime(value: string | null): number | undefined {
+  if (!value) return undefined;
+  if (/^\d+$/.test(value)) return Number(value);
+  const match = value.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/);
+  if (!match) return undefined;
+  return Number(match[1] ?? 0) * 3600 + Number(match[2] ?? 0) * 60 + Number(match[3] ?? 0);
+}
 
 /** Extracts a YouTube video/playlist ref from watch/short/embed/playlist URL shapes; null if not YouTube. */
 export function getYouTubeRef(url: string): YouTubeRef | null {
@@ -66,18 +79,18 @@ export function getYouTubeRef(url: string): YouTubeRef | null {
     if (!/(^|\.)youtube\.com$/.test(u.hostname) && u.hostname !== 'youtu.be') return null;
     if (u.hostname === 'youtu.be') {
       const id = u.pathname.slice(1);
-      return id ? { kind: 'video', id } : null;
+      return id ? { kind: 'video', id, startSeconds: parseYouTubeTime(u.searchParams.get('t')), endSeconds: parseYouTubeTime(u.searchParams.get('end')) } : null;
     }
     if (u.pathname === '/watch') {
       const id = u.searchParams.get('v');
-      return id ? { kind: 'video', id } : null;
+      return id ? { kind: 'video', id, startSeconds: parseYouTubeTime(u.searchParams.get('t') ?? u.searchParams.get('start')), endSeconds: parseYouTubeTime(u.searchParams.get('end')) } : null;
     }
     if (u.pathname === '/playlist') {
       const id = u.searchParams.get('list');
       return id ? { kind: 'playlist', id } : null;
     }
     const embedMatch = u.pathname.match(/^\/(embed|shorts)\/([^/?]+)/);
-    return embedMatch ? { kind: 'video', id: embedMatch[2] } : null;
+    return embedMatch ? { kind: 'video', id: embedMatch[2], startSeconds: parseYouTubeTime(u.searchParams.get('start')), endSeconds: parseYouTubeTime(u.searchParams.get('end')) } : null;
   } catch {
     return null;
   }
@@ -101,9 +114,11 @@ export function YouTubeEmbed({
   const [loaded, setLoaded] = useState(false);
   const [progress, setProgress] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const segmentStartSeconds = source.kind === 'video' ? source.startSeconds : undefined;
+  const segmentEndSeconds = source.kind === 'video' ? source.endSeconds : undefined;
   const embedSrc =
     source.kind === 'video'
-      ? `https://www.youtube-nocookie.com/embed/${source.id}?autoplay=1&enablejsapi=1`
+      ? `https://www.youtube-nocookie.com/embed/${source.id}?autoplay=1&enablejsapi=1${source.startSeconds != null ? `&start=${source.startSeconds}` : ''}${source.endSeconds != null ? `&end=${source.endSeconds}` : ''}`
       : `https://www.youtube-nocookie.com/embed/videoseries?list=${source.id}&autoplay=1&enablejsapi=1`;
 
   useEffect(() => {
@@ -132,9 +147,12 @@ export function YouTubeEmbed({
             }
             if (pollId) return;
             pollId = setInterval(() => {
-              const duration = player?.getDuration() ?? 0;
+              const fullDuration = player?.getDuration() ?? 0;
+              const segmentStart = segmentStartSeconds ?? 0;
+              const segmentEnd = segmentEndSeconds ?? fullDuration;
+              const duration = segmentEnd - segmentStart;
               if (!duration) return;
-              const fraction = Math.min(1, (player?.getCurrentTime() ?? 0) / duration);
+              const fraction = Math.min(1, Math.max(0, ((player?.getCurrentTime() ?? 0) - segmentStart) / duration));
               setProgress(fraction);
               if (!thresholdFired && fraction >= WATCH_THRESHOLD) {
                 thresholdFired = true;
@@ -151,8 +169,8 @@ export function YouTubeEmbed({
       stopPolling();
       player?.destroy();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- source/onWatchThreshold identity churn shouldn't tear down and reload the player
-  }, [loaded]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- callback identity churn must not tear down an active player
+  }, [loaded, source.kind, source.id, segmentStartSeconds, segmentEndSeconds]);
 
   if (loaded) {
     return (
@@ -173,7 +191,7 @@ export function YouTubeEmbed({
           </div>
         )}
         <a
-          href={source.kind === 'video' ? `https://www.youtube.com/watch?v=${source.id}` : `https://www.youtube.com/playlist?list=${source.id}`}
+          href={source.kind === 'video' ? `https://www.youtube.com/watch?v=${source.id}${source.startSeconds != null ? `&t=${source.startSeconds}s` : ''}` : `https://www.youtube.com/playlist?list=${source.id}`}
           target="_blank"
           rel="noreferrer"
           className="mt-2 inline-block font-code text-[10px] text-on-surface-variant underline decoration-outline-variant underline-offset-2 hover:text-cyan"
