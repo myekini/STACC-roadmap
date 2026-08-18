@@ -121,19 +121,6 @@ function ProjectMilestone({
             </div>
           </div>
         ) : null}
-        <div className="mt-3 grid gap-2 border-t border-outline-variant pt-3 sm:grid-cols-2" aria-label="Project quality checklist">
-          {(task.project_requirements?.manualReview?.length
-            ? task.project_requirements.manualReview
-            : [
-                'The result works and includes a check, test, or reconciliation.',
-                'Another person can reproduce it from the repository instructions.',
-              ]).map((detail) => (
-            <div key={detail} className="flex gap-2 leading-5 text-on-surface-variant">
-              <span className="mt-1 size-3 shrink-0 border border-outline-variant" aria-hidden="true" />
-              <span>{detail}</span>
-            </div>
-          ))}
-        </div>
       </div>
       <a
         href={project.repo_url}
