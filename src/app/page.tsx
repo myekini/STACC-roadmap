@@ -120,7 +120,7 @@ export default function LandingPage() {
               </Button>
             )}
 
-            <Button onClick={handleStart} size="sm" className="gap-1.5 text-xs font-code uppercase font-bold tracking-wider rounded-none bg-cyan text-navy hover:bg-cyan/90">
+            <Button onClick={handleStart} size="sm" className="gap-1.5 text-xs font-code uppercase font-bold tracking-wider rounded-none bg-cyan text-on-primary-fixed hover:bg-cyan/90">
               {hasSelectedPath ? 'Continue Roadmap' : 'Start Roadmap'}
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>

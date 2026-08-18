@@ -13,7 +13,7 @@ function Stat({ label, value, sub, icon: Icon, tone }: { label: string; value: s
       </CardHeader>
       <CardContent>
         <p className="font-display text-2xl font-bold text-on-surface">{value}</p>
-        <p className="mt-1 font-code text-[10px] lowercase text-on-surface-variant">{`// ${sub}`}</p>
+        <p className="mt-1 font-code text-xs lowercase text-on-surface-variant">{`// ${sub}`}</p>
       </CardContent>
     </Card>
   );

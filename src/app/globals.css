@@ -19,6 +19,7 @@
   --orange: #d9622e;
   --orange-2: #e8895c;
   --orange-neon: #ff6b35;
+  --orange-label: #ff8a5c;
   --orange-glow: rgba(217, 98, 46, 0.18);
   --cyan: #00d9ff;
   --cyan-dim: rgba(0, 217, 255, 0.6);
@@ -34,7 +35,11 @@
 
   --success: #10b981;
   --warning: #f59e0b;
-  --error: #ef4444;
+  --error: #f87171;
+  --error-action: #b91c1c;
+  --on-action: #0a1628;
+  --on-signal: #0a1628;
+  --on-error: #ffffff;
 
   --grad-hero: linear-gradient(135deg, #050c18 0%, #0d1e35 100%);
   --grad-accent: linear-gradient(90deg, var(--orange) 0%, var(--orange-2) 100%);
@@ -60,11 +65,12 @@ html.light {
   --orange: #ea580c;
   --orange-2: #f97316;
   --orange-neon: #ea580c;
+  --orange-label: #c2410c;
   --orange-glow: rgba(234, 88, 12, 0.12);
-  --cyan: #0284c7;
-  --cyan-dim: rgba(2, 132, 199, 0.7);
-  --cyan-border: rgba(2, 132, 199, 0.25);
-  --cyan-bg: rgba(2, 132, 199, 0.08);
+  --cyan: #0369a1;
+  --cyan-dim: rgba(3, 105, 161, 0.72);
+  --cyan-border: rgba(3, 105, 161, 0.3);
+  --cyan-bg: rgba(3, 105, 161, 0.08);
 
   --fg: #0f172a;
   --fg-muted: #475569;
@@ -72,6 +78,14 @@ html.light {
 
   --border: rgba(2, 132, 199, 0.3);
   --border-subtle: #e2e8f0;
+
+  --success: #047857;
+  --warning: #b45309;
+  --error: #b91c1c;
+  --error-action: #b91c1c;
+  --on-action: #0a1628;
+  --on-signal: #ffffff;
+  --on-error: #ffffff;
 
   --background: #f8fafc;
   --foreground: #0f172a;

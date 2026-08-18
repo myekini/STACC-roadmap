@@ -48,7 +48,7 @@ function AdminLogin({ signIn }: { signIn: (email: string, password: string) => P
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <form onSubmit={submit} className="w-full max-w-sm border border-outline-variant bg-surface/80 p-7">
         <StaccMark className="h-9 w-9" />
-        <p className="micro-label mt-4 text-primary-neon">{'// restricted'}</p>
+        <p className="micro-label mt-4 text-primary-label">{'// restricted'}</p>
         <h1 className="mt-2 font-display text-2xl font-bold text-on-surface">Admin sign-in</h1>
         <p className="mt-2 text-sm leading-6 text-on-surface-variant">Use the email and password assigned to your admin account.</p>
         <label className="mt-6 block">
@@ -221,7 +221,7 @@ export default function AdminPage() {
       <button
         type="button"
         onClick={() => setCohort(null)}
-        className={cn('border px-2.5 py-1.5 font-code text-[10px] font-semibold uppercase', !cohort ? 'border-primary/50 bg-primary/10 text-primary-neon' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}
+        className={cn('border px-3 py-2 font-code text-xs font-semibold uppercase', !cohort ? 'border-primary/50 bg-primary/10 text-primary-label' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}
       >
         all
       </button>
@@ -230,7 +230,7 @@ export default function AdminPage() {
           key={c}
           type="button"
           onClick={() => setCohort(c)}
-          className={cn('border px-2.5 py-1.5 font-code text-[10px] font-semibold uppercase', cohort === c ? 'border-primary/50 bg-primary/10 text-primary-neon' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}
+          className={cn('border px-3 py-2 font-code text-xs font-semibold uppercase', cohort === c ? 'border-primary/50 bg-primary/10 text-primary-label' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}
         >
           {c}
         </button>
@@ -260,12 +260,12 @@ export default function AdminPage() {
                 >
                   <span className="text-sm font-semibold text-on-surface">{stuckCount > 0 ? `${stuckCount} ${stuckCount === 1 ? 'member needs' : 'members need'} attention` : 'Everyone is on track'}</span>
                   <span className="mt-1 block text-xs text-on-surface-variant">{stuckCount > 0 ? 'Review members with no roadmap activity in 14 days.' : 'No members are currently flagged as inactive.'}</span>
-                  <span className="mt-5 flex items-center gap-1 font-code text-[10px] font-semibold uppercase text-cyan">View members <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" /></span>
+                  <span className="mt-5 flex items-center gap-1 font-code text-xs font-semibold uppercase text-cyan">View members <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" /></span>
                 </button>
                 <Link href="/roadmap" className="group bg-surface p-5 transition-colors hover:bg-surface-container-low">
                   <span className="text-sm font-semibold text-on-surface">View as a member</span>
                   <span className="mt-1 block text-xs text-on-surface-variant">Open every course and module without prerequisite locks.</span>
-                  <span className="mt-5 flex items-center gap-1 font-code text-[10px] font-semibold uppercase text-cyan">Browse all courses <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" /></span>
+                  <span className="mt-5 flex items-center gap-1 font-code text-xs font-semibold uppercase text-cyan">Browse all courses <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" /></span>
                 </Link>
               </div>
             </div>
@@ -276,8 +276,8 @@ export default function AdminPage() {
               <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="flex items-center gap-1" aria-label="Member status filter">
-                    <button type="button" onClick={() => { setMemberFilter('all'); setMemberPage(0); }} className={cn('border px-2.5 py-1.5 font-code text-[10px] font-semibold uppercase', memberFilter === 'all' ? 'border-primary/50 bg-primary/10 text-primary-neon' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}>all members</button>
-                    <button type="button" onClick={() => { setMemberFilter('attention'); setMemberPage(0); }} className={cn('border px-2.5 py-1.5 font-code text-[10px] font-semibold uppercase', memberFilter === 'attention' ? 'border-error/50 bg-error/10 text-error' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}>needs attention</button>
+                    <button type="button" onClick={() => { setMemberFilter('all'); setMemberPage(0); }} className={cn('border px-3 py-2 font-code text-xs font-semibold uppercase', memberFilter === 'all' ? 'border-primary/50 bg-primary/10 text-primary-label' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}>all members</button>
+                    <button type="button" onClick={() => { setMemberFilter('attention'); setMemberPage(0); }} className={cn('border px-3 py-2 font-code text-xs font-semibold uppercase', memberFilter === 'attention' ? 'border-error/50 bg-error/10 text-error' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}>needs attention</button>
                   </div>
                   {CohortFilter}
                   <Input
@@ -322,8 +322,7 @@ export default function AdminPage() {
 
           {section === 'curriculum' && (
             <div className="space-y-8">
-              {/* 3-panel CurriculumManager — needs a fixed height to enable internal scroll */}
-              <div className="overflow-hidden rounded-none border border-outline-variant bg-surface" style={{ height: '70vh', minHeight: 520 }}>
+              <div className="h-[calc(100dvh-9rem)] min-h-[34rem] overflow-hidden rounded-none border border-outline-variant bg-surface lg:h-[70vh] lg:min-h-[520px]">
                 <CurriculumManager />
               </div>
               <div className="pt-2 border-t border-outline-variant/60">

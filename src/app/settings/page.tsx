@@ -152,7 +152,7 @@ export default function MemberSettingsPage() {
                         disabled={busy}
                         onClick={handleSaveUsername}
                         size="sm"
-                        className="h-9 gap-1 bg-cyan text-navy font-semibold hover:bg-cyan/90"
+                        className="h-9 gap-1 bg-cyan text-on-primary-fixed font-semibold hover:bg-cyan/90"
                       >
                         <Check className="h-4 w-4" /> Save
                       </Button>
