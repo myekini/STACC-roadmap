@@ -318,6 +318,8 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
       ? 'Saving progress…'
     : nextPendingTask?.type === 'build'
       ? 'Verify milestone'
+    : nextPendingTask?.type === 'practice'
+      ? 'Complete practice'
     : nextPendingTask?.type === 'quiz'
       ? 'Take Quiz'
       : nextPendingTask?.type === 'challenge'
@@ -520,7 +522,9 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                           {/* Description */}
                           <span className={cn('min-w-0 flex-1 leading-5', done ? 'line-through text-outline' : 'text-on-surface')}>
                             <span className="mb-0.5 block font-code text-[10px] font-bold uppercase tracking-wide text-cyan">
-                              {task.type === 'build'
+                              {task.type === 'practice'
+                                ? 'Practise'
+                                : task.type === 'build'
                                 ? node.path_id === 'foundations' ? 'Practise' : 'Ship'
                                 : task.type === 'quiz' || task.type === 'challenge' ? 'Prove' : 'Learn'}
                             </span>

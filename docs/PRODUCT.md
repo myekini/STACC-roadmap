@@ -105,11 +105,12 @@ Curriculum: starts/completions/completion-rate per node
 |---|---|---|
 | Roadmap progression | ✅ Shipped | One responsive list experience: a zigzag center spine on desktop and a compact vertical rail on mobile. The former React Flow canvas was archived to reduce interaction and bundle complexity. Public, structure-only version at `/tree` remains for SEO. |
 | Path selection | ✅ Shipped | Foundations + Data Engineering, Data Analysis, Data Science, AI Engineering, MLOps. MLOps unlocks after DE + DS. AI Engineering remains visible but is paused for members while the core paths are strengthened; admins retain audit access. |
-| Node detail | ✅ Shipped | Description, skills, curated resources (2 per node, community-rated), tasks, estimated hours. |
+| Node detail | ✅ Shipped | Description, skills, two curated resources, bounded lesson titles/durations, a small practice step, tasks, and estimated hours. The second resource is a short platform step rather than an unstructured optional link. |
 | Progress tracking | ✅ Shipped | Per-node and per-path completion; derived status `locked \| available \| in_progress \| complete`. |
 | Prerequisite gates | ✅ Shipped | Node-level (fan-in supported — a node can require several prerequisites) + path-level gates. |
 | Resource ratings | ⚙️ Backend only | 1–5 stars, aggregated server-side (`rate_resource`, `resources.avg_rating`) — pulled from the node workspace UI for now, re-implementing later. |
 | **Evidence shipping** | ✅ Shipped | Specialization build tasks require a public URL inside the learner's path project. Foundations build exercises stay lightweight checklist completions and do not require GitHub setup or evidence. Enforced server-side in `complete_task`. |
+| **Short learning steps** | ✅ Shipped | Available modules follow bounded Learn → Practise → Ship steps. `practice` is manually completed and low-risk; `build` remains the cumulative repository-verified milestone. Admins can edit lesson title, duration, resource, and optional video segment boundaries. Full playlists are not assigned as a single lesson. |
 | **Projects (per-path)** | ✅ Code complete; configuration required | One connected GitHub repository per specialization. The installation callback stores stable repository identity; **Check my work** verifies a new, unreused commit and content-owned file requirements before completing the milestone. Requires migrations through `0010` and the GitHub App environment values. |
 | **Public portfolio** | ✅ Shipped | `/u/[handle]` — each path renders as a build-log timeline (oldest → newest) under its project repo link, not a flat recency feed. Powered by an anon-callable `get_public_profile` RPC that exposes only username/avatar/shipped work/project repos, never XP/rank/role. |
 | **Code challenges** | ✅ Shipped (Foundations) | `challenge` task type, Monaco editor + a client-only runtime — Pyodide (CPython/WASM) for Python, sql.js (SQLite/WASM) for SQL — both loaded lazily from CDN, no server execution. Opening a challenge enters a focused full-screen workspace: problem/editor/console split on desktop and Problem/Code/Results tabs on mobile. These **replace**, not supplement, the checkpoint quiz on the three Foundations topics that are genuinely code-testable: Python Basics (`clean_scores`), Statistics Basics (`describe`), SQL Basics (aggregate query, min. 3 assertions each). Git & GitHub, Command Line, and AI Literacy stay multiple-choice — none of them reduce to a clean in-browser pass/fail check without a much bigger build (a simulated git/shell environment). Every other node's checkpoint is still a quiz — this hasn't rolled out past Foundations. |
@@ -379,7 +380,7 @@ on both sides.
 
 ## 12. Current delivery risks
 
-1. Verify all migrations through `0009_connected_track_projects.sql` in production before
+1. Verify all migrations through `0010_connected_track_projects.sql` in production before
    deploying code that depends on connected projects.
 2. Register and configure the GitHub App before the connected-project UI can complete installation.
 3. Validate the Data Engineering curriculum blueprint with real learners before expanding its

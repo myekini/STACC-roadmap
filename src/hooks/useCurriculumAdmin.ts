@@ -162,6 +162,11 @@ export function useCurriculumAdmin() {
       quiz: QuizPayload | null;
       challenge: ChallengePayload | null;
       project_requirements: TaskRow['project_requirements'];
+      resource_id: string | null;
+      lesson_title: string | null;
+      duration_minutes: number | null;
+      start_seconds: number | null;
+      end_seconds: number | null;
     }) => {
       const { data, error } = await supabase.rpc('admin_upsert_task', {
         p_id: task.id,
@@ -172,6 +177,11 @@ export function useCurriculumAdmin() {
         p_quiz: task.quiz,
         p_challenge: task.challenge,
         p_project_requirements: task.project_requirements,
+        p_resource_id: task.resource_id,
+        p_lesson_title: task.lesson_title,
+        p_duration_minutes: task.duration_minutes,
+        p_start_seconds: task.start_seconds,
+        p_end_seconds: task.end_seconds,
       });
       if (error) throw error;
       return data as TaskRow;

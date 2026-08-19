@@ -725,11 +725,11 @@ const PATH_DEFS: PathDef[] = [
         icon: 'schema', estHours: 16, xp: 300,
         skills: ['Experiment tracking', 'Model registries', 'Platform architecture'], prereqs: ['ml-production'],
         resources: [
-          ['MLOps Zoomcamp — Lecture Playlist', 'video', 'YouTube (DataTalksClub)', 'https://www.youtube.com/playlist?list=PL3MmuxUbc_hIUISrluw_A7wDSmfOhErJK'],
+          ['MLOps Zoomcamp — platform capstone', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/mlops-zoomcamp/tree/main/07-project'],
           ['MLflow Documentation', 'documentation', 'MLflow', 'https://mlflow.org/docs/latest/index.html'],
         ],
         tasks: [
-          ['Work through the MLOps Zoomcamp capstone material', 'watch'],
+          ['Read the bounded MLOps Zoomcamp capstone brief', 'read'],
           ['Build: an end-to-end platform design doc — tracking, registry, deploy paths', 'build'],
         ],
       },
@@ -789,20 +789,56 @@ export const RESOURCES: ResourceRow[] = PATH_DEFS.flatMap((p) =>
 
 export const TASKS: TaskRow[] = PATH_DEFS.flatMap((p) =>
   p.nodes.flatMap((n) =>
-    n.tasks.map(([description, type, payload, lesson], i) => ({
+    [
+      ...n.tasks.map(([description, type, payload, lesson], i) => ({
       id: `${n.slug}::t${i}`,
       node_id: n.slug,
       description,
       type,
-      order: i + 1,
+      order: i === 0 ? 1 : i + (PAUSED_PATH_IDS.has(p.id) ? 1 : p.id === 'foundations' ? 2 : 3),
       quiz: type === 'quiz' ? (payload as QuizPayload) ?? null : null,
       challenge: type === 'challenge' ? (payload as ChallengePayload) ?? null : null,
-      resource_id: lesson ? `${n.slug}::r${lesson.resourceIndex}` : null,
-      lesson_title: lesson?.title ?? null,
-      duration_minutes: lesson?.durationMinutes ?? null,
+      resource_id: lesson
+        ? `${n.slug}::r${lesson.resourceIndex}`
+        : i === 0 && (type === 'read' || type === 'watch') && !PAUSED_PATH_IDS.has(p.id)
+          ? `${n.slug}::r0`
+          : null,
+      lesson_title: lesson?.title
+        ?? (i === 0 && (type === 'read' || type === 'watch') && !PAUSED_PATH_IDS.has(p.id) ? n.resources[0][0] : null),
+      duration_minutes: lesson?.durationMinutes
+        ?? (i === 0 && (type === 'read' || type === 'watch') && !PAUSED_PATH_IDS.has(p.id) ? 45 : null),
       start_seconds: lesson?.startSeconds ?? null,
       end_seconds: lesson?.endSeconds ?? null,
-    })),
+      })),
+      ...(!PAUSED_PATH_IDS.has(p.id) ? [{
+        id: `${n.slug}::lesson-reference`,
+        node_id: n.slug,
+        description: `Read: complete the bounded reference step from ${n.resources[1][0]}.`,
+        type: (n.resources[1][1] === 'video' ? 'watch' : 'read') as TaskType,
+        order: 2,
+        quiz: null,
+        challenge: null,
+        resource_id: `${n.slug}::r1`,
+        lesson_title: n.resources[1][0],
+        duration_minutes: 15,
+        start_seconds: null,
+        end_seconds: null,
+      }] : []),
+      ...(!PAUSED_PATH_IDS.has(p.id) && p.id !== 'foundations' ? [{
+        id: `${n.slug}::practice`,
+        node_id: n.slug,
+        description: `Practise: reproduce a small example using ${n.skills[0].toLowerCase()}, then record the result and one decision you made.`,
+        type: 'practice' as TaskType,
+        order: 3,
+        quiz: null,
+        challenge: null,
+        resource_id: null,
+        lesson_title: null,
+        duration_minutes: null,
+        start_seconds: null,
+        end_seconds: null,
+      }] : []),
+    ],
   ),
 );
 

@@ -11,13 +11,13 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
    `migrations/0003_username_uniqueness_and_discord.sql` (username uniqueness + `rename_username` RPC —
    filename predates the GitHub switch, still just the uniqueness logic),
    `migrations/0004_projects.sql` (per-path `projects` table + `set_project` RPC — see below),
-   `migrations/0005_challenges.sql` (`challenge` task type + `tasks.challenge` jsonb column — see below),
-   `migrations/0006_sync_foundations_challenges.sql` (content-only: converts the 3 Foundations
+   `migrations/0006_challenges.sql` (`challenge` task type + `tasks.challenge` jsonb column — see below),
+   `migrations/0007_sync_foundations_challenges.sql` (content-only: converts the 3 Foundations
    checkpoint quizzes that became challenges — safe to run against a live DB with real members),
-   `migrations/0007_github_auth.sql` (Discord → GitHub sign-in — see below),
-   `migrations/0008_foundations_no_evidence.sql` (Foundations build exercises require no repo), and
-   `migrations/0009_connected_track_projects.sql` (stable GitHub repository identity + milestone submissions), and
-   `migrations/0010_project_verification.sql` (commit reuse protection + Data Engineering milestone checks).
+   `migrations/0008_github_auth.sql` (Discord → GitHub sign-in — see below),
+   `migrations/0009_foundations_no_evidence.sql` (Foundations build exercises require no repo), and
+   `migrations/0010_connected_track_projects.sql` (stable GitHub repository identity + milestone submissions), and
+   `migrations/0011_project_verification.sql` (commit reuse protection + Data Engineering milestone checks).
 3. Run `seed.sql` on a **fresh** project only (idempotency note: it assumes empty content tables —
    re-running duplicates rows). On an existing project with real member data, apply `0006` instead
    of re-running `seed.sql`.

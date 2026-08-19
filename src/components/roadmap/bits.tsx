@@ -279,6 +279,7 @@ export function StatusChip({ status }: { status: NodeStatus }) {
 const TASK_TYPE_STYLE: Record<TaskType, string> = {
   read: 'text-cyan',
   watch: 'text-cyan',
+  practice: 'text-tertiary',
   build: 'text-primary-neon',
   quiz: 'text-secondary',
   challenge: 'text-tertiary',

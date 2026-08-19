@@ -135,11 +135,11 @@ update priorities and state as each gap closes instead of re-auditing from zero.
 
 ## Implementation sequence
 
-1. ✅ Land the connected-project schema (`0009_connected_track_projects.sql`).
+1. ✅ Land the connected-project schema (`0010_connected_track_projects.sql`).
 2. **External setup:** register the GitHub App and configure server-only credentials.
 3. ✅ Build the installation callback and one-new-repository selection rule.
 4. ✅ Replace pasted evidence with **Check my work** and protect against commit reuse.
-5. ✅ Add initial Data Engineering file requirements (`0010_project_verification.sql`).
+5. ✅ Add initial Data Engineering file requirements (`0011_project_verification.sql`).
 6. Validate the verification rubric with real learners.
 7. Expand milestone definitions across each approved track curriculum.
 8. Add webhooks only if evidence shows explicit sync is inadequate.

@@ -169,11 +169,13 @@ function blankChallenge(language: 'python' | 'sql'): ChallengePayload {
 
 function TaskEditor({
   task,
+  resources,
   onSave,
   onCancel,
   disabled,
 }: {
   task: Partial<TaskRow> & { node_id: string };
+  resources: ResourceRow[];
   onSave: (task: Partial<TaskRow> & { node_id: string }) => Promise<void>;
   onCancel: () => void;
   disabled: boolean;
@@ -181,6 +183,12 @@ function TaskEditor({
   const [draft, setDraft] = useState<Partial<TaskRow> & { node_id: string }>(task);
   const [saving, setSaving] = useState(false);
   const type: TaskType = draft.type ?? 'read';
+  const isLesson = type === 'read' || type === 'watch';
+  const videoRangeReady = type !== 'watch' || (
+    (draft.start_seconds == null && draft.end_seconds == null) ||
+    (draft.start_seconds != null && draft.end_seconds != null && draft.end_seconds > draft.start_seconds)
+  );
+  const lessonReady = !isLesson || Boolean(draft.resource_id && draft.lesson_title?.trim() && draft.duration_minutes && videoRangeReady);
 
   const save = async () => {
     setSaving(true);
@@ -209,12 +217,18 @@ function TaskEditor({
               type: t,
               quiz: t === 'quiz' ? (d.quiz ?? blankQuiz()) : null,
               challenge: t === 'challenge' ? (d.challenge ?? blankChallenge('python')) : null,
+              resource_id: t === 'read' || t === 'watch' ? d.resource_id : null,
+              lesson_title: t === 'read' || t === 'watch' ? d.lesson_title : null,
+              duration_minutes: t === 'read' || t === 'watch' ? d.duration_minutes : null,
+              start_seconds: t === 'watch' ? d.start_seconds : null,
+              end_seconds: t === 'watch' ? d.end_seconds : null,
             }));
           }}
           className={cn(fieldCls, 'col-span-1')}
         >
           <option value="read">Read</option>
           <option value="watch">Watch</option>
+          <option value="practice">Practise (small exercise)</option>
           <option value="build">Build (project milestone)</option>
           <option value="quiz">Quiz</option>
           <option value="challenge">Code challenge</option>
@@ -234,6 +248,42 @@ function TaskEditor({
         onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
         className={cn(fieldCls, 'w-full min-h-[60px] resize-y')}
       />
+
+      {isLesson && (
+        <fieldset className="space-y-3 border-t border-outline-variant/60 pt-3">
+          <legend className="font-code text-[10px] font-bold uppercase tracking-wide text-on-surface">Lesson setup</legend>
+          <p className="text-xs leading-5 text-on-surface-variant">Connect this step to one curated source and keep it short enough to finish in one sitting.</p>
+          <label className="block space-y-1">
+            <span className="text-xs font-semibold text-on-surface">Resource</span>
+            <select value={draft.resource_id ?? ''} disabled={disabled} onChange={(e) => setDraft((d) => ({ ...d, resource_id: e.target.value || null }))} className={cn(fieldCls, 'w-full')}>
+              <option value="">Select a module resource</option>
+              {resources.map((resource) => <option key={resource.id} value={resource.id}>{resource.name} · {resource.platform}</option>)}
+            </select>
+          </label>
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_7rem]">
+            <label className="block space-y-1">
+              <span className="text-xs font-semibold text-on-surface">Lesson title</span>
+              <Input value={draft.lesson_title ?? ''} disabled={disabled} placeholder="e.g. Joins without duplicate rows" onChange={(e) => setDraft((d) => ({ ...d, lesson_title: e.target.value }))} className="h-8 text-xs" />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-xs font-semibold text-on-surface">Minutes</span>
+              <Input value={draft.duration_minutes ?? ''} disabled={disabled} type="number" min="1" max="180" placeholder="15" onChange={(e) => setDraft((d) => ({ ...d, duration_minutes: e.target.value ? Number(e.target.value) : null }))} className="h-8 text-xs" />
+            </label>
+          </div>
+          {type === 'watch' && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="block space-y-1">
+                <span className="text-xs font-semibold text-on-surface">Start time (seconds)</span>
+                <Input value={draft.start_seconds ?? ''} disabled={disabled} type="number" min="0" placeholder="0" onChange={(e) => setDraft((d) => ({ ...d, start_seconds: e.target.value ? Number(e.target.value) : null }))} className="h-8 text-xs" />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-xs font-semibold text-on-surface">End time (seconds)</span>
+                <Input value={draft.end_seconds ?? ''} disabled={disabled} type="number" min="1" placeholder="720" onChange={(e) => setDraft((d) => ({ ...d, end_seconds: e.target.value ? Number(e.target.value) : null }))} className="h-8 text-xs" />
+              </label>
+            </div>
+          )}
+        </fieldset>
+      )}
 
       {type === 'quiz' && quiz && (
         <div className="space-y-2 border-t border-outline-variant/60 pt-2">
@@ -392,7 +442,7 @@ function TaskEditor({
       )}
 
       <div className="flex items-center gap-2 pt-1">
-        <Button size="sm" onClick={save} disabled={disabled || saving || !draft.description} className="px-3 font-code text-xs gap-1">
+        <Button size="sm" onClick={save} disabled={disabled || saving || !draft.description || !lessonReady} className="px-3 font-code text-xs gap-1">
           {saving ? <Spinner className="size-3" /> : null} Save task
         </Button>
         <button type="button" onClick={onCancel} className="text-on-surface-variant hover:text-on-surface">
@@ -794,6 +844,11 @@ export function CurriculumManager() {
                   quiz: task.quiz ?? null,
                   challenge: task.challenge ?? null,
                   project_requirements: task.project_requirements ?? null,
+                  resource_id: task.resource_id ?? null,
+                  lesson_title: task.lesson_title ?? null,
+                  duration_minutes: task.duration_minutes ?? null,
+                  start_seconds: task.start_seconds ?? null,
+                  end_seconds: task.end_seconds ?? null,
                 });
                 setAddingTask(false);
                 setEditingTaskId(null);
@@ -1181,7 +1236,7 @@ function ModuleEditor({
           )}
           {tasks.map((task) =>
             editingTaskId === task.id ? (
-              <TaskEditor key={task.id} task={task} disabled={disabled} onCancel={onStopEditTask} onSave={(t) => onSaveTask(t).then(() => {})} />
+              <TaskEditor key={task.id} task={task} resources={resources} disabled={disabled} onCancel={onStopEditTask} onSave={(t) => onSaveTask(t).then(() => {})} />
             ) : (
               <div key={task.id} className="flex items-center justify-between gap-2 rounded-none border border-outline-variant/60 bg-surface/50 px-3 py-2 text-xs group">
                 <div className="min-w-0">
@@ -1200,7 +1255,7 @@ function ModuleEditor({
             ),
           )}
           {addingTask && (
-            <TaskEditor task={{ node_id: node.id, type: 'read', order: tasks.length + 1 }} disabled={disabled} onCancel={onStopEditTask} onSave={(t) => onSaveTask(t).then(() => {})} />
+            <TaskEditor task={{ node_id: node.id, type: 'read', order: tasks.length + 1 }} resources={resources} disabled={disabled} onCancel={onStopEditTask} onSave={(t) => onSaveTask(t).then(() => {})} />
           )}
         </div>
       </section>

@@ -42,7 +42,7 @@ final artifact tells a coherent engineering or business story.
 ## Scope guardrails
 
 This is an enhancement of the curriculum and product that already exist, not a replacement LMS.
-Keep the current paths, prerequisite model, two-resource limit, task types, progress tracking,
+Keep the current paths, prerequisite model, two-resource limit, progress tracking,
 GitHub project flow, and admin curriculum editor unless a small change is required to make the
 learning contract clear.
 

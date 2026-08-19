@@ -5,7 +5,7 @@
 export type NodeStatus = 'locked' | 'available' | 'in_progress' | 'complete';
 export type StoredNodeStatus = 'in_progress' | 'complete';
 export type ResourceType = 'article' | 'video' | 'course' | 'project' | 'documentation';
-export type TaskType = 'read' | 'watch' | 'build' | 'quiz' | 'challenge';
+export type TaskType = 'read' | 'watch' | 'practice' | 'build' | 'quiz' | 'challenge';
 export type Role = 'member' | 'admin';
 export type Rank = 'Bronze' | 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
 
@@ -274,7 +274,7 @@ export interface Database {
       };
       admin_delete_resource: { Args: { p_id: string }; Returns: undefined };
       admin_upsert_task: {
-        Args: { p_id: string | null; p_node_id: string; p_description: string; p_type: TaskType; p_order: number; p_quiz: QuizPayload | null; p_challenge: ChallengePayload | null; p_project_requirements: TaskRow['project_requirements'] };
+        Args: { p_id: string | null; p_node_id: string; p_description: string; p_type: TaskType; p_order: number; p_quiz: QuizPayload | null; p_challenge: ChallengePayload | null; p_project_requirements: TaskRow['project_requirements']; p_resource_id: string | null; p_lesson_title: string | null; p_duration_minutes: number | null; p_start_seconds: number | null; p_end_seconds: number | null };
         Returns: TaskRow;
       };
       admin_delete_task: { Args: { p_id: string }; Returns: undefined };
