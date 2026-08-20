@@ -50,7 +50,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Spinner } from '@/components/ui/spinner';
-import { AnimatedStaccMark } from '@/components/brand/AnimatedStaccMark';
 import type { ChallengePayload, NodeRow, PathRow, QuizPayload, ResourceRow, TaskRow, TaskType } from '@/lib/database.types';
 import { cn } from '@/lib/utils';
 
@@ -497,6 +496,7 @@ export function CurriculumManager() {
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [editingPrereqs, setEditingPrereqs] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<DeleteTarget | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [justSaved, setJustSaved] = useState(false);
   const [nodeSearch, setNodeSearch] = useState('');
   const [mobileView, setMobileView] = useState<'tracks' | 'modules' | 'editor'>('tracks');
@@ -587,8 +587,17 @@ export function CurriculumManager() {
       // error surfaced via toast
     } finally {
       setConfirmDelete(null);
+      setDeleteConfirmText('');
     }
   };
+
+  // Node/path deletes cascade to every resource and task underneath them and,
+  // for nodes, break a public `/roadmap/[slug]` URL immediately — the two
+  // deletes here that are genuinely hard to walk back. Typing the exact name
+  // is the same friction GitHub uses for repo deletion: enough to stop a
+  // fat-fingered click, cheap enough not to need a real undo system.
+  const requiresTypedConfirmation = confirmDelete?.type === 'node' || confirmDelete?.type === 'path';
+  const deleteConfirmed = !requiresTypedConfirmation || deleteConfirmText === confirmDelete?.label;
 
   /* ═══════════════════════════════════════════════════════
      RENDER
@@ -888,7 +897,7 @@ export function CurriculumManager() {
           ) : (
             <div className="flex h-full items-center justify-center text-center p-12">
               <div>
-                <AnimatedStaccMark className="mx-auto h-10 w-10 opacity-30" />
+                <BookOpen className="mx-auto size-8 text-outline" aria-hidden="true" />
                 <p className="mt-4 text-sm text-on-surface-variant">
                   {activePath ? 'Select a module to view and edit its content' : 'Create a track to get started'}
                 </p>
@@ -915,19 +924,42 @@ export function CurriculumManager() {
       )}
 
       {/* ── Delete confirmation dialog ── */}
-      <AlertDialog open={Boolean(confirmDelete)} onOpenChange={(open) => !open && setConfirmDelete(null)}>
+      <AlertDialog
+        open={Boolean(confirmDelete)}
+        onOpenChange={(open) => { if (!open) { setConfirmDelete(null); setDeleteConfirmText(''); } }}
+      >
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete &ldquo;{confirmDelete?.label}&rdquo;?</AlertDialogTitle>
             <AlertDialogDescription>
               {confirmDelete?.type === 'path'
                 ? 'A track can only be deleted once every module in it is removed.'
-                : 'This removes it from the live curriculum immediately — members currently viewing it will no longer see it.'}
+                : confirmDelete?.type === 'node'
+                  ? 'This deletes the module and every resource and task inside it immediately, and breaks its public lesson URL for anyone with it open — members currently viewing it will no longer see it.'
+                  : 'This removes it from the live curriculum immediately — members currently viewing it will no longer see it.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {requiresTypedConfirmation && confirmDelete && (
+            <label className="block space-y-1.5 text-xs">
+              <span className="text-on-surface-variant">
+                Type <span className="font-code font-semibold text-on-surface">{confirmDelete.label}</span> to confirm.
+              </span>
+              <Input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                autoFocus
+                autoComplete="off"
+                className="font-code"
+              />
+            </label>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmAndDelete} className="bg-error-action text-on-error hover:bg-error-action/90">
+            <AlertDialogAction
+              onClick={confirmAndDelete}
+              disabled={!deleteConfirmed}
+              className="bg-error-action text-on-error hover:bg-error-action/90 disabled:pointer-events-none disabled:opacity-50"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

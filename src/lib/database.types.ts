@@ -294,6 +294,14 @@ export interface Database {
         Args: { p_total_nodes: number };
         Returns: { total_members: number; active_this_week: number; avg_completion_pct: number; stuck_count: number }[];
       };
+      admin_shipment_stats: {
+        Args: Record<string, never>;
+        Returns: { total_verified_shipments: number; members_shipped: number }[];
+      };
+      admin_path_analytics: {
+        Args: Record<string, never>;
+        Returns: { path_id: string; total_nodes: number; members_started: number; members_completed: number }[];
+      };
     };
   };
 }

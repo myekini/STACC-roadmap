@@ -1,17 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, CircleCheck, Flame, Hourglass, Trophy } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 import ActivityHeatmap from '@/components/progress/ActivityHeatmap';
 import { Button } from '@/components/ui/button';
 import { AppIcon } from '@/components/ui/app-icon';
 import { cn } from '@/lib/utils';
+import { PageFrame, PageHeader } from '@/components/ui/page-layout';
 
 export default function DashboardPage() {
   const data = useUserData();
-  const reduceMotion = useReducedMotion();
   const { paths, nodes, nodesByPath, progress, activity, streak, activePath } = data;
 
   const completedCount = Object.keys(progress.completedNodes).length;
@@ -79,31 +78,20 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-7 py-5 md:space-y-8 md:py-8">
-      <motion.header
-        initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="grid gap-5 border-b border-outline-variant pb-6 min-[1000px]:grid-cols-[minmax(0,1fr)_auto] min-[1000px]:items-end"
-      >
-        <div className="max-w-3xl">
-          <p className="font-code text-xs font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
-            {currentTrackLabel}
-          </p>
-          <h1 className="mt-2 text-balance font-display text-3xl font-bold tracking-tight text-on-surface sm:text-4xl">
-            Your learning, at a glance.
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-on-surface-variant sm:text-base">
-            See your momentum over time, the milestones you have reached, and what remains on your current track.
-          </p>
-        </div>
-        <Button asChild className="w-full justify-center min-[1000px]:w-auto">
-          <Link href={currentNode ? `/roadmap/${currentNode.slug}` : activePath ? '/roadmap' : '/paths'}>
-            {currentNode ? 'Continue learning' : activePath ? 'Review roadmap' : 'Choose a path'}
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
-        </Button>
-      </motion.header>
+    <PageFrame>
+      <PageHeader
+        context={currentTrackLabel}
+        title="Your learning, at a glance."
+        description="See your momentum over time, the milestones you have reached, and what remains on your current track."
+        action={(
+          <Button asChild className="w-full justify-center min-[1000px]:w-auto">
+            <Link href={currentNode ? `/roadmap/${currentNode.slug}` : activePath ? '/roadmap' : '/paths'}>
+              {currentNode ? 'Continue learning' : activePath ? 'Review roadmap' : 'Choose a path'}
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </Button>
+        )}
+      />
 
       <section aria-label="Progress summary" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {metrics.map((metric) => (
@@ -164,6 +152,6 @@ export default function DashboardPage() {
           </ul>
         </section>
       </div>
-    </div>
+    </PageFrame>
   );
 }

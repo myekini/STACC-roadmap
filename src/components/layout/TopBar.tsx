@@ -2,8 +2,8 @@
 
 import { useUserData } from '@/hooks/useUserData';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { ArrowRight, Flame, LogOut, Settings, ShieldCheck, UserRound, CheckCircle2 } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { ArrowRight, Flame, Settings, ShieldCheck, UserRound, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarBadge, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -17,6 +17,7 @@ import { StaccMark } from '@/components/brand/StaccMark';
 import { useUiStore } from '@/store/useUiStore';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { SignOutMenuItem } from '@/components/ui/sign-out-button';
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard': 'Progress',
@@ -30,16 +31,10 @@ export default function TopBar() {
   const userData = useUserData();
   const { user, hasSelectedPath, signOut, streak, progress, isAdmin } = userData;
   const pathname = usePathname();
-  const router = useRouter();
   const { sidebarCollapsed } = useUiStore();
 
   const pageTitle = PAGE_TITLES[pathname] ?? 'Stacc';
   const completedCount = Object.keys(progress.completedNodes).length;
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/');
-  };
 
   return (
     <header
@@ -147,13 +142,7 @@ export default function TopBar() {
 
             <DropdownMenuSeparator className="bg-outline-variant/40" />
 
-            <DropdownMenuItem
-              onClick={handleSignOut}
-              className="cursor-pointer rounded-none text-xs text-error hover:bg-error-container/20 hover:text-error focus:bg-error-container/20 focus:text-error flex items-center gap-2.5 py-2"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Sign Out</span>
-            </DropdownMenuItem>
+            <SignOutMenuItem onSignOut={signOut} />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

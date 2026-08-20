@@ -5,7 +5,7 @@
  * restyled to Stacc's Modern Technical Brutalism and wired to real sections.
  */
 import Link from 'next/link';
-import { BookOpen, LayoutDashboard, LogOut, Route, ShieldCheck, Users } from 'lucide-react';
+import { BookOpen, LayoutDashboard, Route, ShieldCheck, Users } from 'lucide-react';
 import { StaccMark } from '@/components/brand/StaccMark';
 import {
   Sidebar,
@@ -24,6 +24,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { SignOutButton } from '@/components/ui/sign-out-button';
 
 export type AdminSection = 'overview' | 'members' | 'curriculum';
 
@@ -38,7 +39,7 @@ interface AdminShellProps {
   onSectionChange: (section: AdminSection) => void;
   stuckCount: number;
   username: string;
-  onSignOut: () => void;
+  onSignOut: () => Promise<void> | void;
   children: React.ReactNode;
 }
 
@@ -101,14 +102,7 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
               <p className="truncate font-code text-[11px] font-semibold text-on-surface">{username}</p>
               <p className="micro-label text-outline">admin</p>
             </div>
-            <button
-              type="button"
-              onClick={onSignOut}
-              aria-label="Sign out"
-              className="flex h-8 w-8 shrink-0 items-center justify-center border border-outline-variant text-on-surface-variant transition-colors hover:border-error/40 hover:text-error"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
+            <SignOutButton onSignOut={onSignOut} compact className="size-9 min-h-9 border border-outline-variant text-on-surface-variant hover:border-error/40" />
           </div>
         </SidebarFooter>
       </Sidebar>

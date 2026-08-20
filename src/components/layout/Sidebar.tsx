@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useUserData } from '@/hooks/useUserData';
-import { ChartNoAxesCombined, Compass, LogOut, PanelLeftClose, PanelLeftOpen, Route, ShieldCheck } from 'lucide-react';
+import { ChartNoAxesCombined, Compass, PanelLeftClose, PanelLeftOpen, Route, ShieldCheck } from 'lucide-react';
 import { StaccMark } from '@/components/brand/StaccMark';
 import { useUiStore } from '@/store/useUiStore';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -11,10 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { SIDEBAR_W, SIDEBAR_W_COLLAPSED } from '@/lib/layout';
 import { cn } from '@/lib/utils';
+import { SignOutButton } from '@/components/ui/sign-out-button';
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const userData = useUserData();
   const { signOut, hasSelectedPath, isAdmin } = userData;
   const { sidebarCollapsed, toggleSidebar } = useUiStore();
@@ -25,11 +25,6 @@ export default function Sidebar() {
     { name: 'Explore paths', href: '/paths', icon: Compass },
     ...(isAdmin ? [{ name: 'Admin', href: '/admin', icon: ShieldCheck }] : []),
   ];
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/');
-  };
 
   const itemClass = (isActive: boolean) =>
     cn(
@@ -112,34 +107,25 @@ export default function Sidebar() {
           {sidebarCollapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleSignOut}
-                  aria-label="Sign out"
+                <SignOutButton
+                  onSignOut={signOut}
+                  compact
                   className="w-full rounded-none text-error hover:bg-error-container/20 hover:text-error"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
+                />
               </TooltipTrigger>
               <TooltipContent side="right" className="bg-surface-container-high font-code text-[11px] text-on-surface">
                 Sign out
               </TooltipContent>
             </Tooltip>
           ) : (
-            <Button
-              variant="ghost"
-              onClick={handleSignOut}
+            <SignOutButton
+              onSignOut={signOut}
               className="w-full justify-start gap-3 rounded-none px-3 py-2 font-code text-xs uppercase tracking-[0.06em] text-error hover:bg-error-container/20 hover:text-error"
-            >
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </Button>
+            />
           )}
         </div>
       </aside>
     </TooltipProvider>
   );
 }
-
 

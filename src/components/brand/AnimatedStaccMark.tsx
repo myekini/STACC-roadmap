@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 /**
  * Animated Stacc Mark — Signature loader featuring the 3 stacked bars
@@ -11,12 +11,18 @@ export function AnimatedStaccMark({
 }: {
   className?: string;
 }) {
+  const reduceMotion = useReducedMotion();
+  const barMotion = (delay: number) => reduceMotion ? undefined : {
+    animate: { x: [0, 4, 0], opacity: [0.55, 1, 0.55] },
+    transition: { duration: 1.1, repeat: Infinity, ease: 'easeInOut' as const, delay },
+  };
+
   return (
     <div className={`relative inline-flex items-center justify-center ${className}`} role="status" aria-label="Loading">
       <svg
         viewBox="0 0 32 32"
         fill="none"
-        className="w-full h-full drop-shadow-[0_0_8px_rgba(255,107,53,0.3)]"
+        className="h-full w-full"
       >
         {/* Container */}
         <rect width="32" height="32" rx="6" fill="#0A1628" />
@@ -29,16 +35,7 @@ export function AnimatedStaccMark({
           height="4"
           rx="1"
           fill="#FFFFFF"
-          animate={{
-            width: ['14px', '20px', '14px'],
-            opacity: [0.7, 1, 0.7],
-          }}
-          transition={{
-            duration: 1.4,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 0,
-          }}
+          {...barMotion(0)}
         />
 
         {/* Middle bar (Orange Stacc Brand Accent) */}
@@ -49,16 +46,7 @@ export function AnimatedStaccMark({
           height="4"
           rx="1"
           fill="#FF6B35"
-          animate={{
-            width: ['20px', '12px', '20px'],
-            opacity: [1, 0.6, 1],
-          }}
-          transition={{
-            duration: 1.4,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 0.2,
-          }}
+          {...barMotion(0.12)}
         />
 
         {/* Bottom bar (White) */}
@@ -69,16 +57,7 @@ export function AnimatedStaccMark({
           height="4"
           rx="1"
           fill="#FFFFFF"
-          animate={{
-            width: ['14px', '20px', '14px'],
-            opacity: [0.7, 1, 0.7],
-          }}
-          transition={{
-            duration: 1.4,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 0.4,
-          }}
+          {...barMotion(0.24)}
         />
       </svg>
     </div>

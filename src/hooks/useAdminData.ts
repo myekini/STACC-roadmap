@@ -194,6 +194,69 @@ export function useAdminNodeAnalytics(userData: UserData) {
   });
 }
 
+/* ── Verified shipments — the differentiator metric: how many GitHub-verified
+   build milestones have actually been shipped, and by how many members.
+   Foundations build/practice tasks never carry evidence (§4 of the product
+   spec), so this only ever counts real specialization-track shipments. ── */
+export interface ShipmentStats {
+  totalVerifiedShipments: number;
+  membersShipped: number;
+}
+
+export function useAdminShipmentStats(userData: UserData) {
+  const { isAdmin, nodes, tasks, progress } = userData;
+  return useQuery<ShipmentStats>({
+    queryKey: ['admin-shipment-stats', hasSupabaseEnv, nodes.length],
+    enabled: isAdmin && nodes.length > 0,
+    queryFn: async () => {
+      if (!hasSupabaseEnv) {
+        const shipped = tasks.filter((t) => t.type === 'build' && progress.evidence[t.id]);
+        return { totalVerifiedShipments: shipped.length, membersShipped: shipped.length > 0 ? 1 : 0 };
+      }
+      const { data, error } = await supabase.rpc('admin_shipment_stats');
+      if (error) throw error;
+      const row = data?.[0];
+      return { totalVerifiedShipments: row?.total_verified_shipments ?? 0, membersShipped: row?.members_shipped ?? 0 };
+    },
+  });
+}
+
+/* ── Path completion — the §9 "path completion rate" target: of members who
+   started a specialization, how many finished every node in it. Mirrors
+   useUserData's pathFullyComplete() definition exactly. ── */
+export interface PathAnalytics {
+  pathId: string;
+  totalNodes: number;
+  membersStarted: number;
+  membersCompleted: number;
+}
+
+export function useAdminPathAnalytics(userData: UserData) {
+  const { isAdmin, nodes, nodesByPath, paths, progress, pathFullyComplete } = userData;
+  return useQuery<PathAnalytics[]>({
+    queryKey: ['admin-path-analytics', hasSupabaseEnv, nodes.length],
+    enabled: isAdmin && nodes.length > 0,
+    queryFn: async () => {
+      if (!hasSupabaseEnv) {
+        return paths.map((p) => {
+          const pathNodes = nodesByPath[p.id] ?? [];
+          const started = pathNodes.some((n) => progress.completedNodes[n.id] || progress.startedNodes.includes(n.id));
+          return {
+            pathId: p.id,
+            totalNodes: pathNodes.length,
+            membersStarted: started ? 1 : 0,
+            membersCompleted: started && pathFullyComplete(p.id) ? 1 : 0,
+          };
+        });
+      }
+      const { data, error } = await supabase.rpc('admin_path_analytics');
+      if (error) throw error;
+      return ((data ?? []) as { path_id: string; total_nodes: number; members_started: number; members_completed: number }[])
+        .map((r) => ({ pathId: r.path_id, totalNodes: Number(r.total_nodes), membersStarted: Number(r.members_started), membersCompleted: Number(r.members_completed) }));
+    },
+  });
+}
+
 /* ── CSV export — a bounded one-off fetch of up to EXPORT_LIMIT members,
    independent of whatever page is currently on screen. ── */
 export async function exportAllMembersCsv(

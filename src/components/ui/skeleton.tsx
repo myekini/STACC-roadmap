@@ -6,7 +6,8 @@ function Skeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("animate-pulse border border-outline-variant/40 bg-surface/50", className)}
+      aria-hidden="true"
+      className={cn("motion-safe:animate-pulse bg-surface-container-high/70", className)}
       {...props}
     />
   )

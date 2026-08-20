@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { PAUSED_PATH_IDS } from '@/config/roadmap';
 import type { PathRow } from '@/lib/database.types';
+import { PageFrame, PageHeader } from '@/components/ui/page-layout';
 
 function TrackFocus({ paths, onFound }: { paths: PathRow[]; onFound: (pathId: string) => void }) {
   const track = useSearchParams().get('track');
@@ -174,26 +175,22 @@ export default function PathSelectionPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-7 py-5 md:space-y-8 md:py-8">
+    <PageFrame>
       <Suspense fallback={null}>
         <TrackFocus paths={paths} onFound={setFocusedTrack} />
       </Suspense>
 
-      <header className="grid gap-5 border-b border-outline-variant pb-6 min-[1000px]:grid-cols-[minmax(0,1fr)_auto] min-[1000px]:items-end">
-        <div className="max-w-3xl">
-          <p className="font-code text-xs font-semibold uppercase tracking-[0.12em] text-on-surface-variant">Explore paths</p>
-          <h1 className="mt-2 text-balance font-display text-3xl font-bold tracking-tight text-on-surface sm:text-4xl">
-            Choose what you want to ship next.
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-on-surface-variant sm:text-base">
-            Finish the shared foundations, then build one cumulative portfolio project through your specialization.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 font-code text-xs text-on-surface-variant">
-          <Target className="h-4 w-4 text-cyan" aria-hidden />
-          {availablePaths.length} available now · {futurePaths.length} unlock later
-        </div>
-      </header>
+      <PageHeader
+        context="Explore paths"
+        title="Choose what you want to ship next."
+        description="Finish the shared foundations, then build one cumulative portfolio project through your specialization."
+        action={(
+          <div className="flex items-center gap-2 font-code text-xs text-on-surface-variant">
+            <Target className="h-4 w-4 text-cyan" aria-hidden />
+            {availablePaths.length} available now · {futurePaths.length} unlock later
+          </div>
+        )}
+      />
 
       <section aria-labelledby="foundations-heading" className="grid gap-4 border border-outline-variant bg-surface-card p-4 sm:p-5 min-[1050px]:grid-cols-[minmax(0,1fr)_minmax(220px,320px)] min-[1050px]:items-center">
         <div className="flex min-w-0 items-start gap-3">
@@ -244,6 +241,6 @@ export default function PathSelectionPage() {
           </div>
         </section>
       )}
-    </div>
+    </PageFrame>
   );
 }

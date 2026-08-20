@@ -14,13 +14,11 @@ import {
   Menu,
   Rocket,
   Route,
-  Sparkles,
   ShieldCheck,
   CheckCircle2,
 } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { StaccMark } from '@/components/brand/StaccMark';
 import { GithubLogo } from '@/components/icons/GithubLogo';
 import { DiscordLogo } from '@/components/icons/DiscordLogo';
@@ -168,22 +166,11 @@ export default function LandingPage() {
       </Sheet>
 
       {/* ── Modern Centered Hero Section ── */}
-      <section className="relative overflow-hidden border-b border-outline-variant/60 py-16 md:py-28">
+      <section className="relative overflow-hidden border-b border-outline-variant/60 py-14 md:py-24">
         <div className="pointer-events-none absolute inset-0 blueprint-grid opacity-30" />
         <div className="pointer-events-none absolute left-1/2 top-0 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-cyan/[0.08] blur-[150px]" />
 
-        <div className="relative mx-auto max-w-4xl px-5 text-center space-y-6">
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="flex justify-center"
-          >
-            <Badge variant="outline" className="border-cyan/40 bg-cyan/10 text-cyan text-xs font-code tracking-[0.14em] uppercase px-3.5 py-1 rounded-none">
-              <Sparkles className="h-3.5 w-3.5 mr-1.5 inline" /> Data & AI Career Engine
-            </Badge>
-          </motion.div>
-
+        <div className="relative mx-auto max-w-4xl space-y-6 px-5 text-center">
           <motion.p
             initial={reduceMotion ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -251,13 +238,11 @@ export default function LandingPage() {
             initial={reduceMotion ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.2 }}
-            className="pt-6 flex flex-wrap items-center justify-center gap-6 font-code text-xs text-on-surface-variant border-t border-outline-variant/60 max-w-xl mx-auto"
+            className="mx-auto grid max-w-xl grid-cols-1 gap-3 border-t border-outline-variant/60 pt-6 font-code text-xs text-on-surface-variant sm:grid-cols-3"
           >
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-cyan" /> <strong>38</strong> Skill Modules</span>
-            <span>·</span>
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-cyan" /> <strong>5</strong> Career Tracks</span>
-            <span>·</span>
-            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-cyan" /> 100% Free Access</span>
+            <span className="inline-flex items-center justify-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-cyan" /> <strong>38</strong> modules</span>
+            <span className="inline-flex items-center justify-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-cyan" /> <strong>5</strong> career paths</span>
+            <span className="inline-flex items-center justify-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-cyan" /> Free resources</span>
           </motion.div>
         </div>
       </section>
@@ -276,7 +261,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Bento Feature Grid ── */}
-      <section className="border-b border-outline-variant py-16 md:py-24">
+      <section className="border-b border-outline-variant py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-5 md:px-8">
           <div className="mx-auto max-w-3xl text-center space-y-3">
             <h2 className="font-display text-3xl font-bold tracking-tight text-on-surface sm:text-4xl">
@@ -287,7 +272,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
             {[
               {
                 icon: Route,
@@ -305,7 +290,7 @@ export default function LandingPage() {
                 desc: 'One canonical visual map connecting official documentation, battle-tested tutorials, and core architectural concepts.',
               },
             ].map((feat) => (
-              <div key={feat.title} className="group relative flex flex-col justify-between border border-outline-variant bg-surface-card rounded-none p-6 transition-all hover:-translate-y-1 hover:border-cyan/40 hover:shadow-xl">
+              <div key={feat.title} className="group relative flex flex-col justify-between border border-outline-variant bg-surface-card p-5 transition-colors hover:border-cyan/40">
                 <div className="space-y-4">
                   <div className="flex h-11 w-11 items-center justify-center rounded-none border border-cyan/40 bg-cyan/10 text-cyan">
                     <feat.icon className="h-5 w-5" />
@@ -321,7 +306,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Path Showcase Grid ── */}
-      <section className="py-16 md:py-24">
+      <section className="py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-5 md:px-8">
           <div className="mx-auto max-w-3xl text-center space-y-3">
             <h2 className="font-display text-3xl font-bold tracking-tight text-on-surface sm:text-5xl">

@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { motion, useReducedMotion } from 'framer-motion';
 import {
   ArrowRight,
   ArrowUpRight,
@@ -13,7 +11,6 @@ import {
   ExternalLink,
   Flame,
   Hourglass,
-  LogOut,
   Pencil,
   Route,
   Shield,
@@ -26,10 +23,10 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { SignOutButton } from '@/components/ui/sign-out-button';
+import { PageFrame, PageHeader } from '@/components/ui/page-layout';
 
 export default function MemberSettingsPage() {
-  const router = useRouter();
-  const reduceMotion = useReducedMotion();
   const userData = useUserData();
   const {
     user,
@@ -80,25 +77,13 @@ export default function MemberSettingsPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/');
-  };
-
   return (
-    <div className="space-y-8 py-8 md:py-12">
-      <motion.div
-        initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <h1 className="font-display text-3xl font-bold tracking-[-0.03em] text-on-surface sm:text-4xl">
-          Your Member Settings
-        </h1>
-        <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-          Manage your account identity, inspect your learning activity, and access your public portfolio.
-        </p>
-      </motion.div>
+    <PageFrame>
+      <PageHeader
+        context="Account"
+        title="Member settings"
+        description="Manage your identity, public portfolio, and session."
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main 2-column info */}
@@ -285,18 +270,15 @@ export default function MemberSettingsPage() {
                   <Route className="h-4 w-4 text-cyan" /> Go to Roadmap
                 </Link>
               </Button>
-              <Button
-                type="button"
+              <SignOutButton
+                onSignOut={signOut}
                 variant="destructive"
-                onClick={handleSignOut}
                 className="w-full justify-start gap-2"
-              >
-                <LogOut className="h-4 w-4" /> Sign Out
-              </Button>
+              />
             </div>
           </section>
         </div>
       </div>
-    </div>
+    </PageFrame>
   );
 }

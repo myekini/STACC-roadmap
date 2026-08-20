@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
-import { AlertTriangle, TrendingUp, Users, Zap } from 'lucide-react';
+import { AlertTriangle, Rocket, TrendingUp, Users, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { OverviewStats } from '@/hooks/useAdminData';
+import type { OverviewStats, ShipmentStats } from '@/hooks/useAdminData';
 import { cn } from '@/lib/utils';
 
 function Stat({ label, value, sub, icon: Icon, tone }: { label: string; value: string; sub: string; icon: LucideIcon; tone: string }) {
@@ -19,14 +19,26 @@ function Stat({ label, value, sub, icon: Icon, tone }: { label: string; value: s
   );
 }
 
-/** Stats are aggregated server-side (admin_overview_stats RPC) — the panel
- * never needs the full member list in the browser just to show four numbers. */
-export function StatCards({ stats }: { stats: OverviewStats }) {
+/** Stats are aggregated server-side (admin_overview_stats / admin_shipment_stats
+ * RPCs) — the panel never needs the full member list in the browser just to
+ * show these numbers. "Verified shipments" is the differentiator metric: not
+ * lesson completions, but GitHub-verified build milestones — the thing that
+ * actually distinguishes this from a course tracker (docs/PRODUCT.md §9). */
+export function StatCards({ stats, shipmentStats }: { stats: OverviewStats; shipmentStats?: ShipmentStats }) {
   return (
-    <div className="grid grid-cols-1 gap-px overflow-hidden border border-outline-variant bg-outline-variant sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-px overflow-hidden border border-outline-variant bg-outline-variant sm:grid-cols-2 lg:grid-cols-5">
       <Stat label="total members" value={String(stats.totalMembers)} sub="across all cohorts" icon={Users} tone="border-cyan/40 bg-cyan/10 text-cyan" />
       <Stat label="active this week" value={String(stats.activeThisWeek)} sub="roadmap activity in 7d" icon={TrendingUp} tone="border-secondary/40 bg-secondary/10 text-secondary" />
       <Stat label="avg. completion" value={`${stats.avgCompletionPct}%`} sub="mean across members" icon={Zap} tone="border-tertiary/40 bg-tertiary/10 text-tertiary" />
+      {shipmentStats && (
+        <Stat
+          label="verified shipments"
+          value={String(shipmentStats.totalVerifiedShipments)}
+          sub={`by ${shipmentStats.membersShipped} member${shipmentStats.membersShipped === 1 ? '' : 's'}`}
+          icon={Rocket}
+          tone="border-primary/40 bg-primary/10 text-primary-neon"
+        />
+      )}
       <Stat label="stuck" value={String(stats.stuckCount)} sub="14+ days no activity" icon={AlertTriangle} tone="border-error/40 bg-error/10 text-error" />
     </div>
   );

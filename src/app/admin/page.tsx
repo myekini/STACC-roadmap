@@ -15,6 +15,8 @@ import {
   useAdminMembers,
   useAdminNodeAnalytics,
   useAdminOverview,
+  useAdminPathAnalytics,
+  useAdminShipmentStats,
   type MemberRow,
 } from '@/hooks/useAdminData';
 import { AdminShell, type AdminSection } from '@/components/admin/AdminShell';
@@ -22,11 +24,11 @@ import { StatCards } from '@/components/admin/StatCards';
 import { MembersTable } from '@/components/admin/MembersTable';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
+import { MetricSkeleton } from '@/components/ui/loading-skeletons';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { StatusMarker } from '@/components/roadmap/bits';
 import { StaccMark } from '@/components/brand/StaccMark';
-import { AnimatedStaccMark } from '@/components/brand/AnimatedStaccMark';
+import AppLoader from '@/components/layout/AppLoader';
 import { GithubLogo } from '@/components/icons/GithubLogo';
 import { CurriculumManager } from '@/components/admin/CurriculumManager';
 import { cn } from '@/lib/utils';
@@ -171,8 +173,10 @@ export default function AdminPage() {
   }, [memberSearchInput]);
 
   const overview = useAdminOverview(userData);
+  const shipmentStats = useAdminShipmentStats(userData);
   const cohortsQuery = useAdminCohorts(userData);
   const nodeAnalytics = useAdminNodeAnalytics(userData);
+  const pathAnalytics = useAdminPathAnalytics(userData);
   const membersQuery = useAdminMembers(userData, {
     search: memberSearch,
     cohort,
@@ -189,9 +193,7 @@ export default function AdminPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <AnimatedStaccMark className="h-14 w-14" />
-      </div>
+      <AppLoader />
     );
   }
 
@@ -243,15 +245,18 @@ export default function AdminPage() {
       {overview.isLoading ? (
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}
+            {[0, 1, 2, 3].map((i) => <MetricSkeleton key={i} />)}
           </div>
-          <Skeleton className="h-14" />
+          <div className="h-14 border border-outline-variant bg-surface-container-high/70 motion-safe:animate-pulse" aria-hidden="true" />
         </div>
       ) : (
         <>
           {section === 'overview' && (
             <div className="space-y-6">
-              <StatCards stats={overview.data ?? { totalMembers: 0, activeThisWeek: 0, avgCompletionPct: 0, stuckCount: 0 }} />
+              <StatCards
+                stats={overview.data ?? { totalMembers: 0, activeThisWeek: 0, avgCompletionPct: 0, stuckCount: 0 }}
+                shipmentStats={shipmentStats.data}
+              />
               <div className="grid gap-px overflow-hidden border border-outline-variant bg-outline-variant md:grid-cols-2">
                 <button
                   type="button"
@@ -324,6 +329,47 @@ export default function AdminPage() {
             <div className="space-y-8">
               <div className="h-[calc(100dvh-9rem)] min-h-[34rem] overflow-hidden rounded-none border border-outline-variant bg-surface lg:h-[70vh] lg:min-h-[520px]">
                 <CurriculumManager />
+              </div>
+              <div className="pt-2 border-t border-outline-variant/60">
+                <h3 className="font-display text-lg font-bold text-on-surface mb-1">Path Completion</h3>
+                <p className="mb-4 text-sm text-on-surface-variant">Of members who started a specialization, how many finished every module in it (docs/PRODUCT.md §9 target: ≥20%).</p>
+              </div>
+              <div className="overflow-x-auto border border-outline-variant bg-surface">
+                <table className="w-full min-w-[480px] text-left">
+                  <thead>
+                    <tr className="border-b border-outline-variant">
+                      {['path', 'started', 'completed', 'completion rate'].map((h) => (
+                        <th key={h} className="micro-label px-4 py-3 text-outline">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-outline-variant/60">
+                    {(pathAnalytics.data ?? [])
+                      .filter((a) => a.membersStarted > 0)
+                      .sort((a, b) => b.membersStarted - a.membersStarted)
+                      .map((a) => {
+                        const rate = a.membersStarted ? Math.round((a.membersCompleted / a.membersStarted) * 100) : 0;
+                        return (
+                          <tr key={a.pathId} className="hover:bg-surface-container-low/50">
+                            <td className="px-4 py-3 text-xs font-semibold text-on-surface">{allPathTitles[a.pathId] ?? a.pathId}</td>
+                            <td className="px-4 py-3 font-code text-xs text-on-surface-variant">{a.membersStarted}</td>
+                            <td className="px-4 py-3 font-code text-xs text-on-surface-variant">{a.membersCompleted}</td>
+                            <td className="px-4 py-3">
+                              <span className="flex items-center gap-2">
+                                <span className="inline-block h-1 w-20 bg-surface-container-high">
+                                  <span className={cn('block h-full', rate >= 20 ? 'bg-secondary' : rate >= 10 ? 'bg-tertiary' : 'bg-error')} style={{ width: `${rate}%` }} />
+                                </span>
+                                <span className="font-code text-[10px] font-semibold text-on-surface-variant">{rate}%</span>
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    {(pathAnalytics.data ?? []).filter((a) => a.membersStarted > 0).length === 0 && (
+                      <tr><td colSpan={4} className="px-4 py-8 text-center font-code text-xs lowercase text-outline">{'// no path activity yet'}</td></tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
               <div className="pt-2 border-t border-outline-variant/60">
                 <h3 className="font-display text-lg font-bold text-on-surface mb-4">Module Completion Analytics</h3>

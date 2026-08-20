@@ -10,7 +10,7 @@ import { GithubStatusToast } from '@/components/roadmap/GithubStatusToast';
 import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
+import { CardListSkeleton } from '@/components/ui/loading-skeletons';
 import { cn } from '@/lib/utils';
 
 export default function RoadmapPage() {
@@ -112,11 +112,7 @@ export default function RoadmapPage() {
       <div className="relative mt-4">
         <div className="relative">
           {isLoading ? (
-            <div className="mx-auto max-w-5xl space-y-4 px-4 py-10 sm:px-6">
-              {[0, 1, 2].map((i) => (
-                <Skeleton key={i} className="h-28" />
-              ))}
-            </div>
+            <CardListSkeleton count={3} className="mx-auto max-w-5xl grid-cols-1 px-4 py-10 sm:px-6" />
           ) : (
             pathId && (
               <>

@@ -458,7 +458,10 @@ export function useUserData() {
   };
 
   const signOut = async () => {
-    if (connected) await supabase.auth.signOut();
+    if (connected) {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    }
     setSession(null);
     queryClient.invalidateQueries();
   };
