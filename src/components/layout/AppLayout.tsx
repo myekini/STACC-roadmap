@@ -19,7 +19,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // Landing, the public SEO tree, public portfolios, and admin (its own dedicated shell) render
   // without the member app shell. /auth/callback is a server Route Handler (no React render
   // there at all), so it never reaches this component.
-  if (pathname === '/' || pathname === '/tree' || pathname === '/admin' || pathname.startsWith('/u/')) {
+  if (pathname === '/' || pathname === '/tree' || pathname === '/admin' || pathname.startsWith('/u/') || pathname.startsWith('/learn/')) {
     return <>{children}</>;
   }
 

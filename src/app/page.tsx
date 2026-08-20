@@ -27,6 +27,8 @@ import { LinkedInLogo } from '@/components/icons/LinkedInLogo';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { absoluteUrl, SITE_URL } from '@/lib/seo';
 
 const NAV_LINKS = [
   { href: '/paths', label: 'Explore Paths' },
@@ -87,6 +89,24 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background text-on-background">
+      <JsonLd data={[
+        {
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'Stacc',
+          url: SITE_URL,
+          logo: absoluteUrl('/icon.svg'),
+          description: 'A data-career community focused on structured learning and shipped portfolio work.',
+        },
+        {
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'Stacc Roadmap',
+          url: SITE_URL,
+          description: 'Free, prerequisite-ordered learning roadmaps for data careers.',
+          publisher: { '@type': 'Organization', name: 'Stacc', url: SITE_URL },
+        },
+      ]} />
       {/* ── Header Navbar ── */}
       <header className="sticky top-0 z-40 border-b border-cyan/15 bg-navy/90 px-4 pb-3.5 pt-[calc(0.875rem+env(safe-area-inset-top))] backdrop-blur-xl md:px-8 md:py-3.5">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
@@ -381,13 +401,13 @@ export default function LandingPage() {
 
                 <div className="mt-6 pt-4 border-t border-outline-variant space-y-3 font-code">
                   <div className="flex items-center justify-between text-[11px] text-on-surface-variant font-medium">
-                    <span className="flex items-center gap-1"><Hourglass className="h-3.5 w-3.5 text-cyan" /> ~40h est</span>
+                    <span className="flex items-center gap-1"><Hourglass className="h-3.5 w-3.5 text-cyan" /> {nodes.filter((n) => n.path_id === path.id).reduce((sum, node) => sum + node.est_hours, 0)}h est</span>
                     <span className="flex items-center gap-1"><Layers className="h-3.5 w-3.5 text-secondary" /> {nodes.filter((n) => n.path_id === path.id).length} modules</span>
                   </div>
 
                   <Button asChild variant="outline" className="w-full justify-between group-hover:border-cyan font-code text-xs uppercase tracking-wider rounded-none">
-                    <Link href={`/paths?track=${path.id}`}>
-                      <span>Explore Track</span>
+                    <Link href={`/learn/${path.id}`}>
+                      <span>View roadmap</span>
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </Button>

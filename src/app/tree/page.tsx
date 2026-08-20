@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight, Lock } from 'lucide-react';
-import { NODES, PATHS } from '@/config/roadmap';
+import { NODES, PATHS, PAUSED_PATH_IDS } from '@/config/roadmap';
 import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
 import { StaccMark } from '@/components/brand/StaccMark';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { absoluteUrl } from '@/lib/seo';
 
 /**
  * Public, server-rendered skill tree (spec §1.9): structure only — module
@@ -19,10 +21,23 @@ export const metadata: Metadata = {
 };
 
 export default function PublicTreePage() {
-  const totalHours = NODES.reduce((sum, n) => sum + n.est_hours, 0);
+  const publicPaths = PATHS.filter((path) => !PAUSED_PATH_IDS.has(path.id));
+  const publicPathIds = new Set(publicPaths.map((path) => path.id));
+  const publicNodes = NODES.filter((node) => publicPathIds.has(node.path_id));
+  const totalHours = publicNodes.reduce((sum, node) => sum + node.est_hours, 0);
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Stacc data career learning roadmaps',
+    description: 'Free, prerequisite-ordered learning roadmaps for data careers.',
+    itemListElement: publicPaths.map((path, index) => ({
+      '@type': 'ListItem', position: index + 1, url: absoluteUrl(`/learn/${path.id}`), name: `${path.title} Learning Roadmap`,
+    })),
+  };
 
   return (
     <main className="relative min-h-screen bg-background text-on-background">
+      <JsonLd data={structuredData} />
       <div className="pointer-events-none absolute inset-0 blueprint-grid opacity-40" aria-hidden />
 
       <div className="relative mx-auto max-w-4xl px-5 py-14 sm:px-8">
@@ -35,7 +50,7 @@ export default function PublicTreePage() {
             Every module. In order. Free.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-on-surface-variant">
-            {NODES.length} modules across {PATHS.length - 1} specialization paths, roughly {totalHours} hours of curated,
+            {publicNodes.length} modules across {publicPaths.length - 1} specialization paths, roughly {totalHours} hours of curated,
             free material. Sign in to open the resources, work the tasks, and track your progress.
           </p>
           <Button asChild className="mt-6">
@@ -44,7 +59,7 @@ export default function PublicTreePage() {
         </header>
 
         <div className="space-y-10">
-          {PATHS.map((path) => {
+          {publicPaths.map((path) => {
             const pathNodes = NODES.filter((n) => n.path_id === path.id);
             const gated = path.requires_paths.length > 0;
             const gateTitles = path.requires_paths
@@ -55,9 +70,11 @@ export default function PublicTreePage() {
               <section key={path.id} aria-labelledby={`path-${path.id}`}>
                 <div className="flex flex-wrap items-end justify-between gap-2 border-b border-outline-variant pb-3">
                   <div>
-                    <h2 id={`path-${path.id}`} className="flex items-center gap-2.5 font-display text-xl font-bold uppercase tracking-wide text-on-surface">
-                      <AppIcon name={path.icon} className="h-5 w-5 text-cyan" />
-                      {path.title}
+                    <h2 id={`path-${path.id}`} className="font-display text-xl font-bold uppercase tracking-wide text-on-surface">
+                      <Link href={`/learn/${path.id}`} className="flex items-center gap-2.5 hover:text-cyan">
+                        <AppIcon name={path.icon} className="h-5 w-5 text-cyan" />
+                        {path.title}
+                      </Link>
                     </h2>
                   </div>
                   {gated && (
