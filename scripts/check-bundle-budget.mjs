@@ -13,6 +13,15 @@ const budgets = {
   firstLoadJsKb: 315,
 };
 
+// /admin is gated behind auth + admin role and never shipped to public or
+// logged-out visitors — it doesn't affect SEO or Core Web Vitals the way
+// member/public routes do, so it gets a looser budget instead of forcing
+// every future admin feature (curriculum editor, analytics) to fight the
+// same ceiling as the marketing/member surface.
+const routeBudgetOverrides = {
+  "/admin": { routeJsKb: 32, firstLoadJsKb: 340 },
+};
+
 const toKb = (bytes) => bytes / 1024;
 const formatKb = (bytes) => `${toKb(bytes).toFixed(1)} kB`;
 
@@ -95,14 +104,17 @@ try {
   }
 
   for (const route of routes) {
-    if (route.routeBytes > budgets.routeJsKb * 1024) {
+    const override = routeBudgetOverrides[route.name];
+    const routeLimitKb = override?.routeJsKb ?? budgets.routeJsKb;
+    const firstLoadLimitKb = override?.firstLoadJsKb ?? budgets.firstLoadJsKb;
+    if (route.routeBytes > routeLimitKb * 1024) {
       failures.push(
-        `${route.name} route JavaScript is ${formatKb(route.routeBytes)} (budget: ${budgets.routeJsKb} kB).`,
+        `${route.name} route JavaScript is ${formatKb(route.routeBytes)} (budget: ${routeLimitKb} kB).`,
       );
     }
-    if (route.firstLoadBytes > budgets.firstLoadJsKb * 1024) {
+    if (route.firstLoadBytes > firstLoadLimitKb * 1024) {
       failures.push(
-        `${route.name} first-load JavaScript is ${formatKb(route.firstLoadBytes)} (budget: ${budgets.firstLoadJsKb} kB).`,
+        `${route.name} first-load JavaScript is ${formatKb(route.firstLoadBytes)} (budget: ${firstLoadLimitKb} kB).`,
       );
     }
   }
