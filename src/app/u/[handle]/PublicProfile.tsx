@@ -61,7 +61,9 @@ function useProfilePayload(handle: string) {
   const payload: PublicProfilePayload = {
     profile: { username: local.user.username, avatar_url: local.user.avatar_url, joined_at: '' },
     shipped,
-    projects: local.projects,
+    projects: Object.fromEntries(
+      Object.entries(local.projectConnections).map(([pathId, project]) => [pathId, project.repo_url]),
+    ),
     activity: local.activity,
   };
   return { payload, isLoading: local.isLoading, demo: true };

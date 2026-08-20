@@ -41,7 +41,6 @@ const LS = {
   ratings: 'stacc.v2.ratings', // Record<resourceId, rating>
   profile: 'stacc.v2.profile', // { username }
   evidence: 'stacc.v2.evidence', // Record<taskId, url>
-  projects: 'stacc.v2.projects', // Record<pathId, repoUrl>
 };
 
 function readLS<T>(key: string, fallback: T): T {
@@ -232,6 +231,9 @@ export function useUserData() {
   });
 
   // ── Projects (one repo per path — build tasks accumulate into it) ──
+  // GitHub-App-verified connections only live in Supabase mode (see
+  // ProjectMilestone in NodeWorkspace.tsx) — demo mode has no runtime target
+  // to connect a repo against, so it always reports no projects.
   const projectsQuery = useQuery<ProjectRow[]>({
     queryKey: ['projects', userId],
     queryFn: async () => {
@@ -240,14 +242,6 @@ export function useUserData() {
         if (error) throw error;
         return rows as ProjectRow[];
       }
-      if (!connected) {
-        return Object.entries(readLS<Record<string, string>>(LS.projects, {})).map(([pathId, repoUrl]) => ({
-          id: `local-${pathId}`, user_id: 'guest', path_id: pathId, repo_url: repoUrl,
-          github_repo_id: null, repo_owner: null, repo_name: null, default_branch: 'main',
-          github_installation_id: null, connection_status: 'manual' as const, connected_at: null,
-          last_synced_at: null, created_at: '',
-        }));
-      }
       return [];
     },
   });
@@ -255,7 +249,6 @@ export function useUserData() {
   const data = content.data;
   const prog = progress.data ?? EMPTY_PROGRESS;
   const projectConnections = Object.fromEntries((projectsQuery.data ?? []).map((project) => [project.path_id, project]));
-  const projects = Object.fromEntries((projectsQuery.data ?? []).map((project) => [project.path_id, project.repo_url]));
   const isAdmin = connected ? profile.data?.role === 'admin' : true;
 
   // ── Derived: node status (locked/available/in_progress/complete) ──
@@ -364,26 +357,6 @@ export function useUserData() {
   }).mutateAsync;
 
   /**
-   * Sets a path's project repo once — immutable afterwards, since every later
-   * build-task evidence on that path gets validated against it.
-   */
-  const setProject = useMutation({
-    mutationFn: async ({ pathId, repoUrl }: { pathId: string; repoUrl: string }) => {
-      if (projects[pathId]) throw new Error('This path already has a project repo set.');
-      const clean = repoUrl.trim().replace(/\/+$/, '');
-      if (!/^https?:\/\//i.test(clean)) throw new Error('Project repo must be a URL (https://…)');
-      if (connected && userId) {
-        const { error } = await supabase.rpc('set_project', { p_path: pathId, p_repo_url: clean });
-        if (error) throw error;
-      } else {
-        writeLS(LS.projects, { ...readLS<Record<string, string>>(LS.projects, {}), [pathId]: clean });
-      }
-      return clean;
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['projects'] }),
-  }).mutateAsync;
-
-  /**
    * Completes a task; returns 'complete' when it was the node's last task.
    * Build tasks must ship evidence: a public URL (repo / live app / writeup) —
    * once the path has a project repo, evidence must link into it (docs/PRODUCT.md §4).
@@ -396,7 +369,7 @@ export function useUserData() {
         throw new Error('Build tasks require an evidence URL (https://…)');
       }
       if (needsEvidence) {
-        const projectUrl = pathId ? projects[pathId] : undefined;
+        const projectUrl = pathId ? projectConnections[pathId]?.repo_url : undefined;
         if (projectUrl && !evidenceUrl?.startsWith(projectUrl)) {
           throw new Error(`Evidence must link into this path's project repo (${projectUrl}).`);
         }
@@ -513,7 +486,6 @@ export function useUserData() {
     prereqs: data?.prereqs ?? {},
     // progress
     progress: prog,
-    projects,
     projectConnections,
     activity,
     streak,
@@ -525,7 +497,6 @@ export function useUserData() {
     // actions
     selectPath,
     startNode,
-    setProject,
     completeTask,
     rateResource,
     renameUsername,

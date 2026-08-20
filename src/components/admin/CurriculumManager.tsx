@@ -65,6 +65,29 @@ function fromCsv(value: string): string[] {
   return value.split(',').map((s) => s.trim()).filter(Boolean);
 }
 
+/** Keeps free-typed track/module ids URL-safe as the admin types, rather than
+ * rejecting the save after the fact — these ids become public route segments
+ * (`/roadmap/[slug]`), so a stray space or capital letter here is a routing bug. */
+function sanitizeSlugInput(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-');
+}
+
+function finalizeSlug(value: string): string {
+  return sanitizeSlugInput(value).replace(/^-+|-+$/g, '');
+}
+
+/** Turns a Postgres "duplicate key value violates unique constraint" error into
+ * something an admin can act on, instead of the raw constraint-name message. */
+function friendlyMutationError(err: unknown, whatIsDuplicated: string): string {
+  const message = err instanceof Error ? err.message : String(err);
+  if (/duplicate key value/i.test(message)) return `That ${whatIsDuplicated} is already in use — pick another.`;
+  return message;
+}
+
 /* ─── Resource row ───────────────────────────────────────── */
 
 function ResourceRow({
@@ -489,6 +512,12 @@ export function CurriculumManager() {
     () => (activePathId ? (nodesByPath[activePathId] ?? []).slice().sort((a, b) => a.order - b.order) : []),
     [nodesByPath, activePathId],
   );
+  // Module slugs are the public route segment (`/roadmap/[slug]`) and are unique
+  // across every track, not just the active one — the create form needs the full set.
+  const allNodeSlugs = useMemo(
+    () => Object.values(nodesByPath).flat().map((n) => n.slug),
+    [nodesByPath],
+  );
   const activeNode = orderedNodes.find((n) => n.id === selectedNodeId) ?? orderedNodes[0] ?? null;
   const nodeResources = activeNode ? resources.filter((r) => r.node_id === activeNode.id) : [];
   const nodeTasks = activeNode ? tasks.filter((t) => t.node_id === activeNode.id).sort((a, b) => a.order - b.order) : [];
@@ -712,6 +741,7 @@ export function CurriculumManager() {
               <NewNodeForm
                 pathId={activePath.id}
                 nextOrder={orderedNodes.length + 1}
+                existingSlugs={allNodeSlugs}
                 onCancel={() => setAddingNode(false)}
                 onCreate={async (draft) => {
                   await runMutation(async () => {
@@ -912,25 +942,43 @@ export function CurriculumManager() {
 function NewNodeForm({
   pathId,
   nextOrder,
+  existingSlugs,
   onCreate,
   onCancel,
 }: {
   pathId: string;
   nextOrder: number;
+  existingSlugs: string[];
   onCreate: (draft: Parameters<ReturnType<typeof useCurriculumAdmin>['upsertNode']>[0]) => Promise<void>;
   onCancel: () => void;
 }) {
   const [slug, setSlug] = useState('');
+  const [slugTouched, setSlugTouched] = useState(false);
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const finalSlug = finalizeSlug(slug);
+  const isDuplicate = finalSlug.length > 0 && existingSlugs.includes(finalSlug);
 
   const create = async () => {
+    if (!finalSlug) {
+      setError('Module slug must contain letters or numbers.');
+      return;
+    }
+    if (isDuplicate) {
+      setError('That slug is already used by another module — module URLs must be unique.');
+      return;
+    }
     setSaving(true);
+    setError(null);
     try {
       await onCreate({
-        id: null, path_id: pathId, slug: slug.trim(), name: name.trim(), subtitle: '', description: '',
+        id: null, path_id: pathId, slug: finalSlug, name: name.trim(), subtitle: '', description: '',
         icon: 'database', order: nextOrder, est_hours: 8, xp_reward: 100, skills: [],
       });
+    } catch (err) {
+      setError(friendlyMutationError(err, 'module slug'));
     } finally {
       setSaving(false);
     }
@@ -938,10 +986,27 @@ function NewNodeForm({
 
   return (
     <li className="rounded-none border border-cyan/40 bg-cyan/[0.04] p-2.5 space-y-1.5 text-xs">
-      <Input placeholder="Module slug (e.g. de-etl)" value={slug} onChange={(e) => setSlug(e.target.value)} className="h-7 text-xs" />
-      <Input placeholder="Module name" value={name} onChange={(e) => setName(e.target.value)} className="h-7 text-xs" />
+      <Input
+        placeholder="Module name"
+        value={name}
+        onChange={(e) => {
+          setName(e.target.value);
+          if (!slugTouched) setSlug(sanitizeSlugInput(e.target.value));
+        }}
+        className="h-7 text-xs"
+      />
+      <Input
+        placeholder="Module slug (e.g. de-etl)"
+        value={slug}
+        onChange={(e) => { setSlugTouched(true); setSlug(sanitizeSlugInput(e.target.value)); }}
+        className={cn('h-7 text-xs', isDuplicate && 'border-error')}
+      />
+      <p className="font-code text-[10px] text-outline">
+        {finalSlug ? <>/roadmap/<span className={isDuplicate ? 'text-error' : 'text-cyan'}>{finalSlug}</span></> : 'Public URL preview appears once you type a name or slug.'}
+      </p>
+      {error && <p className="text-error">{error}</p>}
       <div className="flex items-center gap-2">
-        <Button size="sm" onClick={create} disabled={saving || !slug.trim() || !name.trim()} className="px-3 font-code text-xs gap-1">
+        <Button size="sm" onClick={create} disabled={saving || !finalSlug || !name.trim() || isDuplicate} className="px-3 font-code text-xs gap-1">
           {saving ? <Spinner className="size-3" /> : <Plus className="h-3 w-3" />} Create
         </Button>
         <button type="button" onClick={onCancel} className="text-on-surface-variant hover:text-on-surface"><X className="h-3.5 w-3.5" /></button>
@@ -964,14 +1029,22 @@ function PathFormDialog({
   onClose: () => void;
 }) {
   const [id, setId] = useState(path?.id ?? '');
+  const [idTouched, setIdTouched] = useState(Boolean(path));
   const [title, setTitle] = useState(path?.title ?? '');
   const [description, setDescription] = useState(path?.description ?? '');
   const [requiresPaths, setRequiresPaths] = useState(toCsv(path?.requires_paths));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const finalId = finalizeSlug(id);
+  const isDuplicate = !path && finalId.length > 0 && existingIds.includes(finalId);
+
   const save = async () => {
-    if (!path && existingIds.includes(id.trim())) {
+    if (!finalId) {
+      setError('Track id must contain letters or numbers.');
+      return;
+    }
+    if (isDuplicate) {
       setError('A track with that id already exists.');
       return;
     }
@@ -979,11 +1052,11 @@ function PathFormDialog({
     setError(null);
     try {
       await onSave({
-        id: id.trim(), title: title.trim(), description, icon: path?.icon ?? 'route',
+        id: finalId, title: title.trim(), description, icon: path?.icon ?? 'route',
         tags: path?.tags ?? [], order: path?.order ?? existingIds.length + 1, requires_paths: fromCsv(requiresPaths),
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save track.');
+      setError(friendlyMutationError(err, 'track id'));
     } finally {
       setSaving(false);
     }
@@ -998,12 +1071,30 @@ function PathFormDialog({
         </AlertDialogHeader>
         <div className="space-y-2 text-xs">
           <label className="block space-y-1">
-            <span className="font-code text-[10px] uppercase text-outline">Track id (slug)</span>
-            <Input value={id} onChange={(e) => setId(e.target.value)} disabled={Boolean(path)} placeholder="e.g. data-engineering" />
+            <span className="font-code text-[10px] uppercase text-outline">Title</span>
+            <Input
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (!idTouched) setId(sanitizeSlugInput(e.target.value));
+              }}
+              placeholder="e.g. Data Engineering"
+            />
           </label>
           <label className="block space-y-1">
-            <span className="font-code text-[10px] uppercase text-outline">Title</span>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Data Engineering" />
+            <span className="font-code text-[10px] uppercase text-outline">Track id (slug)</span>
+            <Input
+              value={id}
+              onChange={(e) => { setIdTouched(true); setId(sanitizeSlugInput(e.target.value)); }}
+              disabled={Boolean(path)}
+              placeholder="e.g. data-engineering"
+              className={isDuplicate ? 'border-error' : undefined}
+            />
+            {!path && (
+              <p className="font-code text-[10px] text-outline">
+                {finalId ? <>id: <span className={isDuplicate ? 'text-error' : 'text-cyan'}>{finalId}</span></> : 'Track ids are lowercase, hyphenated, and permanent once created.'}
+              </p>
+            )}
           </label>
           <label className="block space-y-1">
             <span className="font-code text-[10px] uppercase text-outline">Description</span>
@@ -1017,7 +1108,7 @@ function PathFormDialog({
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button onClick={save} disabled={saving || !id.trim() || !title.trim()} className="font-code text-xs rounded-none">
+          <Button onClick={save} disabled={saving || !finalId || !title.trim() || isDuplicate} className="font-code text-xs rounded-none">
             {saving ? <Spinner className="size-3.5" /> : null} Save track
           </Button>
         </AlertDialogFooter>

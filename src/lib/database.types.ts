@@ -131,7 +131,6 @@ export interface TaskRow {
     requiredPaths?: string[];
     requiredHeadings?: Record<string, string[]>;
     submissionMode?: 'commit' | 'pull_request';
-    manualReview?: string[];
   } | null;
   created_at?: string;
   created_by?: string | null;

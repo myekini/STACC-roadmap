@@ -30,7 +30,6 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Play,
-  Star,
   Terminal,
 } from 'lucide-react';
 import type { TaskRow } from '@/lib/database.types';
@@ -41,10 +40,17 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Spinner } from '@/components/ui/spinner';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { GithubLogo } from '@/components/icons/GithubLogo';
-import { getYouTubeRef, YouTubeEmbed } from './bits';
+import { getYouTubeRef, Stars, YouTubeEmbed } from './bits';
 import { ChallengeBlock } from './ChallengeBlock';
 import { QuizWorkspace } from './QuizWorkspace';
 import { cn } from '@/lib/utils';
+
+/** GitHub commit URLs look like `.../commit/<sha>` — pull a short sha back out for display
+ * when all we have is the persisted evidence URL (no in-memory verify response). */
+function shortShaFromCommitUrl(url: string): string {
+  const match = url.match(/\/commit\/([0-9a-f]{7,40})/i);
+  return match ? match[1].slice(0, 7) : '';
+}
 
 /* ─────────────────────────────────────────────────────────
    ProjectMilestone — GitHub commit verifier (inline)
@@ -70,6 +76,19 @@ function ProjectMilestone({
   const [verified, setVerified] = useState<{ url: string; sha: string } | null>(null);
   const project = data.projectConnections[pathId];
   const connected = project?.connection_status === 'active' && Boolean(project.github_repo_id);
+
+  // The task is completed the moment /api/github/verify succeeds server-side —
+  // that's the durable source of truth. `verified` above only covers *this*
+  // click, so on remount (nav away/back, refresh) it resets to null and a
+  // genuinely shipped milestone would otherwise flash back to "Check my
+  // work" as if it had never been verified. Fall back to the persisted
+  // evidence URL (the commit link `complete_task` stored) once the task
+  // shows up in completedTasks.
+  const persistedEvidenceUrl = data.progress.evidence[task.id];
+  const isCompleted = data.progress.completedTasks.includes(task.id);
+  const verifiedState = verified ?? (isCompleted && persistedEvidenceUrl
+    ? { url: persistedEvidenceUrl, sha: shortShaFromCommitUrl(persistedEvidenceUrl) }
+    : null);
 
   if (!data.isSupabaseConnected) {
     return (
@@ -136,7 +155,7 @@ function ProjectMilestone({
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Button
           size="sm"
-          disabled={disabled || busy || Boolean(verified)}
+          disabled={disabled || busy || Boolean(verifiedState)}
           className="rounded-none font-code text-xs"
           onClick={async () => {
             setBusy(true);
@@ -160,13 +179,13 @@ function ProjectMilestone({
             }
           }}
         >
-          {busy ? <Spinner /> : verified ? <Check className="h-3.5 w-3.5" /> : <GitBranch className="h-3.5 w-3.5" />}
-          {busy ? 'Checking…' : verified ? 'Verified' : 'Check my work'}
+          {busy ? <Spinner /> : verifiedState ? <Check className="h-3.5 w-3.5" /> : <GitBranch className="h-3.5 w-3.5" />}
+          {busy ? 'Checking…' : verifiedState ? 'Verified' : 'Check my work'}
         </Button>
 
-        {verified && (
-          <a href={verified.url} target="_blank" rel="noreferrer" className="font-semibold text-secondary hover:underline">
-            Commit {verified.sha.slice(0, 7)}
+        {verifiedState && (
+          <a href={verifiedState.url} target="_blank" rel="noreferrer" className="font-semibold text-secondary hover:underline">
+            Commit {verifiedState.sha.slice(0, 7)}
           </a>
         )}
       </div>
@@ -181,6 +200,31 @@ function ProjectMilestone({
     </div>
   );
 }
+
+type PrimaryAction =
+  | 'locked'
+  | 'saving'
+  | 'verifyMilestone'
+  | 'completePractice'
+  | 'takeQuiz'
+  | 'openChallenge'
+  | 'returnToFocusedLesson'
+  | 'watchToComplete'
+  | 'completeLessonTask'
+  | 'continue';
+
+const PRIMARY_ACTION_LABEL: Record<PrimaryAction, string> = {
+  locked: 'Complete prerequisites',
+  saving: 'Saving progress…',
+  verifyMilestone: 'Verify milestone',
+  completePractice: 'Complete practice',
+  takeQuiz: 'Take Quiz',
+  openChallenge: 'Open Code Challenge',
+  returnToFocusedLesson: 'Return to focused lesson',
+  watchToComplete: 'Watch lesson to complete',
+  completeLessonTask: 'Mark lesson read',
+  continue: 'Continue',
+};
 
 /* ─────────────────────────────────────────────────────────
    Main NodeWorkspace component
@@ -262,32 +306,63 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
     }
   };
 
-  const handleGotIt = async () => {
-    if (activeResource && !activeLessonTask && pendingLessonResourceIndex >= 0) {
-      setActiveResourceIndex(pendingLessonResourceIndex);
-      return;
-    }
-    if (activeLessonTask && !data.progress.completedTasks.includes(activeLessonTask.id)) {
-      if (activeLessonTask.type === 'watch' && activeYouTubeRef?.kind === 'video') return;
-      const saved = await handleCompleteTask(activeLessonTask);
-      if (saved && activeResourceIndex < resources.length - 1) setActiveResourceIndex((i) => i + 1);
-      return;
-    }
-    if (nextPendingTask) {
-      if (nextPendingTask.type === 'watch' || nextPendingTask.type === 'read') {
-        const saved = await handleCompleteTask(nextPendingTask);
-        if (saved && activeResourceIndex < resources.length - 1) setActiveResourceIndex((i) => i + 1);
-      } else if (nextPendingTask.type === 'quiz' && nextPendingTask.quiz) {
-        setActiveQuizTask(nextPendingTask);
-      } else if (nextPendingTask.type === 'challenge' && nextPendingTask.challenge) {
-        setActiveChallengeTask(nextPendingTask);
-      } else if (nextPendingTask.type === 'build') {
+  /* ── Primary CTA — single decision tree shared by the label and the click
+     handler, so they can't drift out of sync with each other (previously two
+     independent branch chains over the same state). Only meaningful while
+     !allDone — the allDone states render their own Link/disabled button. ── */
+  const activeLessonPending = Boolean(activeLessonTask && !data.progress.completedTasks.includes(activeLessonTask.id));
+  const primaryAction: PrimaryAction =
+    status === 'locked' ? 'locked'
+    : completingTaskId ? 'saving'
+    : nextPendingTask?.type === 'build' ? 'verifyMilestone'
+    : nextPendingTask?.type === 'practice' ? 'completePractice'
+    : nextPendingTask?.type === 'quiz' ? 'takeQuiz'
+    : nextPendingTask?.type === 'challenge' ? 'openChallenge'
+    : activeResource && !activeLessonTask && pendingLessonResourceIndex >= 0 ? 'returnToFocusedLesson'
+    : activeLessonPending && activeLessonTask?.type === 'watch' && activeYouTubeRef?.kind === 'video' ? 'watchToComplete'
+    : activeLessonPending ? 'completeLessonTask'
+    : 'continue';
+
+  const runPrimaryAction = async () => {
+    switch (primaryAction) {
+      case 'locked':
+      case 'saving':
+      case 'watchToComplete':
+        return; // watch progress is driven by the video's onWatchThreshold, not a click
+      case 'verifyMilestone':
         document.getElementById('project-milestone')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else {
-        await handleCompleteTask(nextPendingTask);
+        return;
+      case 'takeQuiz':
+        if (nextPendingTask?.quiz) setActiveQuizTask(nextPendingTask);
+        return;
+      case 'openChallenge':
+        if (nextPendingTask?.challenge) setActiveChallengeTask(nextPendingTask);
+        return;
+      case 'returnToFocusedLesson':
+        if (pendingLessonResourceIndex >= 0) setActiveResourceIndex(pendingLessonResourceIndex);
+        return;
+      case 'completePractice':
+        if (nextPendingTask) await handleCompleteTask(nextPendingTask);
+        return;
+      case 'completeLessonTask': {
+        if (!activeLessonTask) return;
+        const saved = await handleCompleteTask(activeLessonTask);
+        if (saved && activeResourceIndex < resources.length - 1) setActiveResourceIndex((i) => i + 1);
+        return;
       }
-    } else if (activeResourceIndex < resources.length - 1) {
-      setActiveResourceIndex((i) => i + 1);
+      case 'continue': {
+        if (nextPendingTask) {
+          if (nextPendingTask.type === 'watch' || nextPendingTask.type === 'read') {
+            const saved = await handleCompleteTask(nextPendingTask);
+            if (saved && activeResourceIndex < resources.length - 1) setActiveResourceIndex((i) => i + 1);
+          } else {
+            await handleCompleteTask(nextPendingTask);
+          }
+        } else if (activeResourceIndex < resources.length - 1) {
+          setActiveResourceIndex((i) => i + 1);
+        }
+        return;
+      }
     }
   };
 
@@ -310,27 +385,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
   const stepPct = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
   const allDone = tasks.length > 0 && doneCount === tasks.length;
 
-  const primaryBtnLabel = allDone
-    ? nextNode ? 'Next Lesson' : 'Complete!'
-    : status === 'locked'
-      ? 'Complete prerequisites'
-    : completingTaskId
-      ? 'Saving progress…'
-    : nextPendingTask?.type === 'build'
-      ? 'Verify milestone'
-    : nextPendingTask?.type === 'practice'
-      ? 'Complete practice'
-    : nextPendingTask?.type === 'quiz'
-      ? 'Take Quiz'
-      : nextPendingTask?.type === 'challenge'
-        ? 'Open Code Challenge'
-        : activeResource && !activeLessonTask && pendingLessonResourceIndex >= 0
-          ? 'Return to focused lesson'
-        : activeLessonTask?.type === 'watch' && activeYouTubeRef?.kind === 'video'
-          ? 'Watch lesson to complete'
-          : activeLessonTask?.type === 'read'
-            ? 'Mark lesson read'
-            : 'Continue';
+  const primaryBtnLabel = allDone ? 'Complete!' : PRIMARY_ACTION_LABEL[primaryAction];
 
   /* ═══════════════════════════════════════════════════════
      RENDER
@@ -695,30 +750,21 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                         : 'No ratings yet'}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1" role="group" aria-label={`Rate ${activeResource.name}`}>
-                    {[1, 2, 3, 4, 5].map((rating) => {
-                      const selected = (data.progress.ratings[activeResource.id] ?? 0) >= rating;
-                      return (
-                        <button
-                          key={rating}
-                          type="button"
-                          disabled={!canWork}
-                          onClick={async () => {
-                            try {
-                              await data.rateResource({ resourceId: activeResource.id, rating });
-                              toast.success('Resource rating saved.');
-                            } catch (error) {
-                              toast.error(error instanceof Error ? error.message : 'Could not save your rating.');
-                            }
-                          }}
-                          className="flex size-9 items-center justify-center text-outline transition-colors hover:text-secondary disabled:cursor-not-allowed disabled:opacity-40"
-                          aria-label={`${rating} star${rating === 1 ? '' : 's'}`}
-                          aria-pressed={(data.progress.ratings[activeResource.id] ?? 0) === rating}
-                        >
-                          <Star className={cn('size-4', selected && 'fill-secondary text-secondary')} />
-                        </button>
-                      );
-                    })}
+                  <div role="group" aria-label={`Rate ${activeResource.name}`}>
+                    <Stars
+                      value={data.progress.ratings[activeResource.id] ?? 0}
+                      disabled={!canWork}
+                      tone="secondary"
+                      size="size-4"
+                      onRate={async (rating) => {
+                        try {
+                          await data.rateResource({ resourceId: activeResource.id, rating });
+                          toast.success('Resource rating saved.');
+                        } catch (error) {
+                          toast.error(error instanceof Error ? error.message : 'Could not save your rating.');
+                        }
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -868,8 +914,8 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
           </Link>
         ) : (
           <Button
-            onClick={data.isSupabaseConnected && !data.isAuthenticated ? data.signInWithGithub : handleGotIt}
-            disabled={(status === 'locked') || Boolean(completingTaskId) || (allDone && !nextNode)}
+            onClick={data.isSupabaseConnected && !data.isAuthenticated ? data.signInWithGithub : runPrimaryAction}
+            disabled={(status === 'locked') || Boolean(completingTaskId) || (allDone && !nextNode) || primaryAction === 'watchToComplete'}
             className={cn(
               'min-w-0 shrink-0 gap-2 px-3 py-2 font-code text-[11px] font-bold sm:ml-auto sm:px-5 sm:text-sm',
               allDone

@@ -293,13 +293,28 @@ export function TaskTypeBadge({ type, label }: { type: TaskType; label?: string 
   );
 }
 
+const STARS_TONE_CLS: Record<'tertiary' | 'secondary', string> = {
+  tertiary: 'fill-tertiary text-tertiary',
+  secondary: 'fill-secondary text-secondary',
+};
+const STARS_TONE_HOVER_CLS: Record<'tertiary' | 'secondary', string> = {
+  tertiary: 'hover:text-tertiary focus-visible:text-tertiary',
+  secondary: 'hover:text-secondary focus-visible:text-secondary',
+};
+
 export function Stars({
   value,
   onRate,
+  disabled = false,
+  tone = 'tertiary',
   size = 'h-3.5 w-3.5',
 }: {
   value: number;
   onRate?: (rating: number) => void;
+  /** Renders interactive buttons as disabled instead of falling back to read-only stars —
+   * keeps the "you can't rate this yet" affordance distinct from an already-rated display. */
+  disabled?: boolean;
+  tone?: 'tertiary' | 'secondary';
   size?: string;
 }) {
   return (
@@ -309,14 +324,16 @@ export function Stars({
           <button
             key={star}
             type="button"
+            disabled={disabled}
             onClick={() => onRate(star)}
             aria-label={`${star} star${star > 1 ? 's' : ''}`}
-            className="p-0.5 text-outline transition-colors hover:text-tertiary focus-visible:text-tertiary"
+            aria-pressed={value === star}
+            className={cn('flex size-9 items-center justify-center text-outline transition-colors disabled:cursor-not-allowed disabled:opacity-40', STARS_TONE_HOVER_CLS[tone])}
           >
-            <Star className={cn(size, star <= value && 'fill-tertiary text-tertiary')} />
+            <Star className={cn(size, star <= value && STARS_TONE_CLS[tone])} />
           </button>
         ) : (
-          <Star key={star} className={cn(size, star <= Math.round(value) ? 'fill-tertiary text-tertiary' : 'text-outline-variant')} />
+          <Star key={star} className={cn(size, star <= Math.round(value) ? STARS_TONE_CLS[tone] : 'text-outline-variant')} />
         ),
       )}
     </span>
