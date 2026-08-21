@@ -22,7 +22,7 @@ export function MembersTable({ members, emptyLabel, onSelect }: { members: Membe
             <span className="flex items-start gap-3">
               <Avatar className={cn(m.isStuck && 'border-error/50 ring-error/10')}>
                 <AvatarImage src={m.avatar_url ?? undefined} alt={m.username} />
-                <AvatarFallback className="text-[10px]">{m.username.slice(0, 2)}</AvatarFallback>
+                <AvatarFallback className="text-xs">{m.username.slice(0, 2)}</AvatarFallback>
                 {m.isStuck && <AvatarBadge className="bg-error" aria-label="Needs attention" />}
               </Avatar>
               <span className="min-w-0 flex-1">
@@ -30,13 +30,13 @@ export function MembersTable({ members, emptyLabel, onSelect }: { members: Membe
                   <span className="truncate text-sm font-semibold text-on-surface">{m.username}</span>
                   {m.isStuck && <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-error" />}
                 </span>
-                <span className="mt-1 block font-code text-[10px] uppercase text-on-surface-variant">{m.cohort ?? 'No cohort'} · {m.inProgressNodes.length || 0} in progress</span>
+                <span className="mt-1 block font-code text-xs uppercase text-on-surface-variant">{m.cohort ?? 'No cohort'} · {m.inProgressNodes.length || 0} in progress</span>
               </span>
               <span className="font-code text-xs font-semibold text-cyan">{m.overallPct}%</span>
             </span>
             <span className="mt-3 flex items-center gap-3">
               <span className="h-1.5 flex-1 bg-surface-container-high"><span className="block h-full bg-cyan" style={{ width: `${m.overallPct}%` }} /></span>
-              <span className={cn('font-code text-[10px]', m.isStuck ? 'font-semibold text-error' : 'text-on-surface-variant')}>{fmtDate(m.lastActiveAt)}</span>
+              <span className={cn('font-code text-xs', m.isStuck ? 'font-semibold text-error' : 'text-on-surface-variant')}>{fmtDate(m.lastActiveAt)}</span>
             </span>
           </button>
         ))}
@@ -62,25 +62,25 @@ export function MembersTable({ members, emptyLabel, onSelect }: { members: Membe
                 <span className="flex items-center gap-2.5">
                   <Avatar size="sm" className={cn(m.isStuck && 'border-error/50 ring-error/10')}>
                     <AvatarImage src={m.avatar_url ?? undefined} alt={m.username} />
-                    <AvatarFallback className="text-[9px]">{m.username.slice(0, 2)}</AvatarFallback>
+                    <AvatarFallback className="text-[11px]">{m.username.slice(0, 2)}</AvatarFallback>
                     {m.isStuck && <AvatarBadge className="h-3 w-3 bg-error" aria-label="Needs attention" />}
                   </Avatar>
                   <span className="text-xs font-semibold text-on-surface">{m.username}</span>
                   {m.isStuck && <AlertTriangle className="h-3.5 w-3.5 text-error" />}
                 </span>
               </TableCell>
-              <TableCell className="font-code text-[10px] uppercase text-on-surface-variant">{m.cohort ?? '—'}</TableCell>
+              <TableCell className="font-code text-xs uppercase text-on-surface-variant">{m.cohort ?? '—'}</TableCell>
               <TableCell>
                 <span className="flex items-center gap-2">
                   <span className="inline-block h-1 w-20 bg-surface-container-high">
                     <span className="block h-full bg-cyan" style={{ width: `${m.overallPct}%` }} />
                   </span>
-                  <span className="font-code text-[10px] font-semibold text-on-surface-variant">{m.overallPct}%</span>
+                  <span className="font-code text-xs font-semibold text-on-surface-variant">{m.overallPct}%</span>
                 </span>
               </TableCell>
               <TableCell className="font-code text-xs text-on-surface-variant">{m.inProgressNodes.length || '—'}</TableCell>
               <TableCell className={cn('font-code text-[11px]', m.isStuck ? 'font-semibold text-error' : 'text-on-surface-variant')}>{fmtDate(m.lastActiveAt)}</TableCell>
-              <TableCell className="text-right font-code text-[10px] uppercase text-outline">view →</TableCell>
+              <TableCell className="text-right font-code text-xs uppercase text-outline">view →</TableCell>
             </TableRow>
           ))}
           {members.length === 0 && (

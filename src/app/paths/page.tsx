@@ -99,12 +99,12 @@ export default function PathSelectionPage() {
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1.5">
             {isActive && (
-              <Badge variant="success" className="gap-1 px-2 py-1 font-code text-[10px] uppercase">
+              <Badge variant="success" className="px-2 py-1">
                 <CheckCircle2 className="h-3 w-3" /> Active
               </Badge>
             )}
             {locked && (
-              <Badge variant="outline" className="gap-1 border-warning/45 bg-warning/10 px-2 py-1 font-code text-[10px] uppercase text-on-surface">
+              <Badge variant="outline" className="border-warning/45 bg-warning/10 px-2 py-1 text-on-surface">
                 <Lock className="h-3 w-3" /> Later
               </Badge>
             )}
@@ -119,7 +119,7 @@ export default function PathSelectionPage() {
             <Layers className="h-3.5 w-3.5 text-cyan" aria-hidden /> {pathNodes.length} modules
           </span>
           {path.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="border border-outline-variant bg-surface-container-high px-2 py-1 text-[10px] text-on-surface-variant">
+            <span key={tag} className="border border-outline-variant bg-surface-container-high px-2 py-1 font-code text-xs text-on-surface-variant">
               {tag}
             </span>
           ))}
@@ -154,12 +154,7 @@ export default function PathSelectionPage() {
             )}
             <Button
               onClick={() => handlePathSelect(path.id)}
-              className={cn(
-                'w-full justify-center',
-                isActive
-                  ? 'bg-cyan text-on-primary-fixed hover:bg-cyan/90'
-                  : 'border border-cyan/55 bg-surface-card text-on-surface hover:bg-cyan hover:text-on-primary-fixed',
-              )}
+              className="w-full justify-center"
             >
               {isSupabaseConnected && !isAuthenticated
                 ? 'Sign in to start'

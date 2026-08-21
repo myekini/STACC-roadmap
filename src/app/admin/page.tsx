@@ -99,13 +99,13 @@ function MemberDrilldown({ member, onClose }: { member: MemberRow | null; onClos
                 href={`https://github.com/${member.githubUsername}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-none border border-cyan/40 bg-cyan/10 px-2.5 py-1 font-code text-[10px] font-bold uppercase text-cyan hover:bg-cyan/20"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-none border border-cyan/40 bg-cyan/10 px-2.5 py-1 font-code text-xs font-bold uppercase tracking-[0.08em] text-cyan hover:bg-cyan/20"
               >
                 <GithubLogo className="h-3 w-3" /> GitHub
               </a>
             )}
           </div>
-          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 font-code text-[10px] lowercase text-on-surface-variant">
+          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 font-code text-xs lowercase text-on-surface-variant">
             <span>overall {member.overallPct}%</span>
             <span>last active {member.lastActiveAt ? new Date(member.lastActiveAt).toLocaleDateString('en', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase() : 'never'}</span>
             {member.isStuck && <span className="font-bold text-error">⚠ stuck</span>}
@@ -120,7 +120,7 @@ function MemberDrilldown({ member, onClose }: { member: MemberRow | null; onClos
               <section key={path.id}>
                 <div className="flex items-center justify-between">
                   <p className="micro-label text-outline">{path.title}</p>
-                  <span className="font-code text-[10px] font-semibold text-on-surface-variant">{done}/{pathNodes.length}</span>
+                  <span className="font-code text-xs font-semibold text-on-surface-variant">{done}/{pathNodes.length}</span>
                 </div>
                 <ul className="mt-2 space-y-1">
                   {pathNodes.map((node) => {
@@ -134,7 +134,7 @@ function MemberDrilldown({ member, onClose }: { member: MemberRow | null; onClos
                         <StatusMarker status={status} size="sm" />
                         <span className={cn('flex-1 truncate text-xs', status === 'complete' ? 'text-on-surface' : 'text-on-surface-variant')}>{node.name}</span>
                         {status === 'complete' && (
-                          <span className="font-code text-[9px] text-outline">{member.completedNodes[node.id]?.slice(0, 10)}</span>
+                          <span className="font-code text-[11px] text-outline">{member.completedNodes[node.id]?.slice(0, 10)}</span>
                         )}
                       </li>
                     );
@@ -359,7 +359,7 @@ export default function AdminPage() {
                                 <span className="inline-block h-1 w-20 bg-surface-container-high">
                                   <span className={cn('block h-full', rate >= 20 ? 'bg-secondary' : rate >= 10 ? 'bg-tertiary' : 'bg-error')} style={{ width: `${rate}%` }} />
                                 </span>
-                                <span className="font-code text-[10px] font-semibold text-on-surface-variant">{rate}%</span>
+                                <span className="font-code text-xs font-semibold text-on-surface-variant">{rate}%</span>
                               </span>
                             </td>
                           </tr>
@@ -393,7 +393,7 @@ export default function AdminPage() {
                         return (
                           <tr key={a.nodeId} className="hover:bg-surface-container-low/50">
                             <td className="px-4 py-3 text-xs font-semibold text-on-surface">{node?.name ?? a.nodeId}</td>
-                            <td className="px-4 py-3 font-code text-[10px] uppercase text-on-surface-variant">{allPathTitles[node?.path_id ?? ''] ?? node?.path_id}</td>
+                            <td className="px-4 py-3 font-code text-xs uppercase text-on-surface-variant">{allPathTitles[node?.path_id ?? ''] ?? node?.path_id}</td>
                             <td className="px-4 py-3 font-code text-xs text-on-surface-variant">{a.starts}</td>
                             <td className="px-4 py-3 font-code text-xs text-on-surface-variant">{a.completions}</td>
                             <td className="px-4 py-3">
@@ -401,7 +401,7 @@ export default function AdminPage() {
                                 <span className="inline-block h-1 w-20 bg-surface-container-high">
                                   <span className={cn('block h-full', rate >= 60 ? 'bg-secondary' : rate >= 30 ? 'bg-tertiary' : 'bg-error')} style={{ width: `${rate}%` }} />
                                 </span>
-                                <span className="font-code text-[10px] font-semibold text-on-surface-variant">{rate}%</span>
+                                <span className="font-code text-xs font-semibold text-on-surface-variant">{rate}%</span>
                               </span>
                             </td>
                           </tr>

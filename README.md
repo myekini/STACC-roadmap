@@ -54,9 +54,12 @@ For the real backend, copy `.env.example` to `.env.local` and follow [`supabase/
 
 ## Repo map
 
-- `docs/PRODUCT.md` — full product spec + architecture reference (single source of truth)
-- `docs/ARCHITECTURE.md` — scale, GitHub integration, and feature-weight decisions
+- `docs/README.md` — documentation index and ownership rules
+- `docs/PRODUCT.md` — product scope and founder decisions (product source of truth)
+- `docs/ARCHITECTURE.md` — scale, GitHub integration, and production-readiness decisions
+- `docs/CURRICULUM_STANDARD.md` — curriculum quality and evidence standard
 - `docs/CURRICULUM_*.md` — reviewed lesson-level track blueprints
+- `DESIGN.md` — canonical visual system (kept at the root for design tooling)
 - `src/config/roadmap.ts` — the content engine (mirrors `supabase/seed.sql`)
 - `src/hooks/useUserData.ts` — all user state; Supabase RPCs or localStorage with identical semantics
 - `supabase/` — schema migrations, seed, setup guide; XP-safe RPCs + RLS

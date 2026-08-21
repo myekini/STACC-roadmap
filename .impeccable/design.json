@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-21T00:00:00.000Z",
+  "title": "Design System: Stacc",
+  "extensions": {
+    "colorMeta": {
+      "action-orange-dark": {
+        "role": "primary",
+        "displayName": "Commit Orange",
+        "canonical": "#d9622e",
+        "tonalRamp": ["#32160a", "#572510", "#7b371a", "#a54a22", "#d9622e", "#e8895c", "#f3b79c", "#fce6dc"]
+      },
+      "signal-cyan-dark": {
+        "role": "secondary",
+        "displayName": "Signal Cyan",
+        "canonical": "#00d9ff",
+        "tonalRamp": ["#00323b", "#004f5d", "#006f82", "#0095ad", "#00bddc", "#00d9ff", "#78eaff", "#d9faff"]
+      },
+      "dark-background": {
+        "role": "neutral",
+        "displayName": "Deep Work Canvas",
+        "canonical": "#0d1117",
+        "tonalRamp": ["#0d1117", "#161e2e", "#243044", "#3d495d", "#677286", "#98a1af", "#cdd2d9", "#f4f6f8"]
+      },
+      "light-background": {
+        "role": "neutral",
+        "displayName": "Technical Paper",
+        "canonical": "#f8fafc",
+        "tonalRamp": ["#111827", "#273449", "#46566d", "#6b7b91", "#98a5b6", "#c5cdd7", "#e2e8f0", "#f8fafc"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Marketing hero only." },
+      "headline": { "displayName": "Headline", "purpose": "Page and section hierarchy." },
+      "body": { "displayName": "Body", "purpose": "Curriculum, guidance, and operational reading." },
+      "label": { "displayName": "System Label", "purpose": "Compact state, evidence, and navigation labels." },
+      "label-compact": { "displayName": "Compact System Label", "purpose": "Space-constrained navigation and status labels; never body copy." },
+      "control": { "displayName": "Control Text", "purpose": "Dense editor and workspace controls." },
+      "visualization-caption": { "displayName": "Visualization Caption", "purpose": "Non-essential chart axes and legends only." }
+    },
+    "shadows": [
+      { "name": "overlay", "value": "0 16px 40px rgba(2, 8, 23, 0.24)", "purpose": "Dialogs, menus, sheets, and floating navigation only." },
+      { "name": "status-glow", "value": "0 0 8px currentColor", "purpose": "Small verified or live status dots only." }
+    ],
+    "motion": [
+      { "name": "state-fast", "value": "150ms ease", "purpose": "Button, border, and icon state changes." },
+      { "name": "surface-standard", "value": "200ms ease", "purpose": "Menus, sheets, and compact surface transitions." },
+      { "name": "progress", "value": "400ms ease", "purpose": "Progress value changes." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "0px" },
+      { "name": "tablet", "value": "768px" },
+      { "name": "desktop", "value": "1200px" },
+      { "name": "wide", "value": "1440px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The consequential action in a decision region.",
+      "html": "<button class=\"ds-btn-primary\">CONTINUE</button>",
+      "css": ".ds-btn-primary { min-height: 44px; padding: 12px 16px; border: 0; border-radius: 0; background: #d9622e; color: #0a1628; font: 600 12px/1.35 'Geist Mono', monospace; letter-spacing: .08em; text-transform: uppercase; transition: background-color 150ms ease; } .ds-btn-primary:hover { background: #ff6b35; } .ds-btn-primary:focus-visible { outline: 2px solid #00d9ff; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A supporting or exploratory action.",
+      "html": "<button class=\"ds-btn-secondary\">VIEW DETAILS</button>",
+      "css": ".ds-btn-secondary { min-height: 44px; padding: 12px 16px; border: 1px solid #2a3547; border-radius: 0; background: #12263f; color: #e0e3e5; font: 600 12px/1.35 'Geist Mono', monospace; letter-spacing: .08em; text-transform: uppercase; transition: border-color 150ms ease, color 150ms ease; } .ds-btn-secondary:hover { border-color: #00d9ff; color: #00d9ff; } .ds-btn-secondary:focus-visible { outline: 2px solid #00d9ff; outline-offset: 2px; }"
+    },
+    {
+      "name": "Operational Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A flat, bordered container for one coherent task or status group.",
+      "html": "<article class=\"ds-card\"><p class=\"ds-label\">CURRENT MODULE</p><h3>Build a reliable pipeline</h3><p>Ship the next feature and verify it from your connected repository.</p></article>",
+      "css": ".ds-card { max-width: 360px; padding: 24px; border: 1px solid #2a3547; border-radius: 0; background: #12263f; color: #e0e3e5; font: 400 14px/1.5 'Geist Sans', sans-serif; } .ds-card h3 { margin: 8px 0; font-size: 18px; line-height: 1.3; } .ds-card p { margin: 0; color: #8395ac; } .ds-card .ds-label { color: #00d9ff; font: 600 11px/1.35 'Geist Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A labeled, theme-safe field with a clear technical focus state.",
+      "html": "<label class=\"ds-field\"><span>REPOSITORY URL</span><input placeholder=\"https://github.com/…\" /></label>",
+      "css": ".ds-field { display: grid; gap: 8px; color: #e0e3e5; font: 600 11px/1.35 'Geist Mono', monospace; letter-spacing: .08em; } .ds-field input { min-height: 44px; padding: 10px 12px; border: 1px solid #2a3547; border-radius: 4px; background: #101b2c; color: #e0e3e5; font: 400 14px/1.5 'Geist Sans', sans-serif; } .ds-field input:focus-visible { outline: 2px solid #00d9ff; outline-offset: 1px; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "description": "A compact semantic state, never decorative filler.",
+      "html": "<span class=\"ds-badge\">VERIFIED</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; padding: 3px 8px; border: 1px solid rgba(16,185,129,.35); border-radius: 0; background: rgba(16,185,129,.1); color: #10b981; font: 600 11px/1.35 'Geist Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Technical Field Manual",
+    "overview": "Modern Technical Brutalism made usable: sharp, evidence-led, dark-first, and fully resolved for light mode. Member and admin surfaces prioritize orientation, action, recovery, and proof over decoration.",
+    "keyCharacteristics": [
+      "Orange commits; cyan guides.",
+      "Sharp structures, selectively softened controls.",
+      "Geist Sans for reading and Geist Mono for system meaning.",
+      "Flat by default with earned elevation.",
+      "Member and admin workflows stay quieter than marketing."
+    ],
+    "rules": [
+      { "name": "The Two-Accent Rule", "body": "Orange represents commitment; cyan represents orientation and feedback.", "section": "colors" },
+      { "name": "The Eleven-Pixel Floor", "body": "Meaningful UI labels and metadata never render below 11px.", "section": "typography" },
+      { "name": "The Earned Elevation Rule", "body": "Shadows are reserved for elements that genuinely float above another surface.", "section": "elevation" }
+    ],
+    "dos": [
+      "Use semantic tokens in both themes.",
+      "Prioritize the learner's next action and proof.",
+      "Build repeatable patterns as shared primitives.",
+      "Provide keyboard, touch, loading, empty, and error states."
+    ],
+    "donts": [
+      "Do not reintroduce obsolete XP, Ladder, AI-assistant, or Discord requirements.",
+      "Do not use 9px interface text.",
+      "Do not stack glow, shadow, blur, badges, and motion.",
+      "Do not create page-specific copies of global primitives."
+    ]
+  }
+}

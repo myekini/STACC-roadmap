@@ -67,7 +67,7 @@ function HeatmapGrid({ weeks }: { weeks: ActivityWeek[] }) {
       </div>
 
       <div className="flex gap-2">
-        <div className="flex w-5 shrink-0 flex-col justify-between py-0.5 font-code text-[9px] text-on-surface-variant" aria-hidden>
+        <div className="flex w-5 shrink-0 flex-col justify-between py-0.5 font-code text-[10px] text-on-surface-variant" aria-hidden>
           <span>Sun</span>
           <span>Tue</span>
           <span>Thu</span>
@@ -107,9 +107,9 @@ export default function ActivityHeatmap({ activity }: { activity: Record<string,
           <h2 id="activity-heading" className="flex items-center gap-2 font-display text-lg font-bold text-on-surface">
             <CalendarDays className="h-5 w-5 text-cyan" aria-hidden /> Learning activity
           </h2>
-          <p className="mt-1 text-xs text-on-surface-variant">{activeDays} active {activeDays === 1 ? 'day' : 'days'} recorded.</p>
+          <p className="mt-1 text-sm text-on-surface-variant">{activeDays} active {activeDays === 1 ? 'day' : 'days'} recorded.</p>
         </div>
-        <span className="font-code text-[10px] font-semibold uppercase tracking-[0.1em] text-on-surface-variant">
+        <span className="font-code text-xs font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
           <span className="md:hidden">Last 16 weeks</span>
           <span className="hidden md:inline">Last 12 months</span>
         </span>

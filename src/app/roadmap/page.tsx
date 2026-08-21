@@ -68,7 +68,7 @@ export default function RoadmapPage() {
               </h1>
               <div className="h-4 w-px bg-outline-variant/60" />
               <div className="flex items-center gap-2">
-                <span className="hidden font-code text-[10px] uppercase tracking-wider text-outline sm:inline">This track</span>
+                <span className="hidden font-code text-xs uppercase tracking-[0.08em] text-outline sm:inline">This track</span>
                 <Progress
                   value={trackPct}
                   className="h-1.5 w-16 rounded-none bg-surface-container-high sm:w-24 [&>div]:rounded-none [&>div]:bg-cyan"

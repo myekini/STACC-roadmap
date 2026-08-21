@@ -111,17 +111,19 @@ const config: Config = {
   				ring: 'hsl(var(--sidebar-ring))'
   			}
   		},
-  		borderRadius: {
-  			'none': '0',
-  			'sm': '0',
-  			'DEFAULT': '0',
-  			'md': '0',
-  			'lg': '0',
-  			'xl': '0',
-  			'2xl': '0',
-  			'3xl': '0',
-  			'full': '9999px'
-  		},
+		borderRadius: {
+			'none': '0',
+			'sm': '0',
+			'DEFAULT': '0',
+			'md': '0',
+			'lg': '0',
+			'xl': '0',
+			'2xl': '0',
+			'3xl': '0',
+			'control': '4px',
+			'overlay': '6px',
+			'full': '9999px'
+		},
   		spacing: {
   			'base': '4px',
   			'lg': '24px',

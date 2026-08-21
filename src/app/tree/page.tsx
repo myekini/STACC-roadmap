@@ -78,7 +78,7 @@ export default function PublicTreePage() {
                     </h2>
                   </div>
                   {gated && (
-                    <span className="inline-flex items-center gap-1.5 border border-outline-variant bg-surface-container-low px-2 py-1 font-code text-[10px] uppercase tracking-[0.12em] text-outline">
+                    <span className="inline-flex items-center gap-1.5 border border-outline-variant bg-surface-container-low px-2 py-1 font-code text-xs uppercase tracking-[0.08em] text-outline">
                       <Lock className="h-3 w-3" /> unlocks after {gateTitles}
                     </span>
                   )}
@@ -90,9 +90,9 @@ export default function PublicTreePage() {
                       <span className="font-code text-[11px] font-bold text-outline">{String(i + 1).padStart(2, '0')}</span>
                       <div className="min-w-0 flex-1">
                         <h3 className="truncate text-sm font-semibold text-on-surface">{node.name}</h3>
-                        <p className="truncate text-[10px] text-on-surface-variant">{node.subtitle}</p>
+                        <p className="truncate text-xs text-on-surface-variant">{node.subtitle}</p>
                       </div>
-                      <span className="shrink-0 font-code text-[10px] text-outline">{node.est_hours}h</span>
+                      <span className="shrink-0 font-code text-xs text-outline">{node.est_hours}h</span>
                     </li>
                   ))}
                 </ol>

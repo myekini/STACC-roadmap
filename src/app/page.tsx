@@ -138,7 +138,7 @@ export default function LandingPage() {
               </Button>
             )}
 
-            <Button onClick={handleStart} size="sm" className="gap-1.5 text-xs font-code uppercase font-bold tracking-wider rounded-none bg-cyan text-on-primary-fixed hover:bg-cyan/90">
+            <Button onClick={handleStart} size="sm" className="gap-1.5">
               {hasSelectedPath ? 'Continue Roadmap' : 'Start Roadmap'}
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
@@ -195,7 +195,7 @@ export default function LandingPage() {
             initial={reduceMotion ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.02 }}
-            className="font-code text-xs font-bold uppercase tracking-[0.2em] text-cyan"
+            className="font-code text-xs font-bold uppercase tracking-[0.08em] text-cyan"
           >
             {'// not learning. just shipping.'}
           </motion.p>
@@ -225,7 +225,7 @@ export default function LandingPage() {
             transition={{ duration: 0.45, delay: 0.15 }}
             className="flex flex-wrap items-center justify-center gap-4 pt-2"
           >
-            <Button size="lg" onClick={handleStart} className="gap-2 shadow-xl font-code uppercase font-bold tracking-wider px-6 py-3.5 text-xs rounded-none bg-secondary text-white hover:bg-secondary/90">
+            <Button size="lg" onClick={handleStart} className="gap-2">
               <Rocket className="h-4 w-4" />
               {hasSelectedPath ? 'Continue Your Roadmap' : 'Start Learning Free'}
             </Button>
@@ -379,7 +379,7 @@ export default function LandingPage() {
             {featuredPaths.map((path) => (
               <article
                 key={path.id}
-                className="group flex flex-col justify-between border border-outline-variant bg-surface-card rounded-none p-6 transition-all hover:-translate-y-1 hover:border-cyan/40 hover:shadow-xl"
+                className="group flex flex-col justify-between border border-outline-variant bg-surface-card rounded-none p-6 transition-[border-color,background-color] hover:border-cyan/40 hover:bg-surface-container-low"
               >
                 <div className="space-y-4">
                   <p className="font-code text-[11px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">

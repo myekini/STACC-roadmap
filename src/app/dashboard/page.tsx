@@ -100,9 +100,9 @@ export default function DashboardPage() {
               <metric.icon className="h-5 w-5" aria-hidden />
             </div>
             <div className="min-w-0">
-              <p className="font-code text-[10px] font-semibold uppercase tracking-[0.1em] text-on-surface-variant">{metric.label}</p>
+              <p className="font-code text-xs font-semibold uppercase tracking-[0.08em] text-on-surface-variant">{metric.label}</p>
               <p className="mt-1 font-display text-2xl font-bold text-on-surface">{metric.value}</p>
-              <p className="mt-1 text-xs leading-5 text-on-surface-variant">{metric.detail}</p>
+              <p className="mt-1 text-sm leading-5 text-on-surface-variant">{metric.detail}</p>
             </div>
           </div>
         ))}

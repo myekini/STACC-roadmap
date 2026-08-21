@@ -153,7 +153,7 @@ function ResourceRow({
         <div className="min-w-0">
           <p className="font-semibold text-on-surface truncate">{res.name || <em className="text-outline">Unnamed</em>}</p>
           <p className="text-xs text-on-surface-variant truncate">{res.platform} · {res.url || '—'}</p>
-          <p className="mt-0.5 font-code text-[10px] text-outline">
+          <p className="mt-0.5 font-code text-xs text-outline">
             {res.rating_count > 0 ? `${res.avg_rating.toFixed(1)} / 5 · ${res.rating_count} rating${res.rating_count === 1 ? '' : 's'}` : 'No ratings'}
             {res.updated_at ? ` · reviewed ${new Date(res.updated_at).toLocaleDateString('en', { day: '2-digit', month: 'short', year: 'numeric' })}` : ' · review date unavailable'}
           </p>
@@ -273,7 +273,7 @@ function TaskEditor({
 
       {isLesson && (
         <fieldset className="space-y-3 border-t border-outline-variant/60 pt-3">
-          <legend className="font-code text-[10px] font-bold uppercase tracking-wide text-on-surface">Lesson setup</legend>
+          <legend className="font-code text-xs font-bold uppercase tracking-[0.08em] text-on-surface">Lesson setup</legend>
           <p className="text-xs leading-5 text-on-surface-variant">Connect this step to one curated source and keep it short enough to finish in one sitting.</p>
           <label className="block space-y-1">
             <span className="text-xs font-semibold text-on-surface">Resource</span>
@@ -362,7 +362,7 @@ function TaskEditor({
                   questions[qi] = { ...q, options: [...q.options, ''] };
                   updateQuiz({ questions });
                 }}
-                className="pl-3 text-[10px] text-cyan hover:underline"
+                className="pl-3 text-xs text-cyan hover:underline"
               >
                 + option
               </button>
@@ -445,7 +445,7 @@ function TaskEditor({
 
       {type === 'build' && (
         <div className="space-y-2 border-t border-outline-variant/60 pt-2">
-          <p className="font-code text-[10px] uppercase text-outline">Project requirements (optional)</p>
+          <p className="font-code text-xs uppercase tracking-[0.08em] text-outline">Project requirements (optional)</p>
           <Input
             placeholder="Required file paths, comma-separated"
             defaultValue={toCsv(draft.project_requirements?.requiredPaths)}
@@ -658,7 +658,7 @@ export function CurriculumManager() {
         {/* ── PANEL 1: Track selector sidebar ── */}
         <aside className={cn('min-h-0 w-full flex-1 flex-col border-r border-outline-variant bg-surface lg:flex lg:w-52 lg:flex-none', mobileView === 'tracks' ? 'flex' : 'hidden')}>
           <div className="flex items-center justify-between px-4 pt-4 pb-2">
-            <p className="font-code text-[10px] font-bold uppercase tracking-widest text-outline">Tracks</p>
+            <p className="font-code text-xs font-bold uppercase tracking-[0.08em] text-outline">Tracks</p>
             {!disabled && (
               <button type="button" onClick={() => setEditingPath('new')} className="flex size-10 items-center justify-center text-cyan hover:bg-cyan/10" title="New track" aria-label="Create a new track">
                 <Plus className="h-3.5 w-3.5" />
@@ -785,7 +785,7 @@ export function CurriculumManager() {
                     onDragEnd={handleDragEnd}
                     className={cn(
                       'group flex min-h-12 items-start gap-2 rounded-none border p-3 cursor-pointer select-none transition-colors text-sm',
-                      isSelected ? 'border-cyan bg-cyan/10 text-on-surface shadow-md' : 'border-outline-variant/40 bg-surface-card text-on-surface-variant hover:border-cyan/40 hover:text-on-surface',
+                      isSelected ? 'border-cyan bg-cyan/10 text-on-surface' : 'border-outline-variant/40 bg-surface-card text-on-surface-variant hover:border-cyan/40 hover:text-on-surface',
                     )}
                     onClick={() => { setSelectedNodeId(node.id); setMobileView('editor'); }}
                   >
@@ -1033,7 +1033,7 @@ function NewNodeForm({
         onChange={(e) => { setSlugTouched(true); setSlug(sanitizeSlugInput(e.target.value)); }}
         className={cn('h-7 text-xs', isDuplicate && 'border-error')}
       />
-      <p className="font-code text-[10px] text-outline">
+      <p className="font-code text-xs text-outline">
         {finalSlug ? <>/roadmap/<span className={isDuplicate ? 'text-error' : 'text-cyan'}>{finalSlug}</span></> : 'Public URL preview appears once you type a name or slug.'}
       </p>
       {error && <p className="text-error">{error}</p>}
@@ -1103,7 +1103,7 @@ function PathFormDialog({
         </AlertDialogHeader>
         <div className="space-y-2 text-xs">
           <label className="block space-y-1">
-            <span className="font-code text-[10px] uppercase text-outline">Title</span>
+            <span className="font-code text-xs uppercase text-outline">Title</span>
             <Input
               value={title}
               onChange={(e) => {
@@ -1114,7 +1114,7 @@ function PathFormDialog({
             />
           </label>
           <label className="block space-y-1">
-            <span className="font-code text-[10px] uppercase text-outline">Track id (slug)</span>
+            <span className="font-code text-xs uppercase text-outline">Track id (slug)</span>
             <Input
               value={id}
               onChange={(e) => { setIdTouched(true); setId(sanitizeSlugInput(e.target.value)); }}
@@ -1123,17 +1123,17 @@ function PathFormDialog({
               className={isDuplicate ? 'border-error' : undefined}
             />
             {!path && (
-              <p className="font-code text-[10px] text-outline">
+              <p className="font-code text-xs text-outline">
                 {finalId ? <>id: <span className={isDuplicate ? 'text-error' : 'text-cyan'}>{finalId}</span></> : 'Track ids are lowercase, hyphenated, and permanent once created.'}
               </p>
             )}
           </label>
           <label className="block space-y-1">
-            <span className="font-code text-[10px] uppercase text-outline">Description</span>
+            <span className="font-code text-xs uppercase text-outline">Description</span>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} className={cn(fieldCls, 'w-full min-h-[60px] resize-y')} />
           </label>
           <label className="block space-y-1">
-            <span className="font-code text-[10px] uppercase text-outline">Requires tracks (comma-separated ids)</span>
+            <span className="font-code text-xs uppercase text-outline">Requires tracks (comma-separated ids)</span>
             <Input value={requiresPaths} onChange={(e) => setRequiresPaths(e.target.value)} placeholder="e.g. de, ds" />
           </label>
           {error && <p className="text-error">{error}</p>}
@@ -1256,7 +1256,7 @@ function ModuleEditor({
         />
 
         <label className="block space-y-1">
-          <span className="font-code text-[10px] uppercase text-outline">Skills (comma-separated — editorial rule: exactly 3)</span>
+          <span className="font-code text-xs uppercase text-outline">Skills (comma-separated — editorial rule: exactly 3)</span>
           <Input
             key={`${node.id}-skills`}
             defaultValue={toCsv(node.skills)}
@@ -1304,7 +1304,7 @@ function ModuleEditor({
             ) : (
               nodePrereqs.map((id) => {
                 const n = allNodes.find((x) => x.id === id);
-                return <Badge key={id} variant="outline" className="text-[10px] font-code">{n?.name ?? id}</Badge>;
+                return <Badge key={id} variant="outline">{n?.name ?? id}</Badge>;
               })
             )}
           </div>
@@ -1364,7 +1364,7 @@ function ModuleEditor({
               <div key={task.id} className="flex items-center justify-between gap-2 rounded-none border border-outline-variant/60 bg-surface/50 px-3 py-2 text-xs group">
                 <div className="min-w-0">
                   <p className="font-semibold text-on-surface truncate">
-                    <Badge variant="outline" className="mr-1.5 text-[9px] font-code uppercase">{task.type}</Badge>
+                    <Badge variant="outline" className="mr-1.5">{task.type}</Badge>
                     {task.description || <em className="text-outline">No description</em>}
                   </p>
                 </div>

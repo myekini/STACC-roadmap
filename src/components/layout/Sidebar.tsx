@@ -48,7 +48,7 @@ export default function Sidebar() {
             {!sidebarCollapsed && (
               <div className="min-w-0">
                 <h2 className="font-display text-base font-bold uppercase tracking-wider text-on-surface">Stacc</h2>
-                <p className="truncate text-[10px] text-on-surface-variant font-medium">
+                <p className="truncate text-xs text-on-surface-variant font-medium">
                   {hasSelectedPath ? 'Roadmap Tracker' : 'Career Tracker'}
                 </p>
               </div>
@@ -128,4 +128,3 @@ export default function Sidebar() {
     </TooltipProvider>
   );
 }
-

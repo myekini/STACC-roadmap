@@ -129,7 +129,7 @@ function ProjectMilestone({
         <p className="mt-1 text-sm leading-6 text-on-surface">{task.description.replace(/^Build:\s*/i, '')}</p>
         {task.project_requirements?.requiredPaths?.length ? (
           <div className="mt-3 border border-outline-variant bg-surface-container-low p-3">
-            <p className="font-code text-[10px] font-bold uppercase tracking-wide text-on-surface">Automated checks</p>
+            <p className="font-code text-xs font-bold uppercase tracking-[0.08em] text-on-surface">Automated checks</p>
             <p className="mt-1 text-xs leading-5 text-on-surface-variant">
               Push a new commit after starting this module. Stacc will confirm that commit is new and these artifacts exist:
             </p>
@@ -510,7 +510,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
               {/* Resource list */}
               {resources.length > 0 && (
                 <section>
-                  <p className="mb-2 font-code text-[10px] font-bold uppercase tracking-widest text-outline">
+                  <p className="mb-2 font-code text-xs font-bold uppercase tracking-[0.08em] text-outline">
                     Learn · {resources.length} selected
                   </p>
                   <ul className="space-y-1.5">
@@ -552,7 +552,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
               {/* Task checklist */}
               {tasks.length > 0 && (
                 <section>
-                  <div className="mb-2 flex items-center justify-between font-code text-[10px]">
+                  <div className="mb-2 flex items-center justify-between font-code text-xs">
                     <span className="font-bold uppercase tracking-widest text-outline flex items-center gap-1">
                       <ListChecks className="h-3 w-3 text-cyan" /> Practise · Prove · Ship
                     </span>
@@ -576,7 +576,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
                           {/* Description */}
                           <span className={cn('min-w-0 flex-1 leading-5', done ? 'line-through text-outline' : 'text-on-surface')}>
-                            <span className="mb-0.5 block font-code text-[10px] font-bold uppercase tracking-wide text-cyan">
+                            <span className="mb-0.5 block font-code text-xs font-bold uppercase tracking-[0.08em] text-cyan">
                               {task.type === 'practice'
                                 ? 'Practise'
                                 : task.type === 'build'
@@ -589,7 +589,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                           {/* Type marker — the action itself lives in the main
                               canvas card or the bottom CTA, not duplicated here */}
                           {!done && (task.type === 'quiz' || task.type === 'challenge' || task.type === 'build') && (
-                            <span className="shrink-0 font-code text-[10px] text-cyan">↓</span>
+                            <span className="shrink-0 font-code text-xs text-cyan">↓</span>
                           )}
                         </li>
                       );
@@ -634,7 +634,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                 <span className="text-outline">·</span>
                 <span>{node.est_hours}h</span>
                 {status === 'locked' && (
-                  <Badge variant="outline" className="ml-2 rounded-none border-warning/40 bg-warning/10 font-code text-[10px] text-on-surface uppercase">
+                  <Badge variant="outline" className="ml-2 border-warning/40 bg-warning/10 text-on-surface">
                     Locked
                   </Badge>
                 )}
@@ -682,7 +682,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                   {activeLessonTask && (
                     <div className="mb-3 flex flex-col gap-1 border-l-2 border-cyan bg-cyan/5 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="font-code text-[10px] font-bold uppercase tracking-wide text-cyan">Focused lesson</p>
+                        <p className="font-code text-xs font-bold uppercase tracking-[0.08em] text-cyan">Focused lesson</p>
                         <p className="mt-0.5 text-sm font-semibold text-on-surface">{activeLessonTask.lesson_title}</p>
                       </div>
                       {activeLessonTask.duration_minutes && (
@@ -728,7 +728,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                     >
                       <ChevronLeft className="h-3.5 w-3.5" /> Previous
                     </button>
-                    <span className="font-code text-[10px] text-outline">
+                    <span className="font-code text-xs text-outline">
                       {activeResourceIndex + 1} / {resources.length}
                     </span>
                     <button
@@ -782,7 +782,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                 {challengeTask && challengeTask.challenge && (
                   <div className="flex flex-col justify-between gap-4 border border-cyan/40 bg-cyan/[0.05] p-4 sm:p-5">
                     <div>
-                      <Badge variant="outline" className="mb-2 border-cyan/40 bg-cyan/15 font-code text-[10px] uppercase text-on-surface">
+                      <Badge variant="outline" className="mb-2 border-cyan/40 bg-cyan/15 text-on-surface">
                         Code Challenge
                       </Badge>
                       <h3 className="font-display text-sm font-bold text-on-surface">Interactive Kata</h3>
@@ -802,7 +802,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
                 {quizTask && quizTask.quiz && (
                   <div className="flex flex-col justify-between gap-4 border border-secondary/40 bg-secondary/[0.05] p-4 sm:p-5">
                     <div>
-                      <Badge variant="outline" className="mb-2 border-secondary/40 bg-secondary/15 font-code text-[10px] uppercase text-on-surface">
+                      <Badge variant="outline" className="mb-2 border-secondary/40 bg-secondary/15 text-on-surface">
                         Knowledge Check
                       </Badge>
                       <h3 className="font-display text-sm font-bold text-on-surface">Checkpoint Quiz</h3>
@@ -824,7 +824,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             {/* ── GitHub milestone card ── */}
             {buildTask && node.path_id !== 'foundations' && (
               <div id="project-milestone" className="scroll-mt-6 space-y-2">
-                <p className="font-code text-[10px] font-bold uppercase tracking-widest text-outline">
+                <p className="font-code text-xs font-bold uppercase tracking-[0.08em] text-outline">
                   Ship · Project Milestone
                 </p>
                 <ProjectMilestone
@@ -878,7 +878,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
         {/* Progress strip */}
         <div className="hidden flex-1 flex-col gap-1 sm:flex">
-          <div className="flex items-center justify-between font-code text-[10px] text-on-surface-variant">
+          <div className="flex items-center justify-between font-code text-xs text-on-surface-variant">
             <span>Progress</span>
             <span className="font-bold text-on-surface">{doneCount}/{tasks.length} ({stepPct}%)</span>
           </div>
@@ -898,7 +898,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
         </div>
 
         <div className="min-w-0 text-center sm:hidden" aria-label={`${stepPct}% of this lesson complete`}>
-          <span className="block font-code text-[10px] font-bold text-on-surface">{stepPct}%</span>
+          <span className="block font-code text-xs font-bold text-on-surface">{stepPct}%</span>
           <span className="mt-1 block h-1 overflow-hidden bg-surface-container-high">
             <span className="block h-full bg-secondary transition-[width] duration-300" style={{ width: `${stepPct}%` }} />
           </span>

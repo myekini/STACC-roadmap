@@ -33,7 +33,7 @@ export default function BottomBar() {
             }`}
           >
             <Icon className="h-5 w-5" aria-hidden="true" />
-            <span className="mt-1 max-w-full truncate font-code text-[9px] font-semibold">{item.name}</span>
+            <span className="mt-1 max-w-full truncate font-code text-[11px] font-semibold">{item.name}</span>
           </Link>
         );
       })}

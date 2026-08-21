@@ -146,7 +146,7 @@ export default function PublicProfile({ handle }: { handle: string }) {
                     <p className="flex items-center justify-center gap-1.5 font-display text-xl font-bold text-on-surface">
                       <Icon className="h-4 w-4 text-cyan" />{value}
                     </p>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider mt-1 text-outline">{label}</p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-outline">{label}</p>
                   </div>
                 ))}
               </div>
@@ -164,14 +164,14 @@ export default function PublicProfile({ handle }: { handle: string }) {
                   <section key={pathId}>
                     <div className="flex items-baseline justify-between border-b border-outline-variant pb-2">
                       <h2 className="font-display text-base font-bold uppercase tracking-wide text-on-surface">{title}</h2>
-                      <span className="font-code text-[10px] text-outline">{items.length} shipped</span>
+                      <span className="font-code text-xs text-outline">{items.length} shipped</span>
                     </div>
                     {projects[pathId] && (
                       <a
                         href={projects[pathId]}
                         target="_blank"
                         rel="noreferrer"
-                        className="group mt-3 inline-flex max-w-full items-center gap-1.5 border border-cyan/25 bg-cyan/[0.05] px-2.5 py-1.5 font-code text-[10px] text-cyan transition-colors hover:border-cyan/50"
+                        className="group mt-3 inline-flex max-w-full items-center gap-1.5 border border-cyan/25 bg-cyan/[0.05] px-2.5 py-1.5 font-code text-xs text-cyan transition-colors hover:border-cyan/50"
                       >
                         <FolderGit2 className="h-3 w-3 shrink-0" />
                         <span className="max-w-[320px] truncate">{projects[pathId].replace(/^https?:\/\//i, '')}</span>
@@ -189,10 +189,10 @@ export default function PublicProfile({ handle }: { handle: string }) {
                               <div className="flex flex-wrap items-baseline justify-between gap-x-3">
                                 <h3 className="text-sm font-semibold text-on-surface">{item.name}</h3>
                                 {fmtDate(item.completed_at) && (
-                                  <span className="font-code text-[10px] text-outline">{fmtDate(item.completed_at)}</span>
+                                  <span className="font-code text-xs text-outline">{fmtDate(item.completed_at)}</span>
                                 )}
                               </div>
-                              <p className="text-[10px] text-on-surface-variant">{item.subtitle}</p>
+                              <p className="text-xs text-on-surface-variant">{item.subtitle}</p>
                               {item.evidence.length > 0 && (
                                 <div className="mt-2.5 flex flex-wrap gap-1.5">
                                   {item.evidence.map((e) => (
@@ -201,7 +201,7 @@ export default function PublicProfile({ handle }: { handle: string }) {
                                       href={e.url}
                                       target="_blank"
                                       rel="noreferrer"
-                                      className="group inline-flex max-w-full items-center gap-1.5 border border-cyan/25 bg-cyan/[0.05] px-2 py-1 font-code text-[10px] text-cyan transition-colors hover:border-cyan/50"
+                                      className="group inline-flex max-w-full items-center gap-1.5 border border-cyan/25 bg-cyan/[0.05] px-2 py-1 font-code text-xs text-cyan transition-colors hover:border-cyan/50"
                                     >
                                       <Rocket className="h-3 w-3 shrink-0" />
                                       <span className="max-w-[260px] truncate">{e.url.replace(/^https?:\/\//i, '')}</span>

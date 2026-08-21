@@ -5,19 +5,19 @@ import { cn } from '@/lib/utils';
 import { Spinner } from '@/components/ui/spinner';
 
 const buttonVariants = cva(
-  'inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-none font-code text-sm font-semibold uppercase tracking-[0.08em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-none font-code font-semibold uppercase tracking-[0.08em] transition-[background-color,border-color,color,opacity] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground shadow-sm hover:bg-primary-neon',
+        default: 'border border-transparent bg-primary text-primary-foreground hover:bg-primary-neon',
         secondary: 'border border-outline-variant bg-surface-container text-on-surface hover:bg-surface-container-high',
-        outline: 'border border-outline-variant bg-surface text-on-surface hover:border-cyan/45 hover:text-cyan',
+        outline: 'border border-outline-variant bg-transparent text-on-surface hover:border-cyan/55 hover:bg-cyan/[0.06] hover:text-cyan',
         ghost: 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface',
-        destructive: 'bg-error-action text-on-error hover:bg-error-action/90',
+        destructive: 'border border-error-action bg-error-action text-on-error hover:bg-error-action/90',
       },
       size: {
         default: 'px-4 py-2 text-xs',
-        sm: 'min-h-9 px-3 text-[11px]',
+        sm: 'min-h-9 px-3 text-xs',
         lg: 'min-h-12 px-6 text-sm',
         icon: 'h-11 w-11 min-h-11 p-0',
       },

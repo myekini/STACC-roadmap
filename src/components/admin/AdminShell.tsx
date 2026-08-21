@@ -53,7 +53,7 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
           <div className="flex items-center gap-2.5">
             <StaccMark className="h-7 w-7 shrink-0" />
             <span className="font-code text-sm font-bold uppercase tracking-[0.14em] text-on-surface">Stacc</span>
-            <span className="border-l border-outline-variant pl-2 font-code text-[10px] uppercase tracking-[0.1em] text-outline">Admin</span>
+            <span className="border-l border-outline-variant pl-2 font-code text-xs uppercase tracking-[0.08em] text-outline">Admin</span>
           </div>
         </SidebarHeader>
 
@@ -73,7 +73,7 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
                     <item.icon className="h-4 w-4" />
                     <span>{item.label}</span>
                     {item.id === 'members' && stuckCount > 0 && (
-                      <span className="ml-auto flex h-4 min-w-4 items-center justify-center border border-error/40 bg-error/10 px-1 font-code text-[9px] font-bold text-error">
+                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center border border-error/40 bg-error/10 px-1 font-code text-[11px] font-bold text-error">
                         {stuckCount}
                       </span>
                     )}
@@ -113,7 +113,7 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
           <Separator orientation="vertical" className="h-4" />
           <div className="min-w-0 flex-1">
             <h1 className="text-sm font-semibold text-on-surface">{activeLabel}</h1>
-            <p className="font-code text-[10px] text-outline">Stacc administration</p>
+            <p className="font-code text-xs text-outline">Stacc administration</p>
           </div>
           <ThemeToggle />
         </header>

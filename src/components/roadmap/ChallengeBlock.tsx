@@ -117,9 +117,9 @@ export function ChallengeBlock({
         </div>
         <div className="min-w-0 flex-1">
           <DialogTitle className="truncate text-sm font-semibold text-on-surface">Challenge workspace</DialogTitle>
-          <p className="truncate font-code text-[10px] text-on-surface-variant">{RUNTIME_LABEL[challenge.language]}</p>
+          <p className="truncate font-code text-xs text-on-surface-variant">{RUNTIME_LABEL[challenge.language]}</p>
         </div>
-        <span className={cn('hidden items-center gap-1.5 font-code text-[10px] font-semibold uppercase sm:flex', consoleState === 'passed' ? 'text-secondary' : consoleState === 'failed' ? 'text-error' : 'text-on-surface-variant')}>
+        <span className={cn('hidden items-center gap-1.5 font-code text-xs font-semibold uppercase sm:flex', consoleState === 'passed' ? 'text-secondary' : consoleState === 'failed' ? 'text-error' : 'text-on-surface-variant')}>
           <span className={cn('h-1.5 w-1.5', busy ? 'animate-pulse bg-tertiary' : result?.passed ? 'bg-secondary' : result ? 'bg-error' : 'bg-outline')} />
           {consoleState}
         </span>
@@ -135,7 +135,7 @@ export function ChallengeBlock({
             type="button"
             aria-pressed={tab === item}
             onClick={() => setTab(item)}
-            className={cn('min-h-12 border-r border-outline-variant px-2 font-code text-[10px] font-semibold uppercase last:border-r-0', tab === item ? 'bg-cyan/10 text-cyan' : 'text-on-surface-variant')}
+            className={cn('min-h-12 border-r border-outline-variant px-2 font-code text-xs font-semibold uppercase last:border-r-0', tab === item ? 'bg-cyan/10 text-cyan' : 'text-on-surface-variant')}
           >
             {item}
           </button>
@@ -144,14 +144,14 @@ export function ChallengeBlock({
 
       <main className="grid min-h-0 flex-1 lg:grid-cols-[minmax(300px,36%)_minmax(0,1fr)]">
         <section className={cn('min-h-0 overflow-y-auto border-r border-outline-variant bg-surface p-5 sm:p-7 lg:block', tab !== 'problem' && 'hidden')}>
-          <p className="flex items-center gap-2 font-code text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">
+          <p className="flex items-center gap-2 font-code text-xs font-semibold uppercase tracking-[0.08em] text-tertiary">
             <TerminalSquare className="h-4 w-4" /> Problem
           </p>
           <h1 className="mt-4 font-display text-2xl font-bold tracking-[-0.02em] text-on-surface">Make the tests pass</h1>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-on-surface-variant">{challenge.prompt}</p>
 
           <div className="mt-8 border-t border-outline-variant pt-5">
-            <p className="font-code text-[10px] font-semibold uppercase text-outline">How this works</p>
+            <p className="font-code text-xs font-semibold uppercase text-outline">How this works</p>
             <ol className="mt-3 space-y-3 text-sm leading-6 text-on-surface-variant">
               <li className="flex gap-3"><span className="font-code text-cyan">01</span><span>Write your solution in the editor.</span></li>
               <li className="flex gap-3"><span className="font-code text-cyan">02</span><span>Run the tests whenever you need feedback.</span></li>
@@ -160,7 +160,7 @@ export function ChallengeBlock({
           </div>
 
           <div className="mt-8 border border-outline-variant bg-surface-container-low p-4">
-            <p className="font-code text-[10px] font-semibold uppercase text-outline">Environment</p>
+            <p className="font-code text-xs font-semibold uppercase text-outline">Environment</p>
             <p className="mt-2 text-xs leading-5 text-on-surface-variant">Everything runs privately in this browser. Your code is not sent to a Stacc server.</p>
           </div>
         </section>
@@ -168,7 +168,7 @@ export function ChallengeBlock({
         <section className={cn('min-h-0 flex-col bg-background', tab === 'code' ? 'flex' : 'hidden lg:flex')}>
           <div className="flex h-10 shrink-0 items-center justify-between border-b border-outline-variant bg-surface-container-low px-4">
             <span className="flex items-center gap-2 font-code text-[11px] text-on-surface"><FileCode2 className="h-3.5 w-3.5 text-cyan" />{FILE_LABEL[challenge.language]}</span>
-            <span className="font-code text-[9px] uppercase text-on-surface-variant">{challenge.language}</span>
+            <span className="font-code text-xs uppercase text-on-surface-variant">{challenge.language}</span>
           </div>
           <div className="min-h-0 flex-1">
           <Editor

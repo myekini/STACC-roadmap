@@ -57,7 +57,7 @@ function SectionHeader({ index, title, done, total }: { index: string; title: st
             <span key={i} className={cn('h-2.5 w-1.5', i < done ? 'bg-cyan' : 'bg-surface-container-high')} />
           ))}
         </div>
-        <span className="font-code text-[10px] font-semibold text-on-surface-variant">
+        <span className="font-code text-xs font-semibold text-on-surface-variant">
           {done}/{total}
         </span>
       </div>
@@ -72,7 +72,7 @@ function SpinePill({ index, title, done, total }: { index: string; title: string
     <div className="relative z-10 flex justify-center">
       <div
         className={cn(
-          'border px-5 py-2 text-center font-code text-[10px] font-semibold uppercase tracking-[0.16em] backdrop-blur transition-colors duration-500',
+          'border px-5 py-2 text-center font-code text-xs font-semibold uppercase tracking-[0.08em] backdrop-blur transition-colors duration-500',
           allDone
             ? 'border-secondary/50 bg-secondary/10 text-secondary shadow-[0_0_15px_rgba(16,185,129,0.15)]'
             : 'border-cyan/40 bg-surface/90 text-cyan shadow-[0_0_15px_rgba(0,217,255,0.08)]',
@@ -109,7 +109,7 @@ function FoundationCard({ data, node, status, isCurrent }: { data: UserData; nod
         <StatusMarker status={status} size="sm" />
       </div>
       <h4 className="mt-3 font-display text-sm font-semibold leading-tight text-on-surface">{node.name}</h4>
-      <p className="mt-0.5 font-code text-[10px] lowercase text-on-surface-variant">{`// ${node.subtitle}`}</p>
+      <p className="mt-0.5 font-code text-xs lowercase text-on-surface-variant">{`// ${node.subtitle}`}</p>
       {total > 0 && (
         <div className="mt-3 h-1 w-full bg-surface-container-high">
           <div
@@ -119,7 +119,7 @@ function FoundationCard({ data, node, status, isCurrent }: { data: UserData; nod
         </div>
       )}
       {isCurrent && (
-        <span className="absolute -top-2 right-2 border border-cyan/50 bg-navy px-1.5 font-code text-[9px] font-bold uppercase tracking-[0.14em] text-cyan">
+        <span className="absolute -top-2 right-2 border border-cyan/50 bg-navy px-1.5 font-code text-[11px] font-bold uppercase tracking-[0.08em] text-cyan">
           next up
         </span>
       )}
@@ -144,13 +144,13 @@ function ModuleCard({ data, node, index, status, isCurrent, showMarker }: { data
         'group relative block w-full overflow-hidden border bg-surface/80 p-5 text-left transition-all sm:p-6',
         locked
           ? 'border-outline-variant/60 opacity-55'
-          : 'border-outline-variant hover:-translate-y-0.5 hover:border-cyan/40 hover:shadow-[0_14px_40px_rgba(0,0,0,0.4)]',
+          : 'border-outline-variant hover:border-cyan/40 hover:bg-surface-container-low',
         status === 'complete' && 'border-secondary/35',
-        isCurrent && 'border-cyan/60 shadow-[0_0_40px_rgba(0,217,255,0.07)]',
+        isCurrent && 'border-cyan/60 bg-cyan/[0.04]',
       )}
     >
       {/* ghost index */}
-      <span aria-hidden className="pointer-events-none absolute -right-1 -top-4 font-code text-[68px] font-bold leading-none text-on-surface/[0.05]">
+      <span aria-hidden className="pointer-events-none absolute -right-1 -top-4 font-code text-6xl font-bold leading-none text-on-surface/[0.05]">
         {String(index).padStart(2, '0')}
       </span>
 
@@ -162,7 +162,7 @@ function ModuleCard({ data, node, index, status, isCurrent, showMarker }: { data
           <div className="flex flex-wrap items-center gap-2">
             <h4 className="font-display text-base font-bold text-on-surface sm:text-lg">{node.name}</h4>
             {isCurrent && (
-              <span className="border border-cyan/50 bg-cyan/10 px-1.5 py-0.5 font-code text-[9px] font-bold uppercase tracking-[0.14em] text-cyan">
+              <span className="border border-cyan/50 bg-cyan/10 px-1.5 py-0.5 font-code text-[11px] font-bold uppercase tracking-[0.08em] text-cyan">
                 ▸ current
               </span>
             )}
@@ -175,7 +175,7 @@ function ModuleCard({ data, node, index, status, isCurrent, showMarker }: { data
           <p className="mt-0.5 font-code text-[11px] lowercase text-on-surface-variant">{`// ${node.subtitle}`}</p>
           <p className="mt-2 line-clamp-2 max-w-xl text-xs leading-5 text-on-surface-variant">{node.description}</p>
 
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 font-code text-[10px] text-on-surface-variant">
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 font-code text-xs text-on-surface-variant">
             <span className="inline-flex items-center gap-1.5"><Hourglass className="h-3 w-3 text-outline" />{node.est_hours}h est</span>
             {total > 0 && !locked && (
               <span className="inline-flex items-center gap-2">
@@ -276,7 +276,7 @@ function SkillChip({ label, status, extra }: { label: string; status: NodeStatus
     <span
       style={{ height: CHIP_H }}
       className={cn(
-        'flex max-w-[220px] items-center border bg-surface-container-low px-2.5 font-code text-[10px] leading-none',
+        'flex max-w-[220px] items-center border bg-surface-container-low px-2.5 font-code text-xs leading-none',
         status === 'complete'
           ? 'border-secondary/30 text-on-surface-variant'
           : status === 'locked'
@@ -403,14 +403,10 @@ function SpineView({ data, pathId }: { data: UserData; pathId: string }) {
           <SpinePill index="01 // specialization" title={path.title} done={pathDone} total={pathNodes.length} />
           <div className="relative mt-8">
             {/* spine: dashed base + glowing progress fill */}
+            <div aria-hidden className="absolute left-1/2 top-0 h-full -translate-x-1/2 border-l border-dashed border-outline-variant" />
             <div
               aria-hidden
-              className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2"
-              style={{ backgroundImage: 'repeating-linear-gradient(to bottom, rgba(82,97,116,0.7) 0 4px, transparent 4px 9px)' }}
-            />
-            <div
-              aria-hidden
-              className="absolute left-1/2 top-0 w-0.5 -translate-x-1/2 bg-cyan shadow-[0_0_15px_rgba(0,217,255,0.6)] transition-all duration-700 ease-out"
+              className="absolute left-1/2 top-0 w-0.5 -translate-x-1/2 bg-cyan transition-all duration-700 ease-out"
               style={{ height: `${fillPct}%` }}
             />
 
@@ -432,7 +428,7 @@ function SpineView({ data, pathId }: { data: UserData; pathId: string }) {
             <div className="relative mt-8 flex justify-center">
               <span
                 className={cn(
-                  'z-10 border px-3 py-1 font-code text-[9px] font-bold uppercase tracking-[0.16em] transition-colors duration-500',
+                  'z-10 border px-3 py-1 font-code text-[11px] font-bold uppercase tracking-[0.08em] transition-colors duration-500',
                   pathProgress === 1
                     ? 'border-secondary/50 bg-secondary/10 text-secondary shadow-[0_0_15px_rgba(16,185,129,0.2)]'
                     : 'border-outline-variant bg-surface-container-low text-outline',

@@ -63,9 +63,9 @@ export function QuizWorkspace({
           </div>
           <div className="min-w-0 flex-1">
             <DialogTitle className="truncate text-sm font-semibold text-on-surface">Checkpoint</DialogTitle>
-            <p className="truncate font-code text-[10px] text-on-surface-variant">Question {index + 1} of {total} · answer correctly to advance</p>
+            <p className="truncate font-code text-xs text-on-surface-variant">Question {index + 1} of {total} · answer correctly to advance</p>
           </div>
-          <span className={cn('hidden items-center gap-1.5 font-code text-[10px] font-semibold uppercase sm:flex', consoleState === 'correct' ? 'text-secondary' : consoleState === 'try again' ? 'text-error' : 'text-on-surface-variant')}>
+          <span className={cn('hidden items-center gap-1.5 font-code text-xs font-semibold uppercase sm:flex', consoleState === 'correct' ? 'text-secondary' : consoleState === 'try again' ? 'text-error' : 'text-on-surface-variant')}>
             <span className={cn('h-1.5 w-1.5', saving ? 'animate-pulse bg-tertiary' : correct && answered ? 'bg-secondary' : answered ? 'bg-error' : 'bg-outline')} />
             {consoleState}
           </span>
@@ -88,7 +88,7 @@ export function QuizWorkspace({
 
         <main className="min-h-0 flex-1 overflow-y-auto bg-background px-4 py-8 sm:px-8">
           <div className="mx-auto max-w-2xl">
-            <p className="flex items-center gap-2 font-code text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">
+            <p className="flex items-center gap-2 font-code text-xs font-semibold uppercase tracking-[0.08em] text-tertiary">
               <TerminalSquare className="h-4 w-4" /> {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
             </p>
             <h1 className="mt-4 text-balance font-display text-xl font-bold leading-snug text-on-surface sm:text-2xl">{question.question}</h1>
@@ -112,7 +112,7 @@ export function QuizWorkspace({
                     )}
                   >
                     <span className="flex min-w-0 items-center gap-3">
-                      <span className="font-code text-[10px] font-bold text-on-surface-variant">{String.fromCharCode(65 + i)}</span>
+                      <span className="font-code text-xs font-bold text-on-surface-variant">{String.fromCharCode(65 + i)}</span>
                       {option}
                     </span>
                     {answered && isCorrect && <Check className="h-4 w-4 shrink-0" />}

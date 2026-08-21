@@ -76,7 +76,7 @@ export default function TopBar() {
             >
               <Avatar size="sm" className="group-hover:border-cyan group-hover:ring-cyan/15">
                 <AvatarImage src={user.avatar_url ?? undefined} alt={user.username} className="object-cover" />
-                <AvatarFallback className="text-[10px]">
+                <AvatarFallback className="text-xs">
                   {user.username.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
                 <AvatarBadge aria-label="Online" />
@@ -85,7 +85,7 @@ export default function TopBar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-64 rounded-none border border-cyan/30 bg-navy/95 p-2 font-code shadow-2xl backdrop-blur-xl"
+            className="w-64 rounded-overlay border border-cyan/30 bg-navy/95 p-2 font-code shadow-lg backdrop-blur-xl"
           >
             {/* Profile Info Header */}
             <div className="flex items-center gap-3 border-b border-outline-variant/50 p-2.5">
@@ -98,12 +98,12 @@ export default function TopBar() {
               </Avatar>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-bold text-on-surface">{user.username}</p>
-                <p className="truncate text-[10px] text-outline font-medium">Member</p>
+                <p className="truncate text-xs text-outline font-medium">Member</p>
               </div>
             </div>
 
             {/* Quick Stats Banner */}
-            <div className="my-2 grid grid-cols-2 gap-2 border border-outline-variant/40 bg-surface-container-low/60 p-2 text-[10px]">
+            <div className="my-2 grid grid-cols-2 gap-2 border border-outline-variant/40 bg-surface-container-low/60 p-2 text-xs">
               <div className="flex items-center gap-1.5 font-bold text-tertiary">
                 <Flame className="h-3.5 w-3.5 fill-tertiary" />
                 <span>{streak}d streak</span>

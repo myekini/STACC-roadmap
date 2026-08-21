@@ -194,7 +194,7 @@ export function YouTubeEmbed({
           href={source.kind === 'video' ? `https://www.youtube.com/watch?v=${source.id}${source.startSeconds != null ? `&t=${source.startSeconds}s` : ''}` : `https://www.youtube.com/playlist?list=${source.id}`}
           target="_blank"
           rel="noreferrer"
-          className="mt-2 inline-block font-code text-[10px] text-on-surface-variant underline decoration-outline-variant underline-offset-2 hover:text-cyan"
+          className="mt-2 inline-block font-code text-xs text-on-surface-variant underline decoration-outline-variant underline-offset-2 hover:text-cyan"
         >
           Open on youtube.com ↗ {source.kind === 'video' && <span className="text-outline">— watch here to complete this step</span>}
         </a>
@@ -221,11 +221,11 @@ export function YouTubeEmbed({
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-surface-container-low">
           <ListVideo className="h-8 w-8 text-outline" />
-          <span className="font-code text-[10px] uppercase tracking-[0.12em] text-outline">full playlist</span>
+          <span className="font-code text-xs uppercase tracking-[0.08em] text-outline">full playlist</span>
         </div>
       )}
       <span className="absolute inset-0 flex items-center justify-center bg-black/25 transition-colors group-hover/embed:bg-black/10">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-transform group-hover/embed:scale-110">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors group-hover/embed:bg-primary-neon">
           <Play className="h-5 w-5 translate-x-0.5" fill="currentColor" />
         </span>
       </span>
@@ -264,7 +264,7 @@ export function StatusChip({ status }: { status: NodeStatus }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 border px-2 py-0.5 font-code text-[10px] font-semibold uppercase tracking-[0.12em]',
+        'inline-flex items-center gap-1.5 border px-2 py-0.5 font-code text-xs font-semibold uppercase tracking-[0.08em]',
         status === 'complete' && 'border-secondary/40 bg-secondary/10 text-secondary',
         status === 'in_progress' && 'border-cyan/40 bg-cyan/10 text-cyan',
         status === 'available' && 'border-primary/40 bg-primary/10 text-primary-neon',
@@ -287,7 +287,7 @@ const TASK_TYPE_STYLE: Record<TaskType, string> = {
 
 export function TaskTypeBadge({ type, label }: { type: TaskType; label?: string }) {
   return (
-    <span className={cn('shrink-0 font-code text-[9px] font-semibold uppercase tracking-[0.14em]', TASK_TYPE_STYLE[type])}>
+    <span className={cn('shrink-0 font-code text-[11px] font-semibold uppercase tracking-[0.08em]', TASK_TYPE_STYLE[type])}>
       {label ?? type}
     </span>
   );
