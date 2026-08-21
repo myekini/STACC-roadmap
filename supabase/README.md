@@ -32,7 +32,13 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
 ## Design decisions
 
 - **Public vs authed (spec §1.9):** `paths`, `nodes`, `node_prerequisites` are world-readable (SEO tree);
-  `resources`/`tasks` need any authenticated user; progress/completions/ratings are own-rows (+admin read).
+  `topics`/`resources`/`tasks` need any authenticated user; progress/completions/ratings are own-rows
+  (+admin read).
+- **Node content structure (migration `0030`):** a node's learning content lives under `topics`
+  (one row per topic, ordered), and `resources.topic_id` scopes each resource to a topic (max 2 per
+  topic — the admin RPC `admin_upsert_resource` enforces it) instead of directly to a node. `resources`
+  still carries a denormalized `node_id` set by the RPC from the topic, since several client queries
+  filter by it directly.
 - **Server-owned XP:** there are NO insert/update policies on `user_progress`, `task_completions`, or
   `resource_ratings`. All writes go through security-definer RPCs: `start_node(slug)`,
   `complete_task(task_id, evidence_url?)` (evidence is required server-side for `build`-type tasks —

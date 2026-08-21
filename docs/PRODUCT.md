@@ -70,13 +70,13 @@ Sign in (GitHub OAuth, or admin email/password) → Choose a path (/paths)
     ↓
 /roadmap — responsive progression list
     ↓
-Click a node → full-page workspace (`/roadmap/[slug]`): description, skills, resources, tasks
+Click a node → full-page workspace (`/roadmap/[slug]`): description, topic breakdown, tasks
     ↓
 Foundation tasks run inline · Specialization builds sync a verified project milestone · Quizzes pass in-app
     ↓
 All tasks done → node completes, XP awarded (silently) → next node unlocks
     ↓
-Rate resources (1–5 stars) · Track progress on /dashboard (streak, heatmap, milestones)
+Track progress on /dashboard (streak, heatmap, milestones)
     ↓
 Shipped work appears on a public portfolio at /u/[handle] — shareable with anyone, no login required
 ```
@@ -105,10 +105,10 @@ Curriculum: starts/completions/completion-rate per node
 |---|---|---|
 | Roadmap progression | ✅ Shipped | One responsive list experience: a zigzag center spine on desktop and a compact vertical rail on mobile. The former React Flow canvas was archived to reduce interaction and bundle complexity. Public, structure-only version at `/tree` remains for SEO. |
 | Path selection | ✅ Shipped | Foundations + Data Engineering, Data Analysis, Data Science, AI Engineering, MLOps. MLOps unlocks after DE + DS. AI Engineering remains visible but is paused for members while the core paths are strengthened; admins retain audit access. |
-| Node detail | ✅ Shipped | Description, skills, two curated resources, bounded lesson titles/durations, a small practice step, tasks, and estimated hours. The second resource is a short platform step rather than an unstructured optional link. |
+| Node detail | ✅ Shipped | Description, a topic breakdown (each topic carrying up to 2 curated resources), bounded lesson titles/durations, a small practice step, tasks, and estimated hours. |
 | Progress tracking | ✅ Shipped | Per-node and per-path completion; derived status `locked \| available \| in_progress \| complete`. |
 | Prerequisite gates | ✅ Shipped | Node-level (fan-in supported — a node can require several prerequisites) + path-level gates. |
-| Resource ratings | ⚙️ Backend only | 1–5 stars, aggregated server-side (`rate_resource`, `resources.avg_rating`) — pulled from the node workspace UI for now, re-implementing later. |
+| Resource ratings | ❌ Removed from UI | Schema/RPC (`rate_resource`, `resources.avg_rating`) still exist dormant, but the client no longer reads or writes ratings — not needed at this stage. Reinstate deliberately if/when it earns its place. |
 | **Evidence shipping** | ✅ Shipped | Specialization build tasks require a public URL inside the learner's path project. Foundations build exercises stay lightweight checklist completions and do not require GitHub setup or evidence. Enforced server-side in `complete_task`. |
 | **Short learning steps** | ✅ Shipped | Available modules follow bounded Learn → Practise → Ship steps. `practice` is manually completed and low-risk; `build` remains the cumulative repository-verified milestone. Admins can edit lesson title, duration, resource, and optional video segment boundaries. Full playlists are not assigned as a single lesson. |
 | **Projects (per-path)** | ✅ Code complete; configuration required | One connected GitHub repository per specialization. The installation callback stores stable repository identity; **Check my work** verifies a new, unreused commit and content-owned file requirements before completing the milestone. Requires migrations through `0010` and the GitHub App environment values. |
@@ -185,6 +185,12 @@ below. Two deliberate deviations from the earliest spec sketch:
 - **`node_prerequisites` join table**, not a single `parent_id` — real content has fan-in (a
   node can require several prerequisites, e.g. every specialization's first node requires all
   six Foundations nodes).
+- **Nodes break into `topics`** (migration `0030`), each with up to 2 curated resources
+  (primary + secondary) — resources belong to a topic, not directly to a node. Every node
+  currently has exactly 3 topics, seeded 1:1 from its 3 `skills` (which stay a separate, unrelated
+  field — flat marketing chips used on `SkillTree`/`/learn`, not the content structure). Both of a
+  node's originally-authored resources land on its first topic during migration; the other two
+  start empty until an admin curates resources for them via the Curriculum panel.
 - **No custom REST API layer.** There is no `/api/roadmap`, `/api/progress`, etc. The frontend
   talks to Supabase directly (via `@supabase/ssr`'s cookie-based `createBrowserClient`, see
   `src/utils/supabase/client.ts`) for reads, and to security-definer RPCs for every write:
@@ -205,7 +211,7 @@ below. Two deliberate deviations from the earliest spec sketch:
 | Surface | Access |
 |---|---|
 | Skill tree structure (`/tree`, path/node names+order) | Public — SEO |
-| Node resources, tasks, ratings | Authenticated members |
+| Node topics, resources, tasks, ratings | Authenticated members |
 | Progress, evidence, completions | Authenticated members, own rows only (+ admin read) |
 | Public portfolio (`/u/[handle]`) | Public — deliberately, that's the point |
 | Admin dashboard | `profiles.role = 'admin'` only |
@@ -227,9 +233,10 @@ micro-labels, `// comment`-style captions.
   module cards alternating sides, and skill chips fanning out on curved dashed connectors
   opposite each card. Connector geometry is row-local (fixed chip heights), so it holds for
   any node count. Mobile keeps the single-column left rail.
-  Clicking a node navigates to `/roadmap/[slug]` — a focused lesson workspace with ordered
-  learning material in the primary column and one module checklist alongside it. A real YouTube
-  lesson gates only its matching watch task; non-video material is presented as review material.
+  Clicking a node navigates to `/roadmap/[slug]` — a topic-structured workspace: the primary
+  column stacks one section per topic (each with its own primary + secondary resources), with a
+  matching topic outline alongside it. A real YouTube lesson gates only its matching watch task;
+  a resource with no lesson task attached renders as non-blocking reference material.
   Specialization build tasks add milestones to one cumulative track project. A narrowly
   permissioned GitHub App connects the repository; **Check my work** verifies the latest commit
   without asking the learner to paste a URL. Challenge tasks
@@ -334,13 +341,16 @@ on both sides.
   `/u/[handle]` (public portfolio), `/tree` (public SEO tree), `/auth/callback` (Supabase
   OAuth — server Route Handler, see §6). Root `middleware.ts` refreshes the session cookie on
   every request.
-- `src/config/roadmap.ts` — static path/node/resource/task/quiz content, source of truth for
-  demo mode; mirrors `supabase/seed.sql` exactly. See the editorial rules at the top of that
-  file (3 skills/node, 2 resources/node) before adding content.
+- `src/config/roadmap.ts` — static path/node/topic/resource/task/quiz content, source of truth
+  for demo mode; mirrors `supabase/seed.sql` exactly. See the editorial rules at the top of that
+  file (3 skills/node, 2 resources/node) before adding content — topics are synthesized from
+  `skills` at export time, not hand-authored per node (see §6).
 - `src/components/roadmap/` — `SkillTree` (desktop spine and mobile rail), `NodeWorkspace`
-  (full-page task/resource workspace + evidence shipping, rendered at
-  `/roadmap/[slug]`), `ChallengeBlock` (Monaco + `usePyodide`/`useSqlJs`, dynamically imported so
-  Monaco never ships in a bundle that doesn't need it), `bits.tsx` (shared status chips/badges).
+  (topic-structured node workspace + evidence shipping, rendered at `/roadmap/[slug]` — each
+  topic section renders its resources through the shared `ResourceCard`, generic over whether a
+  resource drives a read/watch lesson task), `ChallengeBlock` (Monaco + `usePyodide`/`useSqlJs`,
+  dynamically imported so Monaco never ships in a bundle that doesn't need it), `bits.tsx`
+  (shared status chips/badges).
 - `src/components/layout/` — `AppLayout`, `Sidebar` (collapsible), `TopBar`, `BottomBar`
   (mobile nav).
 - `src/components/admin/` — `AdminShell`, `MembersTable`, `ModuleChart`, `StatCards`.

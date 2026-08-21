@@ -50,11 +50,15 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
     <SidebarProvider className="min-h-screen bg-background text-on-background">
       <Sidebar collapsible="offcanvas" className="border-r border-outline-variant">
         <SidebarHeader className="h-14 justify-center border-b border-outline-variant px-4">
-          <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => onSectionChange('overview')}
+            className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
+          >
             <StaccMark className="h-7 w-7 shrink-0" />
             <span className="font-code text-sm font-bold uppercase tracking-[0.14em] text-on-surface">Stacc</span>
             <span className="border-l border-outline-variant pl-2 font-code text-xs uppercase tracking-[0.08em] text-outline">Admin</span>
-          </div>
+          </button>
         </SidebarHeader>
 
         <SidebarContent className="px-2 py-3">

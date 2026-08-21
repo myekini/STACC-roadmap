@@ -8,6 +8,14 @@
 //  - Exactly 2 curated resources per node — one primary course/video, one
 //    reference doc to come back to. Every URL below is a stable, well-known
 //    official domain (project docs, a maintained course, or a canonical repo).
+//
+// Node content structure (supabase/migrations/0030_node_topics.sql): a node
+// breaks into topics — today, exactly the node's 3 `skills`, synthesized
+// below rather than hand-authored, since that's already the de facto topic
+// list. Both authored resources currently land on the first topic; the other
+// two topics start with no resources of their own until an admin curates
+// some for them via the Curriculum panel — NodeDef/TaskDef stay untouched so
+// nothing here needs rewriting to support that.
 import type {
   ChallengePayload,
   NodeRow,
@@ -18,6 +26,7 @@ import type {
   ResourceType,
   TaskRow,
   TaskType,
+  TopicRow,
 } from '@/lib/database.types';
 
 type SqlRow = Record<string, unknown>;
@@ -770,11 +779,28 @@ export const PREREQUISITES: Record<string, string[]> = Object.fromEntries(
   PATH_DEFS.flatMap((p) => p.nodes.map((n) => [n.slug, n.prereqs])),
 );
 
+export const TOPICS: TopicRow[] = PATH_DEFS.flatMap((p) =>
+  p.nodes.flatMap((n) =>
+    n.skills.map((title, i) => ({
+      id: `${n.slug}::topic${i}`,
+      node_id: n.slug,
+      title,
+      order: i + 1,
+      created_at: '',
+    })),
+  ),
+);
+
 export const RESOURCES: ResourceRow[] = PATH_DEFS.flatMap((p) =>
   p.nodes.flatMap((n) =>
     n.resources.map(([name, type, platform, url], i) => ({
       id: `${n.slug}::r${i}`,
       node_id: n.slug,
+      // Both authored resources currently sit on the first topic (topic 0) —
+      // see the header comment. `admin_upsert_resource` (0030) is what lets
+      // real content move beyond that from here.
+      topic_id: `${n.slug}::topic0`,
+      order: i + 1,
       name,
       type,
       platform,

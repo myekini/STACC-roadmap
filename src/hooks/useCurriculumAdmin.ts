@@ -19,6 +19,7 @@ import type {
   ResourceType,
   TaskRow,
   TaskType,
+  TopicRow,
 } from '@/lib/database.types';
 
 function invalidateContent(queryClient: ReturnType<typeof useQueryClient>) {
@@ -119,10 +120,41 @@ export function useCurriculumAdmin() {
     onSuccess: () => invalidateContent(queryClient),
   });
 
+  const upsertTopic = useMutation({
+    mutationFn: async (topic: { id: string | null; node_id: string; title: string; order: number }) => {
+      const { data, error } = await supabase.rpc('admin_upsert_topic', {
+        p_id: topic.id,
+        p_node_id: topic.node_id,
+        p_title: topic.title,
+        p_order: topic.order,
+      });
+      if (error) throw error;
+      return data as TopicRow;
+    },
+    onSuccess: () => invalidateContent(queryClient),
+  });
+
+  const deleteTopic = useMutation({
+    mutationFn: async (topicId: string) => {
+      const { error } = await supabase.rpc('admin_delete_topic', { p_id: topicId });
+      if (error) throw error;
+    },
+    onSuccess: () => invalidateContent(queryClient),
+  });
+
+  const reorderTopics = useMutation({
+    mutationFn: async ({ nodeId, orderedIds }: { nodeId: string; orderedIds: string[] }) => {
+      const { error } = await supabase.rpc('admin_reorder_topics', { p_node_id: nodeId, p_ordered_ids: orderedIds });
+      if (error) throw error;
+    },
+    onSuccess: () => invalidateContent(queryClient),
+  });
+
   const upsertResource = useMutation({
     mutationFn: async (resource: {
       id: string | null;
-      node_id: string;
+      topic_id: string;
+      order: number;
       name: string;
       type: ResourceType;
       platform: string;
@@ -131,7 +163,8 @@ export function useCurriculumAdmin() {
     }) => {
       const { data, error } = await supabase.rpc('admin_upsert_resource', {
         p_id: resource.id,
-        p_node_id: resource.node_id,
+        p_topic_id: resource.topic_id,
+        p_order: resource.order,
         p_name: resource.name,
         p_type: resource.type,
         p_platform: resource.platform,
@@ -206,6 +239,9 @@ export function useCurriculumAdmin() {
     deleteNode: deleteNode.mutateAsync,
     reorderNodes: reorderNodes.mutateAsync,
     setNodePrerequisites: setNodePrerequisites.mutateAsync,
+    upsertTopic: upsertTopic.mutateAsync,
+    deleteTopic: deleteTopic.mutateAsync,
+    reorderTopics: reorderTopics.mutateAsync,
     upsertResource: upsertResource.mutateAsync,
     deleteResource: deleteResource.mutateAsync,
     upsertTask: upsertTask.mutateAsync,
@@ -213,7 +249,8 @@ export function useCurriculumAdmin() {
     isMutating:
       upsertPath.isPending || deletePath.isPending || reorderPaths.isPending ||
       upsertNode.isPending || deleteNode.isPending || reorderNodes.isPending ||
-      setNodePrerequisites.isPending || upsertResource.isPending || deleteResource.isPending ||
+      setNodePrerequisites.isPending || upsertTopic.isPending || deleteTopic.isPending ||
+      reorderTopics.isPending || upsertResource.isPending || deleteResource.isPending ||
       upsertTask.isPending || deleteTask.isPending,
   };
 }

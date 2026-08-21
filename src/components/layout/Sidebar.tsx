@@ -43,7 +43,7 @@ export default function Sidebar() {
       >
         {/* Brand Header with Integrated Collapse Toggle */}
         <div className={cn('mb-4 flex items-center justify-between px-4', sidebarCollapsed && 'flex-col gap-3 px-2')}>
-          <div className="flex items-center gap-3 min-w-0">
+          <Link href="/roadmap" className="flex min-w-0 items-center gap-3 transition-opacity hover:opacity-80">
             <StaccMark className="h-8 w-8 shrink-0" />
             {!sidebarCollapsed && (
               <div className="min-w-0">
@@ -53,7 +53,7 @@ export default function Sidebar() {
                 </p>
               </div>
             )}
-          </div>
+          </Link>
 
           <Tooltip>
             <TooltipTrigger asChild>

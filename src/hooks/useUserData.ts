@@ -21,6 +21,7 @@ import {
   PREREQUISITES as LOCAL_PREREQS,
   RESOURCES as LOCAL_RESOURCES,
   TASKS as LOCAL_TASKS,
+  TOPICS as LOCAL_TOPICS,
   PAUSED_PATH_IDS,
 } from '@/config/roadmap';
 import type {
@@ -30,6 +31,7 @@ import type {
   ProjectRow,
   ResourceRow,
   TaskRow,
+  TopicRow,
 } from '@/lib/database.types';
 
 // ── Local persistence ───────────────────────────────────────
@@ -38,7 +40,6 @@ const LS = {
   completedTasks: 'stacc.v2.completedTasks', // string[]
   completedNodes: 'stacc.v2.completedNodes', // Record<nodeId, isoDate>
   startedNodes: 'stacc.v2.startedNodes', // string[]
-  ratings: 'stacc.v2.ratings', // Record<resourceId, rating>
   profile: 'stacc.v2.profile', // { username }
   evidence: 'stacc.v2.evidence', // Record<taskId, url>
 };
@@ -63,6 +64,7 @@ function writeLS<T>(key: string, value: T) {
 export interface RoadmapContent {
   paths: PathRow[];
   nodes: NodeRow[];
+  topics: TopicRow[];
   resources: ResourceRow[];
   tasks: TaskRow[];
   prereqs: Record<string, string[]>; // nodeId -> prerequisite nodeIds
@@ -72,7 +74,6 @@ export interface ProgressState {
   completedNodes: Record<string, string>; // nodeId -> completed_at
   startedNodes: string[];
   completedTasks: string[];
-  ratings: Record<string, number>; // resourceId -> my rating
   evidence: Record<string, string>; // taskId -> shipped evidence url
 }
 
@@ -80,7 +81,6 @@ const EMPTY_PROGRESS: ProgressState = {
   completedNodes: {},
   startedNodes: [],
   completedTasks: [],
-  ratings: {},
   evidence: {},
 };
 
@@ -120,7 +120,7 @@ export function useUserData() {
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       if (!connected) {
-        return { paths: LOCAL_PATHS, nodes: LOCAL_NODES, resources: LOCAL_RESOURCES, tasks: LOCAL_TASKS, prereqs: LOCAL_PREREQS };
+        return { paths: LOCAL_PATHS, nodes: LOCAL_NODES, topics: LOCAL_TOPICS, resources: LOCAL_RESOURCES, tasks: LOCAL_TASKS, prereqs: LOCAL_PREREQS };
       }
       const [paths, nodes, prereqs] = await Promise.all([
         supabase.from('paths').select('*').order('order'),
@@ -131,16 +131,20 @@ export function useUserData() {
       if (nodes.error) throw nodes.error;
       if (prereqs.error) throw prereqs.error;
 
-      // Resources/tasks are auth-gated (spec §1.9); logged-out visitors get structure only.
+      // Topics/resources/tasks are auth-gated (spec §1.9); logged-out visitors get structure only.
+      let topics: TopicRow[] = [];
       let resources: ResourceRow[] = [];
       let tasks: TaskRow[] = [];
       if (userId) {
-        const [r, t] = await Promise.all([
-          supabase.from('resources').select('*'),
+        const [tp, r, t] = await Promise.all([
+          supabase.from('topics').select('*').order('order'),
+          supabase.from('resources').select('*').order('order'),
           supabase.from('tasks').select('*').order('order'),
         ]);
+        if (tp.error) throw tp.error;
         if (r.error) throw r.error;
         if (t.error) throw t.error;
+        topics = tp.data as TopicRow[];
         resources = r.data as ResourceRow[];
         tasks = t.data as TaskRow[];
       }
@@ -149,7 +153,7 @@ export function useUserData() {
       for (const edge of prereqs.data as { node_id: string; prerequisite_id: string }[]) {
         (prereqMap[edge.node_id] ??= []).push(edge.prerequisite_id);
       }
-      return { paths: paths.data as PathRow[], nodes: nodes.data as NodeRow[], resources, tasks, prereqs: prereqMap };
+      return { paths: paths.data as PathRow[], nodes: nodes.data as NodeRow[], topics, resources, tasks, prereqs: prereqMap };
     },
   });
 
@@ -193,14 +197,12 @@ export function useUserData() {
     queryKey: ['progress', userId],
     queryFn: async () => {
       if (connected && userId) {
-        const [prog, comps, ratings] = await Promise.all([
+        const [prog, comps] = await Promise.all([
           supabase.from('user_progress').select('node_id,status,completed_at').eq('user_id', userId),
           supabase.from('task_completions').select('task_id,evidence_url').eq('user_id', userId),
-          supabase.from('resource_ratings').select('resource_id,rating').eq('user_id', userId),
         ]);
         if (prog.error) throw prog.error;
         if (comps.error) throw comps.error;
-        if (ratings.error) throw ratings.error;
         const completedNodes: Record<string, string> = {};
         const startedNodes: string[] = [];
         for (const row of prog.data) {
@@ -211,7 +213,6 @@ export function useUserData() {
           completedNodes,
           startedNodes,
           completedTasks: comps.data.map((c) => c.task_id as string),
-          ratings: Object.fromEntries(ratings.data.map((r) => [r.resource_id, r.rating])),
           evidence: Object.fromEntries(
             comps.data.filter((c) => c.evidence_url).map((c) => [c.task_id, c.evidence_url as string]),
           ),
@@ -222,7 +223,6 @@ export function useUserData() {
           completedNodes: readLS(LS.completedNodes, EMPTY_PROGRESS.completedNodes),
           startedNodes: readLS(LS.startedNodes, EMPTY_PROGRESS.startedNodes),
           completedTasks: readLS(LS.completedTasks, EMPTY_PROGRESS.completedTasks),
-          ratings: readLS(LS.ratings, EMPTY_PROGRESS.ratings),
           evidence: readLS(LS.evidence, EMPTY_PROGRESS.evidence),
         };
       }
@@ -402,22 +402,6 @@ export function useUserData() {
     onSuccess: invalidate,
   }).mutateAsync;
 
-  const rateResource = useMutation({
-    mutationFn: async ({ resourceId, rating }: { resourceId: string; rating: number }) => {
-      if (connected && userId) {
-        const { error } = await supabase.rpc('rate_resource', { p_resource: resourceId, p_rating: rating });
-        if (error) throw error;
-      } else {
-        const ratings = readLS(LS.ratings, EMPTY_PROGRESS.ratings);
-        writeLS(LS.ratings, { ...ratings, [resourceId]: rating });
-      }
-    },
-    onSuccess: () => {
-      invalidate();
-      queryClient.invalidateQueries({ queryKey: ['content'] });
-    },
-  }).mutateAsync;
-
   const renameUsername = useMutation({
     mutationFn: async (newUsername: string) => {
       const clean = newUsername.trim();
@@ -484,6 +468,7 @@ export function useUserData() {
     paths: data?.paths ?? [],
     nodes: data?.nodes ?? [],
     nodesByPath,
+    topics: data?.topics ?? [],
     resources: data?.resources ?? [],
     tasks: data?.tasks ?? [],
     prereqs: data?.prereqs ?? {},
@@ -501,7 +486,6 @@ export function useUserData() {
     selectPath,
     startNode,
     completeTask,
-    rateResource,
     renameUsername,
     signInWithGithub,
     signInWithPassword,

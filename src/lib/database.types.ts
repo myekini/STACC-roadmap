@@ -98,9 +98,22 @@ export interface NodePrerequisiteRow {
   prerequisite_id: string;
 }
 
+export interface TopicRow {
+  id: string;
+  node_id: string;
+  title: string;
+  order: number;
+  created_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  updated_at?: string;
+}
+
 export interface ResourceRow {
   id: string;
   node_id: string;
+  topic_id: string;
+  order: number;
   name: string;
   type: ResourceType;
   platform: string;
@@ -235,6 +248,7 @@ export interface Database {
       paths: { Row: PathRow; Insert: PathRow; Update: Partial<PathRow> };
       nodes: { Row: NodeRow; Insert: Partial<NodeRow>; Update: Partial<NodeRow> };
       node_prerequisites: { Row: NodePrerequisiteRow; Insert: NodePrerequisiteRow; Update: Partial<NodePrerequisiteRow> };
+      topics: { Row: TopicRow; Insert: Partial<TopicRow>; Update: Partial<TopicRow> };
       resources: { Row: ResourceRow; Insert: Partial<ResourceRow>; Update: Partial<ResourceRow> };
       tasks: { Row: TaskRow; Insert: Partial<TaskRow>; Update: Partial<TaskRow> };
       user_paths: { Row: UserPathRow; Insert: UserPathRow; Update: Partial<UserPathRow> };
@@ -267,8 +281,14 @@ export interface Database {
       admin_delete_node: { Args: { p_id: string }; Returns: undefined };
       admin_reorder_nodes: { Args: { p_path_id: string; p_ordered_ids: string[] }; Returns: undefined };
       admin_set_node_prerequisites: { Args: { p_node_id: string; p_prerequisite_ids: string[] }; Returns: undefined };
+      admin_upsert_topic: {
+        Args: { p_id: string | null; p_node_id: string; p_title: string; p_order: number };
+        Returns: TopicRow;
+      };
+      admin_delete_topic: { Args: { p_id: string }; Returns: undefined };
+      admin_reorder_topics: { Args: { p_node_id: string; p_ordered_ids: string[] }; Returns: undefined };
       admin_upsert_resource: {
-        Args: { p_id: string | null; p_node_id: string; p_name: string; p_type: ResourceType; p_platform: string; p_url: string; p_cost: 'free' | 'paid' };
+        Args: { p_id: string | null; p_topic_id: string; p_order: number; p_name: string; p_type: ResourceType; p_platform: string; p_url: string; p_cost: 'free' | 'paid' };
         Returns: ResourceRow;
       };
       admin_delete_resource: { Args: { p_id: string }; Returns: undefined };

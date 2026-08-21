@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Check, ListVideo, Lock, Play, Star } from 'lucide-react';
+import { Check, ListVideo, Lock, Play } from 'lucide-react';
 import type { NodeStatus, TaskType } from '@/lib/database.types';
 import { cn } from '@/lib/utils';
 
@@ -293,49 +293,3 @@ export function TaskTypeBadge({ type, label }: { type: TaskType; label?: string 
   );
 }
 
-const STARS_TONE_CLS: Record<'tertiary' | 'secondary', string> = {
-  tertiary: 'fill-tertiary text-tertiary',
-  secondary: 'fill-secondary text-secondary',
-};
-const STARS_TONE_HOVER_CLS: Record<'tertiary' | 'secondary', string> = {
-  tertiary: 'hover:text-tertiary focus-visible:text-tertiary',
-  secondary: 'hover:text-secondary focus-visible:text-secondary',
-};
-
-export function Stars({
-  value,
-  onRate,
-  disabled = false,
-  tone = 'tertiary',
-  size = 'h-3.5 w-3.5',
-}: {
-  value: number;
-  onRate?: (rating: number) => void;
-  /** Renders interactive buttons as disabled instead of falling back to read-only stars —
-   * keeps the "you can't rate this yet" affordance distinct from an already-rated display. */
-  disabled?: boolean;
-  tone?: 'tertiary' | 'secondary';
-  size?: string;
-}) {
-  return (
-    <span className="inline-flex items-center gap-0.5" role={onRate ? 'radiogroup' : undefined} aria-label={onRate ? 'Rate this resource' : `Rated ${value} of 5`}>
-      {[1, 2, 3, 4, 5].map((star) =>
-        onRate ? (
-          <button
-            key={star}
-            type="button"
-            disabled={disabled}
-            onClick={() => onRate(star)}
-            aria-label={`${star} star${star > 1 ? 's' : ''}`}
-            aria-pressed={value === star}
-            className={cn('flex size-9 items-center justify-center text-outline transition-colors disabled:cursor-not-allowed disabled:opacity-40', STARS_TONE_HOVER_CLS[tone])}
-          >
-            <Star className={cn(size, star <= value && STARS_TONE_CLS[tone])} />
-          </button>
-        ) : (
-          <Star key={star} className={cn(size, star <= Math.round(value) ? STARS_TONE_CLS[tone] : 'text-outline-variant')} />
-        ),
-      )}
-    </span>
-  );
-}

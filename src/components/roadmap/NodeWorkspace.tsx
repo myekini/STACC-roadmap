@@ -1,15 +1,18 @@
 'use client';
 
 /**
- * DataCamp-Inspired Interactive Learning Workspace
+ * Topic-structured node workspace.
  *
  * Layout:
  *   ┌─ sticky top bar (breadcrumb + "< Course Outline >" sidebar toggle) ─┐
- *   │  ← collapsible LEFT PANEL (resource list + task checklist)                     │
- *   │  MAIN CANVAS (module header · video/reader · code/quiz cards · milestone)      │
+ *   │  ← collapsible LEFT PANEL (topic outline + practise/prove/ship)               │
+ *   │  MAIN CANVAS (module header · topic sections, each with its own                │
+ *   │               primary + secondary resources · quiz/challenge · milestone)     │
  *   └─ sticky bottom bar (← Prev · segmented progress · Got It! / Next lesson →)    ┘
  *
- * All colours use semantic design tokens so light & dark mode both work.
+ * A node breaks into topics (supabase/migrations/0030_node_topics.sql); each topic
+ * carries its own resources, each resource optionally driving a read/watch lesson
+ * task. All colours use semantic design tokens so light & dark mode both work.
  */
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -21,7 +24,6 @@ import {
   BookOpen,
   Check,
   ChevronLeft,
-  ChevronRight,
   Code2,
   ExternalLink,
   GitBranch,
@@ -32,7 +34,7 @@ import {
   Play,
   Terminal,
 } from 'lucide-react';
-import type { TaskRow } from '@/lib/database.types';
+import type { ResourceRow, TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -40,7 +42,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Spinner } from '@/components/ui/spinner';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { GithubLogo } from '@/components/icons/GithubLogo';
-import { getYouTubeRef, Stars, YouTubeEmbed } from './bits';
+import { getYouTubeRef, YouTubeEmbed } from './bits';
 import { ChallengeBlock } from './ChallengeBlock';
 import { QuizWorkspace } from './QuizWorkspace';
 import { cn } from '@/lib/utils';
@@ -201,6 +203,106 @@ function ProjectMilestone({
   );
 }
 
+/* ─────────────────────────────────────────────────────────
+   ResourceCard — one resource inside a topic section. Generic: renders as a
+   video embed / "study this source" card when a read/watch lesson task
+   drives it, or a plain reference link when it doesn't. Every resource in
+   every topic goes through this exact same path — nothing is hardcoded by
+   position ("primary"/"secondary" is just which slot the admin put it in).
+───────────────────────────────────────────────────────── */
+function ResourceCard({
+  resource,
+  lessonTask,
+  completed,
+  onCompleteLesson,
+}: {
+  resource: ResourceRow;
+  lessonTask: TaskRow | null;
+  completed: boolean;
+  onCompleteLesson: (task: TaskRow) => void;
+}) {
+  const parsedYouTubeRef = getYouTubeRef(resource.url);
+  const youTubeRef = parsedYouTubeRef?.kind === 'video' && lessonTask
+    ? {
+        ...parsedYouTubeRef,
+        startSeconds: lessonTask.start_seconds ?? parsedYouTubeRef.startSeconds,
+        endSeconds: lessonTask.end_seconds ?? parsedYouTubeRef.endSeconds,
+      }
+    : parsedYouTubeRef;
+
+  return (
+    <div id={`resource-${resource.id}`} className="scroll-mt-6 overflow-hidden rounded-none border border-outline-variant bg-surface-card">
+      <div className="flex items-center justify-between gap-3 border-b border-outline-variant bg-surface px-4 py-2.5">
+        <div className="flex min-w-0 items-center gap-2 text-xs font-semibold text-on-surface">
+          {completed ? (
+            <Check className="h-3.5 w-3.5 shrink-0 text-secondary" />
+          ) : youTubeRef ? (
+            <Play className="h-3.5 w-3.5 shrink-0 text-cyan" />
+          ) : (
+            <BookOpen className="h-3.5 w-3.5 shrink-0 text-cyan" />
+          )}
+          <span className="truncate max-w-[240px]">{lessonTask?.lesson_title ?? resource.name}</span>
+          <span className="hidden text-outline sm:inline">·</span>
+          <span className="hidden text-on-surface-variant font-normal sm:inline">{resource.platform}</span>
+          {lessonTask?.duration_minutes && (
+            <span className="hidden font-normal text-on-surface-variant sm:inline">· {lessonTask.duration_minutes} min</span>
+          )}
+        </div>
+        <a
+          href={resource.url}
+          target="_blank"
+          rel="noreferrer"
+          className="flex shrink-0 items-center gap-1 font-code text-[11px] font-semibold text-on-surface hover:text-cyan hover:underline"
+        >
+          Open tab <ExternalLink className="h-3 w-3" />
+        </a>
+      </div>
+
+      <div className="p-3 sm:p-4">
+        {youTubeRef ? (
+          <YouTubeEmbed
+            source={youTubeRef}
+            title={lessonTask?.lesson_title ?? resource.name}
+            onWatchThreshold={lessonTask?.type === 'watch' && !completed ? () => onCompleteLesson(lessonTask) : undefined}
+          />
+        ) : lessonTask ? (
+          <div className="flex flex-col items-center gap-4 border border-outline-variant bg-surface px-4 py-8 text-center sm:py-12">
+            <div className="max-w-md text-center">
+              <p className="font-semibold text-on-surface">Study this selected source</p>
+              <p className="mt-1 text-sm leading-6 text-on-surface-variant">
+                Open it in a new tab, then return here to mark it read.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Button asChild className="gap-2 rounded-none bg-cyan font-bold text-on-primary-fixed hover:bg-cyan/90">
+                <a href={resource.url} target="_blank" rel="noreferrer">
+                  Read on {resource.platform} <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+              {!completed && (
+                <Button variant="outline" className="rounded-none" onClick={() => onCompleteLesson(lessonTask)}>
+                  Mark read
+                </Button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-3 border border-outline-variant bg-surface px-4 py-6 text-center">
+            <p className="text-sm leading-6 text-on-surface-variant">
+              Reference material — use it when this topic leaves a question. It doesn&apos;t block progress.
+            </p>
+            <Button asChild variant="outline" className="gap-2 rounded-none">
+              <a href={resource.url} target="_blank" rel="noreferrer">
+                Open on {resource.platform} <ExternalLink className="h-4 w-4" />
+              </a>
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 type PrimaryAction =
   | 'locked'
   | 'saving'
@@ -208,7 +310,6 @@ type PrimaryAction =
   | 'completePractice'
   | 'takeQuiz'
   | 'openChallenge'
-  | 'returnToFocusedLesson'
   | 'watchToComplete'
   | 'completeLessonTask'
   | 'continue';
@@ -220,7 +321,6 @@ const PRIMARY_ACTION_LABEL: Record<PrimaryAction, string> = {
   completePractice: 'Complete practice',
   takeQuiz: 'Take Quiz',
   openChallenge: 'Open Code Challenge',
-  returnToFocusedLesson: 'Return to focused lesson',
   watchToComplete: 'Watch lesson to complete',
   completeLessonTask: 'Mark lesson read',
   continue: 'Continue',
@@ -231,7 +331,6 @@ const PRIMARY_ACTION_LABEL: Record<PrimaryAction, string> = {
 ───────────────────────────────────────────────────────── */
 export default function NodeWorkspace({ data, slug }: { data: UserData; slug: string }) {
   const [showPanel, setShowPanel] = useState(false);
-  const [activeResourceIndex, setActiveResourceIndex] = useState(0);
   const [activeQuizTask, setActiveQuizTask] = useState<TaskRow | null>(null);
   const [activeChallengeTask, setActiveChallengeTask] = useState<TaskRow | null>(null);
   const [connectingRepo, setConnectingRepo] = useState(false);
@@ -242,26 +341,32 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
   const status = node ? data.nodeStatus(node.id) : 'locked';
   const path = node ? data.paths.find((p) => p.id === node.path_id) : null;
   const tasks = useMemo(() => data.tasks.filter((t) => t.node_id === node?.id), [data.tasks, node?.id]);
-  const resources = useMemo(() => data.resources.filter((r) => r.node_id === node?.id), [data.resources, node?.id]);
+  const topics = useMemo(
+    () => data.topics.filter((t) => t.node_id === node?.id).sort((a, b) => a.order - b.order),
+    [data.topics, node?.id],
+  );
+  const resourcesByTopic = useMemo(() => {
+    const map = new Map<string, ResourceRow[]>();
+    for (const topic of topics) {
+      map.set(topic.id, data.resources.filter((r) => r.topic_id === topic.id).sort((a, b) => a.order - b.order));
+    }
+    return map;
+  }, [topics, data.resources]);
+  const taskForResource = useMemo(() => {
+    const map = new Map<string, TaskRow>();
+    for (const task of tasks) {
+      if (task.resource_id && (task.type === 'read' || task.type === 'watch')) map.set(task.resource_id, task);
+    }
+    return map;
+  }, [tasks]);
+  // Tasks not tied to a specific resource — practice/build/quiz/challenge — assess
+  // the whole module, not one topic, so they live in their own trailing section.
+  const untiedTasks = useMemo(() => tasks.filter((t) => !t.resource_id), [tasks]);
 
   /* ── Progress ── */
   const doneCount = tasks.filter((t) => data.progress.completedTasks.includes(t.id)).length;
   const canWork = !(data.isSupabaseConnected && !data.isAuthenticated) &&
     (status === 'in_progress' || status === 'available');
-
-  /* ── Active resource ── */
-  const activeResource = resources[activeResourceIndex] ?? null;
-  const activeLessonTask = activeResource
-    ? tasks.find((task) => task.resource_id === activeResource.id && (task.type === 'read' || task.type === 'watch')) ?? null
-    : null;
-  const parsedYouTubeRef = activeResource ? getYouTubeRef(activeResource.url) : null;
-  const activeYouTubeRef = parsedYouTubeRef?.kind === 'video' && activeLessonTask
-    ? {
-        ...parsedYouTubeRef,
-        startSeconds: activeLessonTask.start_seconds ?? parsedYouTubeRef.startSeconds,
-        endSeconds: activeLessonTask.end_seconds ?? parsedYouTubeRef.endSeconds,
-      }
-    : parsedYouTubeRef;
 
   /* ── Prev / Next module navigation ── */
   const pathNodes = data.nodes.filter((n) => n.path_id === node?.path_id).sort((a, b) => a.order - b.order);
@@ -271,9 +376,12 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
   /* ── Task shortcuts ── */
   const nextPendingTask = tasks.find((t) => !data.progress.completedTasks.includes(t.id));
-  const pendingLessonResourceIndex = nextPendingTask?.resource_id
-    ? resources.findIndex((resource) => resource.id === nextPendingTask.resource_id)
-    : -1;
+  const nextPendingResource = nextPendingTask?.resource_id
+    ? data.resources.find((r) => r.id === nextPendingTask.resource_id) ?? null
+    : null;
+  const nextPendingIsVideoWatch = Boolean(
+    nextPendingTask?.type === 'watch' && nextPendingResource && getYouTubeRef(nextPendingResource.url)?.kind === 'video',
+  );
   const challengeTask = tasks.find((t) => t.type === 'challenge' && t.challenge);
   const quizTask = tasks.find((t) => t.type === 'quiz' && t.quiz);
   const buildTask = tasks.find((t) => t.type === 'build');
@@ -282,10 +390,6 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
      just wherever the build task card happens to be ── */
   const trackProject = path && path.id !== 'foundations' ? data.projectConnections[path.id] : undefined;
   const trackRepoConnected = trackProject?.connection_status === 'active' && Boolean(trackProject.github_repo_id);
-
-  useEffect(() => {
-    setActiveResourceIndex(0);
-  }, [slug]);
 
   useEffect(() => {
     setShowPanel(window.matchMedia('(min-width: 768px)').matches);
@@ -307,10 +411,10 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
   };
 
   /* ── Primary CTA — single decision tree shared by the label and the click
-     handler, so they can't drift out of sync with each other (previously two
-     independent branch chains over the same state). Only meaningful while
-     !allDone — the allDone states render their own Link/disabled button. ── */
-  const activeLessonPending = Boolean(activeLessonTask && !data.progress.completedTasks.includes(activeLessonTask.id));
+     handler, so they can't drift out of sync with each other. Everything is
+     visible at once now (no more paging between resources), so this just
+     picks the next pending task and, where useful, scrolls its card into
+     view instead of swapping which resource is "active." ── */
   const primaryAction: PrimaryAction =
     status === 'locked' ? 'locked'
     : completingTaskId ? 'saving'
@@ -318,16 +422,21 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
     : nextPendingTask?.type === 'practice' ? 'completePractice'
     : nextPendingTask?.type === 'quiz' ? 'takeQuiz'
     : nextPendingTask?.type === 'challenge' ? 'openChallenge'
-    : activeResource && !activeLessonTask && pendingLessonResourceIndex >= 0 ? 'returnToFocusedLesson'
-    : activeLessonPending && activeLessonTask?.type === 'watch' && activeYouTubeRef?.kind === 'video' ? 'watchToComplete'
-    : activeLessonPending ? 'completeLessonTask'
+    : nextPendingTask && nextPendingIsVideoWatch ? 'watchToComplete'
+    : nextPendingTask ? 'completeLessonTask'
     : 'continue';
+
+  const scrollToResource = (resourceId: string) => {
+    document.getElementById(`resource-${resourceId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
 
   const runPrimaryAction = async () => {
     switch (primaryAction) {
       case 'locked':
       case 'saving':
+        return;
       case 'watchToComplete':
+        if (nextPendingResource) scrollToResource(nextPendingResource.id);
         return; // watch progress is driven by the video's onWatchThreshold, not a click
       case 'verifyMilestone':
         document.getElementById('project-milestone')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -338,31 +447,16 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
       case 'openChallenge':
         if (nextPendingTask?.challenge) setActiveChallengeTask(nextPendingTask);
         return;
-      case 'returnToFocusedLesson':
-        if (pendingLessonResourceIndex >= 0) setActiveResourceIndex(pendingLessonResourceIndex);
-        return;
       case 'completePractice':
         if (nextPendingTask) await handleCompleteTask(nextPendingTask);
         return;
-      case 'completeLessonTask': {
-        if (!activeLessonTask) return;
-        const saved = await handleCompleteTask(activeLessonTask);
-        if (saved && activeResourceIndex < resources.length - 1) setActiveResourceIndex((i) => i + 1);
+      case 'completeLessonTask':
+        if (!nextPendingTask) return;
+        if (nextPendingResource) scrollToResource(nextPendingResource.id);
+        await handleCompleteTask(nextPendingTask);
         return;
-      }
-      case 'continue': {
-        if (nextPendingTask) {
-          if (nextPendingTask.type === 'watch' || nextPendingTask.type === 'read') {
-            const saved = await handleCompleteTask(nextPendingTask);
-            if (saved && activeResourceIndex < resources.length - 1) setActiveResourceIndex((i) => i + 1);
-          } else {
-            await handleCompleteTask(nextPendingTask);
-          }
-        } else if (activeResourceIndex < resources.length - 1) {
-          setActiveResourceIndex((i) => i + 1);
-        }
+      case 'continue':
         return;
-      }
     }
   };
 
@@ -396,7 +490,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
       {/* ──────────────────────────────────────────────────
           TOP BAR
           Left:  ← Back to Roadmap  /  Path  /  Node Name
-          Right: [< Course Outline >]  [XP chip]
+          Right: [< Course Outline >]
       ────────────────────────────────────────────────── */}
       <header className="z-30 flex min-h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-outline-variant bg-surface pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] sm:min-h-16 sm:px-6 sm:py-2">
         {/* Back + breadcrumb */}
@@ -507,88 +601,80 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             {/* Scrollable content */}
             <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
 
-              {/* Resource list */}
-              {resources.length > 0 && (
-                <section>
-                  <p className="mb-2 font-code text-xs font-bold uppercase tracking-[0.08em] text-outline">
-                    Learn · {resources.length} selected
-                  </p>
-                  <ul className="space-y-1.5">
-                    {resources.map((res, idx) => {
-                      const isActive = idx === activeResourceIndex;
-                      const yt = getYouTubeRef(res.url);
-                      const lesson = tasks.find((task) => task.resource_id === res.id && (task.type === 'read' || task.type === 'watch'));
-                      const lessonDone = lesson ? data.progress.completedTasks.includes(lesson.id) : false;
-                      return (
-                        <li key={res.id}>
-                          <button
-                            type="button"
-                            onClick={() => setActiveResourceIndex(idx)}
-                            aria-pressed={isActive}
-                            className={cn(
-                              'flex w-full items-start gap-2.5 border p-3 text-left text-[13px] transition-colors',
-                              isActive
-                                ? 'border-cyan bg-cyan/10 text-on-surface font-semibold'
-                                : 'border-transparent bg-surface-card text-on-surface-variant hover:border-outline-variant hover:text-on-surface',
-                            )}
-                          >
-                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-none bg-surface-container-high text-cyan">
-                              {lessonDone ? <Check className="h-2.5 w-2.5" /> : yt ? <Play className="h-2.5 w-2.5" /> : <BookOpen className="h-2.5 w-2.5" />}
-                            </span>
-                            <div className="min-w-0">
-                              <p className="truncate font-medium leading-4">{lesson?.lesson_title ?? res.name}</p>
-                              <p className="mt-0.5 text-xs text-on-surface-variant">
-                                {idx === 0 ? 'Primary lesson' : 'Reference'} · {lesson?.duration_minutes ? `${lesson.duration_minutes} min` : res.platform} · {yt ? 'Video' : res.type}
-                              </p>
-                            </div>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </section>
-              )}
+              {/* Topic outline */}
+              {topics.map((topic) => {
+                const topicResources = resourcesByTopic.get(topic.id) ?? [];
+                if (topicResources.length === 0) return null;
+                return (
+                  <section key={topic.id}>
+                    <p className="mb-2 font-code text-xs font-bold uppercase tracking-[0.08em] text-outline">
+                      {topic.title}
+                    </p>
+                    <ul className="space-y-1.5">
+                      {topicResources.map((res) => {
+                        const lesson = taskForResource.get(res.id) ?? null;
+                        const done = lesson ? data.progress.completedTasks.includes(lesson.id) : false;
+                        const yt = getYouTubeRef(res.url);
+                        return (
+                          <li key={res.id}>
+                            <a
+                              href={`#resource-${res.id}`}
+                              className="flex w-full items-start gap-2.5 border border-transparent bg-surface-card p-3 text-left text-[13px] text-on-surface-variant transition-colors hover:border-outline-variant hover:text-on-surface"
+                            >
+                              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-none bg-surface-container-high text-cyan">
+                                {done ? <Check className="h-2.5 w-2.5" /> : yt ? <Play className="h-2.5 w-2.5" /> : <BookOpen className="h-2.5 w-2.5" />}
+                              </span>
+                              <div className="min-w-0">
+                                <p className="truncate font-medium leading-4">{lesson?.lesson_title ?? res.name}</p>
+                                <p className="mt-0.5 text-xs text-on-surface-variant">
+                                  {lesson?.duration_minutes ? `${lesson.duration_minutes} min` : res.platform} · {yt ? 'Video' : res.type}
+                                </p>
+                              </div>
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
+                );
+              })}
 
-              {/* Task checklist */}
-              {tasks.length > 0 && (
+              {/* Practise · Prove · Ship — tasks that assess the whole module, not one topic */}
+              {untiedTasks.length > 0 && (
                 <section>
                   <div className="mb-2 flex items-center justify-between font-code text-xs">
                     <span className="font-bold uppercase tracking-widest text-outline flex items-center gap-1">
                       <ListChecks className="h-3 w-3 text-cyan" /> Practise · Prove · Ship
                     </span>
-                    <span className="font-bold text-on-surface">{doneCount}/{tasks.length}</span>
+                    <span className="font-bold text-on-surface">
+                      {untiedTasks.filter((t) => data.progress.completedTasks.includes(t.id)).length}/{untiedTasks.length}
+                    </span>
                   </div>
                   <ul className="space-y-1.5">
-                    {tasks.map((task) => {
+                    {untiedTasks.map((task) => {
                       const done = data.progress.completedTasks.includes(task.id);
                       return (
                         <li
                           key={task.id}
                           className="flex items-center gap-2.5 border border-outline-variant/50 bg-surface-card p-3 text-[13px]"
                         >
-                          {/* Completion checkbox / icon */}
                           <span className={cn(
                             'flex h-4 w-4 shrink-0 items-center justify-center rounded-none border',
                             done ? 'border-secondary bg-secondary' : 'border-outline-variant bg-surface-container-high',
                           )}>
                             {done && <Check className="h-2.5 w-2.5 text-on-secondary-fixed" />}
                           </span>
-
-                          {/* Description */}
                           <span className={cn('min-w-0 flex-1 leading-5', done ? 'line-through text-outline' : 'text-on-surface')}>
                             <span className="mb-0.5 block font-code text-xs font-bold uppercase tracking-[0.08em] text-cyan">
                               {task.type === 'practice'
                                 ? 'Practise'
                                 : task.type === 'build'
                                 ? node.path_id === 'foundations' ? 'Practise' : 'Ship'
-                                : task.type === 'quiz' || task.type === 'challenge' ? 'Prove' : 'Learn'}
+                                : 'Prove'}
                             </span>
                             {task.description}
                           </span>
-
-                          {/* Type marker — the action itself lives in the main
-                              canvas card or the bottom CTA, not duplicated here */}
-                          {!done && (task.type === 'quiz' || task.type === 'challenge' || task.type === 'build') && (
+                          {!done && (
                             <span className="shrink-0 font-code text-xs text-cyan">↓</span>
                           )}
                         </li>
@@ -605,7 +691,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
 
         {/* ─── MAIN CANVAS ─────────────────────────────── */}
         <main className="min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background">
-          <div className="mx-auto max-w-4xl space-y-4 px-4 py-5 sm:space-y-6 sm:px-8 sm:py-8 lg:px-10">
+          <div className="mx-auto max-w-4xl space-y-6 px-4 py-5 sm:space-y-8 sm:px-8 sm:py-8 lg:px-10">
 
             {!data.isAuthenticated && data.isSupabaseConnected && (
               <Alert>
@@ -644,133 +730,45 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
               <div className="max-w-3xl border-y border-outline-variant py-4">
                 <p className="font-code text-[11px] font-bold uppercase tracking-wide text-cyan">Outcome</p>
                 <p className="mt-1 text-sm leading-6 text-on-surface">{node.description}</p>
-                {node.skills.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2" aria-label="Competencies practised in this module">
-                    {node.skills.map((skill) => (
-                      <span key={skill} className="border border-outline-variant bg-surface-container-low px-2.5 py-1 font-code text-xs text-on-surface-variant">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
 
-            {/* ── Resource viewer ── */}
-            {activeResource ? (
-              <div className="overflow-hidden rounded-none border border-outline-variant bg-surface-card">
-                {/* Resource header bar */}
-                <div className="flex items-center justify-between gap-3 border-b border-outline-variant bg-surface px-4 py-2.5">
-                  <div className="flex min-w-0 items-center gap-2 text-xs font-semibold text-on-surface">
-                    {activeYouTubeRef ? <Play className="h-3.5 w-3.5 text-cyan" /> : <BookOpen className="h-3.5 w-3.5 text-cyan" />}
-                    <span className="truncate max-w-[240px]">{activeResource.name}</span>
-                    <span className="hidden text-outline sm:inline">·</span>
-                    <span className="hidden text-on-surface-variant font-normal sm:inline">{activeResource.platform}</span>
-                  </div>
-                  <a
-                    href={activeResource.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex shrink-0 items-center gap-1 font-code text-[11px] font-semibold text-on-surface hover:text-cyan hover:underline"
-                  >
-                    Open tab <ExternalLink className="h-3 w-3" />
-                  </a>
-                </div>
-
-                {/* Player / reader */}
-                <div className="p-3 sm:p-4">
-                  {activeLessonTask && (
-                    <div className="mb-3 flex flex-col gap-1 border-l-2 border-cyan bg-cyan/5 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="font-code text-xs font-bold uppercase tracking-[0.08em] text-cyan">Focused lesson</p>
-                        <p className="mt-0.5 text-sm font-semibold text-on-surface">{activeLessonTask.lesson_title}</p>
-                      </div>
-                      {activeLessonTask.duration_minutes && (
-                        <span className="shrink-0 font-code text-xs text-on-surface-variant">{activeLessonTask.duration_minutes} min</span>
+            {/* ── Topic breakdown ── */}
+            {topics.length > 0 ? (
+              <div className="space-y-8">
+                {topics.map((topic) => {
+                  const topicResources = resourcesByTopic.get(topic.id) ?? [];
+                  return (
+                    <section key={topic.id} className="space-y-3">
+                      <h2 className="font-display text-lg font-bold text-on-surface">{topic.title}</h2>
+                      {topicResources.length === 0 ? (
+                        <div className="rounded-none border border-dashed border-outline-variant bg-surface-card p-6 text-center">
+                          <p className="text-sm text-on-surface-variant">No resources yet for this topic.</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {topicResources.map((res) => {
+                            const lesson = taskForResource.get(res.id) ?? null;
+                            const done = lesson ? data.progress.completedTasks.includes(lesson.id) : false;
+                            return (
+                              <ResourceCard
+                                key={res.id}
+                                resource={res}
+                                lessonTask={lesson}
+                                completed={done}
+                                onCompleteLesson={(task) => { void handleCompleteTask(task); }}
+                              />
+                            );
+                          })}
+                        </div>
                       )}
-                    </div>
-                  )}
-                  {activeYouTubeRef ? (
-                    <YouTubeEmbed
-                      source={activeYouTubeRef}
-                      title={activeLessonTask?.lesson_title ?? activeResource.name}
-                      onWatchThreshold={activeLessonTask?.type === 'watch' && !data.progress.completedTasks.includes(activeLessonTask.id)
-                        ? () => { void handleCompleteTask(activeLessonTask); }
-                        : undefined}
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center gap-4 border border-outline-variant bg-surface px-4 py-8 text-center sm:py-12">
-                      <div className="max-w-md text-center">
-                        <p className="font-semibold text-on-surface">Study this selected source</p>
-                        <p className="mt-1 text-sm leading-6 text-on-surface-variant">
-                          {activeLessonTask
-                            ? 'Open only the focused section named above. Return here to mark it read, then practise and prove the outcome.'
-                            : 'Use this as a reference when the focused lesson or project work leaves a question. It is optional and does not block progress.'}
-                        </p>
-                      </div>
-                      <Button asChild className="gap-2 rounded-none bg-cyan font-bold text-on-primary-fixed hover:bg-cyan/90">
-                        <a href={activeResource.url} target="_blank" rel="noreferrer">
-                          Read on {activeResource.platform} <ExternalLink className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Resource prev/next strip (when there are multiple) */}
-                {resources.length > 1 && (
-                  <div className="flex items-center justify-between border-t border-outline-variant px-4 py-2">
-                    <button
-                      type="button"
-                      disabled={activeResourceIndex === 0}
-                      onClick={() => setActiveResourceIndex((i) => i - 1)}
-                      className="flex items-center gap-1 font-code text-xs text-on-surface-variant transition-colors hover:text-cyan disabled:opacity-30"
-                    >
-                      <ChevronLeft className="h-3.5 w-3.5" /> Previous
-                    </button>
-                    <span className="font-code text-xs text-outline">
-                      {activeResourceIndex + 1} / {resources.length}
-                    </span>
-                    <button
-                      type="button"
-                      disabled={activeResourceIndex === resources.length - 1}
-                      onClick={() => setActiveResourceIndex((i) => i + 1)}
-                      className="flex items-center gap-1 font-code text-xs text-on-surface-variant transition-colors hover:text-cyan disabled:opacity-30"
-                    >
-                      Next <ChevronRight className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                )}
-                <div className="flex flex-col gap-2 border-t border-outline-variant px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="font-code text-[11px] font-semibold text-on-surface">Was this resource useful?</p>
-                    <p className="mt-0.5 text-xs text-on-surface-variant">
-                      {activeResource.rating_count > 0
-                        ? `${activeResource.avg_rating.toFixed(1)} from ${activeResource.rating_count} rating${activeResource.rating_count === 1 ? '' : 's'}`
-                        : 'No ratings yet'}
-                    </p>
-                  </div>
-                  <div role="group" aria-label={`Rate ${activeResource.name}`}>
-                    <Stars
-                      value={data.progress.ratings[activeResource.id] ?? 0}
-                      disabled={!canWork}
-                      tone="secondary"
-                      size="size-4"
-                      onRate={async (rating) => {
-                        try {
-                          await data.rateResource({ resourceId: activeResource.id, rating });
-                          toast.success('Resource rating saved.');
-                        } catch (error) {
-                          toast.error(error instanceof Error ? error.message : 'Could not save your rating.');
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
+                    </section>
+                  );
+                })}
               </div>
             ) : (
               <div className="rounded-none border border-outline-variant bg-surface-card p-10 text-center">
-                <p className="text-sm text-on-surface-variant">No resources yet — check back soon, or start the tasks below.</p>
+                <p className="text-sm text-on-surface-variant">No topics yet — check back soon, or start the tasks below.</p>
               </div>
             )}
 
@@ -915,7 +913,7 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
         ) : (
           <Button
             onClick={data.isSupabaseConnected && !data.isAuthenticated ? data.signInWithGithub : runPrimaryAction}
-            disabled={(status === 'locked') || Boolean(completingTaskId) || (allDone && !nextNode) || primaryAction === 'watchToComplete'}
+            disabled={(status === 'locked') || Boolean(completingTaskId) || (allDone && !nextNode)}
             className={cn(
               'min-w-0 shrink-0 gap-2 px-3 py-2 font-code text-[11px] font-bold sm:ml-auto sm:px-5 sm:text-sm',
               allDone

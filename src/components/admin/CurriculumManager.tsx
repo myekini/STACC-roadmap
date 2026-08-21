@@ -50,7 +50,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Spinner } from '@/components/ui/spinner';
-import type { ChallengePayload, NodeRow, PathRow, QuizPayload, ResourceRow, TaskRow, TaskType } from '@/lib/database.types';
+import type { ChallengePayload, NodeRow, PathRow, QuizPayload, ResourceRow, TaskRow, TaskType, TopicRow } from '@/lib/database.types';
 import { cn } from '@/lib/utils';
 
 /* ─── Shared field styles ────────────────────────────────── */
@@ -154,8 +154,7 @@ function ResourceRow({
           <p className="font-semibold text-on-surface truncate">{res.name || <em className="text-outline">Unnamed</em>}</p>
           <p className="text-xs text-on-surface-variant truncate">{res.platform} · {res.url || '—'}</p>
           <p className="mt-0.5 font-code text-xs text-outline">
-            {res.rating_count > 0 ? `${res.avg_rating.toFixed(1)} / 5 · ${res.rating_count} rating${res.rating_count === 1 ? '' : 's'}` : 'No ratings'}
-            {res.updated_at ? ` · reviewed ${new Date(res.updated_at).toLocaleDateString('en', { day: '2-digit', month: 'short', year: 'numeric' })}` : ' · review date unavailable'}
+            {res.updated_at ? `reviewed ${new Date(res.updated_at).toLocaleDateString('en', { day: '2-digit', month: 'short', year: 'numeric' })}` : 'review date unavailable'}
           </p>
         </div>
       </div>
@@ -178,6 +177,80 @@ function ResourceRow({
   );
 }
 
+/* ─── Topic section — a topic's title bar (reorder/rename/delete) plus its
+   own nested resource list (reuses ResourceRow, capped at 2 per topic) ── */
+
+function TopicSection({
+  topic,
+  resources,
+  disabled,
+  canMoveUp,
+  canMoveDown,
+  onMoveUp,
+  onMoveDown,
+  onSaveTitle,
+  onDelete,
+  onAddResource,
+  onSaveResource,
+  onDeleteResource,
+}: {
+  topic: TopicRow;
+  resources: ResourceRow[];
+  disabled: boolean;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onSaveTitle: (title: string) => Promise<unknown>;
+  onDelete: () => void;
+  onAddResource: () => Promise<unknown>;
+  onSaveResource: (id: string, patch: Partial<ResourceRow>) => Promise<unknown>;
+  onDeleteResource: (id: string, label: string) => void;
+}) {
+  return (
+    <div className="rounded-none border border-outline-variant/60 bg-surface/40 p-3 space-y-2.5">
+      <div className="flex items-center gap-2">
+        <input
+          key={topic.id}
+          defaultValue={topic.title}
+          disabled={disabled}
+          placeholder="Topic title…"
+          onBlur={(e) => { if (e.target.value.trim() && e.target.value !== topic.title) onSaveTitle(e.target.value.trim()); }}
+          className="min-w-0 flex-1 bg-transparent font-display text-sm font-bold text-on-surface focus:outline-none border-b border-transparent focus:border-cyan/40 pb-0.5 transition-colors disabled:opacity-60"
+        />
+        <span className="shrink-0 font-code text-xs text-outline">({resources.length}/2)</span>
+        {!disabled && (
+          <div className="flex shrink-0 items-center gap-0.5">
+            <button type="button" onClick={onMoveUp} disabled={!canMoveUp} className="p-1 text-on-surface-variant hover:text-cyan disabled:pointer-events-none disabled:opacity-30" title="Move topic up" aria-label={`Move ${topic.title} up`}>
+              <ChevronUp className="h-3.5 w-3.5" />
+            </button>
+            <button type="button" onClick={onMoveDown} disabled={!canMoveDown} className="p-1 text-on-surface-variant hover:text-cyan disabled:pointer-events-none disabled:opacity-30" title="Move topic down" aria-label={`Move ${topic.title} down`}>
+              <ChevronDown className="h-3.5 w-3.5" />
+            </button>
+            <button type="button" onClick={onDelete} className="p-1 text-on-surface-variant hover:text-error" title="Delete topic" aria-label={`Delete ${topic.title}`}>
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="space-y-2 pl-1">
+        {resources.length === 0 ? (
+          <p className="text-xs text-on-surface-variant">No resources yet.</p>
+        ) : (
+          resources.map((res) => (
+            <ResourceRow key={res.id} res={res} disabled={disabled} onSave={(patch) => onSaveResource(res.id, patch).then(() => {})} onDelete={() => onDeleteResource(res.id, res.name)} />
+          ))
+        )}
+        {!disabled && (
+          <Button size="sm" variant="outline" onClick={onAddResource} disabled={resources.length >= 2} className="h-7 gap-1.5 px-3 font-code text-xs rounded-none border-outline-variant hover:border-cyan">
+            <Plus className="h-3 w-3" /> Add Resource
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Task editor ────────────────────────────────────────── */
 
 function blankQuiz(): QuizPayload {
@@ -192,12 +265,14 @@ function blankChallenge(language: 'python' | 'sql'): ChallengePayload {
 function TaskEditor({
   task,
   resources,
+  topics,
   onSave,
   onCancel,
   disabled,
 }: {
   task: Partial<TaskRow> & { node_id: string };
   resources: ResourceRow[];
+  topics: TopicRow[];
   onSave: (task: Partial<TaskRow> & { node_id: string }) => Promise<void>;
   onCancel: () => void;
   disabled: boolean;
@@ -279,7 +354,15 @@ function TaskEditor({
             <span className="text-xs font-semibold text-on-surface">Resource</span>
             <select value={draft.resource_id ?? ''} disabled={disabled} onChange={(e) => setDraft((d) => ({ ...d, resource_id: e.target.value || null }))} className={cn(fieldCls, 'w-full')}>
               <option value="">Select a module resource</option>
-              {resources.map((resource) => <option key={resource.id} value={resource.id}>{resource.name} · {resource.platform}</option>)}
+              {topics.map((topic) => {
+                const topicResources = resources.filter((r) => r.topic_id === topic.id);
+                if (topicResources.length === 0) return null;
+                return (
+                  <optgroup key={topic.id} label={topic.title}>
+                    {topicResources.map((resource) => <option key={resource.id} value={resource.id}>{resource.name} · {resource.platform}</option>)}
+                  </optgroup>
+                );
+              })}
             </select>
           </label>
           <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_7rem]">
@@ -480,11 +563,12 @@ function TaskEditor({
 type DeleteTarget =
   | { type: 'resource'; id: string; nodeId: string; label: string }
   | { type: 'task'; id: string; label: string }
+  | { type: 'topic'; id: string; label: string }
   | { type: 'node'; id: string; label: string }
   | { type: 'path'; id: string; label: string };
 
 export function CurriculumManager() {
-  const { paths, nodesByPath, tasks, resources, prereqs } = useUserData();
+  const { paths, nodesByPath, tasks, topics, resources, prereqs } = useUserData();
   const admin = useCurriculumAdmin();
   const disabled = !admin.connected;
 
@@ -519,6 +603,10 @@ export function CurriculumManager() {
     [nodesByPath],
   );
   const activeNode = orderedNodes.find((n) => n.id === selectedNodeId) ?? orderedNodes[0] ?? null;
+  const nodeTopics = useMemo(
+    () => (activeNode ? topics.filter((t) => t.node_id === activeNode.id).sort((a, b) => a.order - b.order) : []),
+    [topics, activeNode],
+  );
   const nodeResources = activeNode ? resources.filter((r) => r.node_id === activeNode.id) : [];
   const nodeTasks = activeNode ? tasks.filter((t) => t.node_id === activeNode.id).sort((a, b) => a.order - b.order) : [];
 
@@ -557,6 +645,15 @@ export function CurriculumManager() {
     await runMutation(() => admin.reorderNodes({ pathId: activePathId, orderedIds: reordered.map((n) => n.id) })).catch(() => {});
   };
 
+  const moveTopic = async (index: number, direction: -1 | 1) => {
+    if (!activeNode) return;
+    const target = index + direction;
+    if (target < 0 || target >= nodeTopics.length) return;
+    const reordered = [...nodeTopics];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    await runMutation(() => admin.reorderTopics({ nodeId: activeNode.id, orderedIds: reordered.map((t) => t.id) })).catch(() => {});
+  };
+
   const handleDragEnd = async () => {
     const from = dragItem.current;
     const to = dragOver.current;
@@ -574,6 +671,7 @@ export function CurriculumManager() {
     try {
       if (confirmDelete.type === 'resource') await runMutation(() => admin.deleteResource(confirmDelete.id));
       if (confirmDelete.type === 'task') await runMutation(() => admin.deleteTask(confirmDelete.id));
+      if (confirmDelete.type === 'topic') await runMutation(() => admin.deleteTopic(confirmDelete.id));
       if (confirmDelete.type === 'node') {
         await runMutation(() => admin.deleteNode(confirmDelete.id));
         setSelectedNodeId(null);
@@ -848,6 +946,7 @@ export function CurriculumManager() {
               node={activeNode}
               allNodes={paths.flatMap((p) => (nodesByPath[p.id] ?? []).map((n) => ({ ...n, pathTitle: p.title })))}
               nodePrereqs={prereqs[activeNode.id] ?? []}
+              topics={nodeTopics}
               resources={nodeResources}
               tasks={nodeTasks}
               disabled={disabled}
@@ -866,11 +965,22 @@ export function CurriculumManager() {
                 xp_reward: activeNode.xp_reward, skills: activeNode.skills, ...patch,
               }))}
               onSavePrereqs={(ids) => runMutation(() => admin.setNodePrerequisites({ nodeId: activeNode.id, prerequisiteIds: ids })).then(() => setEditingPrereqs(false))}
-              onAddResource={() => runMutation(() => admin.upsertResource({ id: null, node_id: activeNode.id, name: 'New resource', type: 'article', platform: '', url: '', cost: 'free' }))}
+              onAddTopic={() => runMutation(() => admin.upsertTopic({ id: null, node_id: activeNode.id, title: 'New topic', order: nodeTopics.length + 1 }))}
+              onSaveTopic={(id, title) => runMutation(async () => {
+                const current = nodeTopics.find((t) => t.id === id);
+                if (!current) return;
+                await admin.upsertTopic({ id, node_id: activeNode.id, title, order: current.order });
+              })}
+              onDeleteTopic={(id, label) => setConfirmDelete({ type: 'topic', id, label })}
+              onMoveTopic={moveTopic}
+              onAddResource={(topicId) => runMutation(() => {
+                const topicResourceCount = nodeResources.filter((r) => r.topic_id === topicId).length;
+                return admin.upsertResource({ id: null, topic_id: topicId, order: topicResourceCount + 1, name: 'New resource', type: 'article', platform: '', url: '', cost: 'free' });
+              })}
               onSaveResource={(id, patch) => runMutation(async () => {
                 const current = nodeResources.find((r) => r.id === id);
                 if (!current) return;
-                await admin.upsertResource({ id, node_id: activeNode.id, name: current.name, type: current.type, platform: current.platform, url: current.url, cost: current.cost, ...patch });
+                await admin.upsertResource({ id, topic_id: current.topic_id, order: current.order, name: current.name, type: current.type, platform: current.platform, url: current.url, cost: current.cost, ...patch });
               })}
               onDeleteResource={(id, label) => setConfirmDelete({ type: 'resource', id, nodeId: activeNode.id, label })}
               onSaveTask={(task) => runMutation(async () => {
@@ -936,7 +1046,9 @@ export function CurriculumManager() {
                 ? 'A track can only be deleted once every module in it is removed.'
                 : confirmDelete?.type === 'node'
                   ? 'This deletes the module and every resource and task inside it immediately, and breaks its public lesson URL for anyone with it open — members currently viewing it will no longer see it.'
-                  : 'This removes it from the live curriculum immediately — members currently viewing it will no longer see it.'}
+                  : confirmDelete?.type === 'topic'
+                    ? 'This deletes the topic and every resource inside it immediately.'
+                    : 'This removes it from the live curriculum immediately — members currently viewing it will no longer see it.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           {requiresTypedConfirmation && confirmDelete && (
@@ -1155,6 +1267,7 @@ function ModuleEditor({
   node,
   allNodes,
   nodePrereqs,
+  topics,
   resources,
   tasks,
   disabled,
@@ -1168,6 +1281,10 @@ function ModuleEditor({
   onStopEditPrereqs,
   onSaveMeta,
   onSavePrereqs,
+  onAddTopic,
+  onSaveTopic,
+  onDeleteTopic,
+  onMoveTopic,
   onAddResource,
   onSaveResource,
   onDeleteResource,
@@ -1177,6 +1294,7 @@ function ModuleEditor({
   node: NodeRow;
   allNodes: (NodeRow & { pathTitle: string })[];
   nodePrereqs: string[];
+  topics: TopicRow[];
   resources: ResourceRow[];
   tasks: TaskRow[];
   disabled: boolean;
@@ -1190,7 +1308,11 @@ function ModuleEditor({
   onStopEditPrereqs: () => void;
   onSaveMeta: (patch: Partial<NodeRow>) => Promise<unknown>;
   onSavePrereqs: (ids: string[]) => Promise<unknown>;
-  onAddResource: () => Promise<unknown>;
+  onAddTopic: () => Promise<unknown>;
+  onSaveTopic: (id: string, title: string) => Promise<unknown>;
+  onDeleteTopic: (id: string, label: string) => void;
+  onMoveTopic: (index: number, direction: -1 | 1) => Promise<unknown>;
+  onAddResource: (topicId: string) => Promise<unknown>;
   onSaveResource: (id: string, patch: Partial<ResourceRow>) => Promise<unknown>;
   onDeleteResource: (id: string, label: string) => void;
   onSaveTask: (task: Partial<TaskRow> & { node_id: string }) => Promise<unknown>;
@@ -1311,27 +1433,42 @@ function ModuleEditor({
         )}
       </section>
 
-      {/* Resources */}
+      {/* Topics — each carries its own primary + secondary resources
+          (max 2 per topic, same cap the node used to enforce as a whole). */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="font-display text-sm font-bold text-on-surface flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-cyan" /> Learning Resources
-            <span className="font-code text-xs text-outline font-normal">({resources.length}/2)</span>
+            <BookOpen className="h-4 w-4 text-cyan" /> Topics
+            <span className="font-code text-xs text-outline font-normal">({topics.length})</span>
           </h4>
           {!disabled && (
-            <Button size="sm" variant="outline" onClick={onAddResource} disabled={resources.length >= 2} className="h-7 gap-1.5 px-3 font-code text-xs rounded-none border-outline-variant hover:border-cyan">
-              <Plus className="h-3 w-3" /> Add Resource
+            <Button size="sm" variant="outline" onClick={onAddTopic} className="h-7 gap-1.5 px-3 font-code text-xs rounded-none border-outline-variant hover:border-cyan">
+              <Plus className="h-3 w-3" /> Add Topic
             </Button>
           )}
         </div>
-        <div className="space-y-2">
-          {resources.length === 0 ? (
+        <div className="space-y-3">
+          {topics.length === 0 ? (
             <div className="rounded-none border border-dashed border-outline-variant/60 py-6 text-center">
-              <p className="text-xs text-on-surface-variant">No resources yet.</p>
+              <p className="text-xs text-on-surface-variant">No topics yet — this module&apos;s content page will be empty.</p>
             </div>
           ) : (
-            resources.map((res) => (
-              <ResourceRow key={res.id} res={res} disabled={disabled} onSave={(patch) => onSaveResource(res.id, patch).then(() => {})} onDelete={() => onDeleteResource(res.id, res.name)} />
+            topics.map((topic, idx) => (
+              <TopicSection
+                key={topic.id}
+                topic={topic}
+                resources={resources.filter((r) => r.topic_id === topic.id).sort((a, b) => a.order - b.order)}
+                disabled={disabled}
+                canMoveUp={idx > 0}
+                canMoveDown={idx < topics.length - 1}
+                onMoveUp={() => onMoveTopic(idx, -1)}
+                onMoveDown={() => onMoveTopic(idx, 1)}
+                onSaveTitle={(title) => onSaveTopic(topic.id, title)}
+                onDelete={() => onDeleteTopic(topic.id, topic.title)}
+                onAddResource={() => onAddResource(topic.id)}
+                onSaveResource={onSaveResource}
+                onDeleteResource={onDeleteResource}
+              />
             ))
           )}
         </div>
@@ -1359,7 +1496,7 @@ function ModuleEditor({
           )}
           {tasks.map((task) =>
             editingTaskId === task.id ? (
-              <TaskEditor key={task.id} task={task} resources={resources} disabled={disabled} onCancel={onStopEditTask} onSave={(t) => onSaveTask(t).then(() => {})} />
+              <TaskEditor key={task.id} task={task} resources={resources} topics={topics} disabled={disabled} onCancel={onStopEditTask} onSave={(t) => onSaveTask(t).then(() => {})} />
             ) : (
               <div key={task.id} className="flex items-center justify-between gap-2 rounded-none border border-outline-variant/60 bg-surface/50 px-3 py-2 text-xs group">
                 <div className="min-w-0">
@@ -1378,7 +1515,7 @@ function ModuleEditor({
             ),
           )}
           {addingTask && (
-            <TaskEditor task={{ node_id: node.id, type: 'read', order: tasks.length + 1 }} resources={resources} disabled={disabled} onCancel={onStopEditTask} onSave={(t) => onSaveTask(t).then(() => {})} />
+            <TaskEditor task={{ node_id: node.id, type: 'read', order: tasks.length + 1 }} resources={resources} topics={topics} disabled={disabled} onCancel={onStopEditTask} onSave={(t) => onSaveTask(t).then(() => {})} />
           )}
         </div>
       </section>
