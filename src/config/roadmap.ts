@@ -5,17 +5,15 @@
 // Editorial rules (keep the tree readable, not just complete):
 //  - Exactly 3 skills per node — more than that fans too many chips off one
 //    module on the roadmap and the progression reads as noise instead of a path.
-//  - Exactly 2 curated resources per node — one primary course/video, one
-//    reference doc to come back to. Every URL below is a stable, well-known
-//    official domain (project docs, a maintained course, or a canonical repo).
+//  - Up to 2 curated resources per topic — a bounded primary lesson and, when
+//    it adds real value, a reference to return to. Do not fill format quotas
+//    with weaker material: executable checkpoints can be the validation layer.
 //
 // Node content structure (supabase/migrations/0030_node_topics.sql): a node
 // breaks into topics — today, exactly the node's 3 `skills`, synthesized
 // below rather than hand-authored, since that's already the de facto topic
-// list. Both authored resources currently land on the first topic; the other
-// two topics start with no resources of their own until an admin curates
-// some for them via the Curriculum panel — NodeDef/TaskDef stay untouched so
-// nothing here needs rewriting to support that.
+// list. The optional topic index on a resource keeps the demo curriculum in
+// lockstep with the topic-aware Supabase content.
 import type {
   ChallengePayload,
   NodeRow,
@@ -31,7 +29,13 @@ import type {
 
 type SqlRow = Record<string, unknown>;
 
-type ResourceDef = [name: string, type: ResourceType, platform: string, url: string];
+type ResourceDef = [
+  name: string,
+  type: ResourceType,
+  platform: string,
+  url: string,
+  topicIndex?: 0 | 1 | 2,
+];
 interface LessonMeta {
   resourceIndex: 0 | 1;
   title: string;
@@ -118,6 +122,8 @@ const PATH_DEFS: PathDef[] = [
         resources: [
           ['Python Tutorial — sections 3–5', 'documentation', 'Python.org', 'https://docs.python.org/3/tutorial/introduction.html'],
           ['10 minutes to pandas', 'documentation', 'pandas.pydata.org', 'https://pandas.pydata.org/docs/user_guide/10min.html'],
+          ['Validate pandas data with Pandera', 'video', 'ArjanCodes', 'https://www.youtube.com/watch?v=-tU7fuUiq7w', 2],
+          ['Pandera DataFrame schemas', 'documentation', 'Pandera', 'https://pandera.readthedocs.io/en/stable/dataframe_schemas.html', 2],
         ],
         tasks: [
           ['Learn: complete Python Tutorial sections 3–5 and reproduce the examples locally', 'read', undefined, { resourceIndex: 0, title: 'Python essentials: values, control flow and functions', durationMinutes: 45 }],
@@ -383,10 +389,10 @@ const PATH_DEFS: PathDef[] = [
         skills: ['Question & metric framing', 'Data profiling', 'Analysis planning'], prereqs: FOUNDATION_SLUGS,
         resources: [
           ['Pandas — working with missing data', 'documentation', 'pandas.pydata.org', 'https://pandas.pydata.org/docs/user_guide/missing_data.html'],
-          ['NIST EDA Handbook — introduction', 'documentation', 'NIST', 'https://www.itl.nist.gov/div898/handbook/eda/section1/eda11.htm'],
+          ['The Aqua Book — analysis design, quality and uncertainty (chapters 6–8)', 'documentation', 'UK Government', 'https://www.gov.uk/guidance/the-aqua-book', 2],
         ],
         tasks: [
-          ['Learn: study pandas missing-data handling and the NIST EDA purpose and approach sections', 'read', undefined, { resourceIndex: 0, title: 'A disciplined exploratory analysis', durationMinutes: 45 }],
+          ['Learn: study pandas missing-data handling and use the Aqua Book chapters 6–8 to frame the analysis plan, quality checks and uncertainty', 'read', undefined, { resourceIndex: 0, title: 'A disciplined exploratory analysis', durationMinutes: 45 }],
           ['Build: add brief.md and analysis.ipynb that define the stakeholder, decision, metrics and assumptions, then profile missingness, duplicates, distributions, segments and anomalies with reproducible code', 'build'],
         ],
       },
@@ -411,7 +417,8 @@ const PATH_DEFS: PathDef[] = [
         skills: ['Decision-led layout', 'KPI definitions', 'Accessible interaction'], prereqs: ['da-visualization'],
         resources: [
           ['Power BI report design tips', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/create-reports/service-dashboards-design-tips'],
-          ['Design Power BI reports for accessibility', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-accessibility-creating-reports'],
+          ['Design effective reports in Power BI — first 3 modules', 'course', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/training/paths/power-bi-effective/', 2],
+          ['Design Power BI reports for accessibility', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-accessibility-creating-reports', 2],
         ],
         tasks: [
           ['Learn: study Microsoft report-design and accessibility guidance', 'read', undefined, { resourceIndex: 0, title: 'Decision-first dashboard design', durationMinutes: 40 }],
@@ -440,6 +447,8 @@ const PATH_DEFS: PathDef[] = [
         resources: [
           ['PL-300 Data Analyst study guide', 'course', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/pl-300'],
           ['Learn DAX basics in Power BI Desktop', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/transform-model/desktop-quickstart-learn-dax-basics'],
+          ['Manage and secure Power BI — semantic models and data access', 'course', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/training/paths/manage-secure-power-bi/', 2],
+          ['Configure scheduled refresh', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/connect-data/refresh-scheduled-refresh', 2],
         ],
         tasks: [
           ['Learn: cover the PL-300 prepare/model/manage objectives and complete the DAX basics tutorial', 'read', undefined, { resourceIndex: 0, title: 'Semantic models, measures and governed BI', durationMinutes: 55 }],
@@ -793,14 +802,13 @@ export const TOPICS: TopicRow[] = PATH_DEFS.flatMap((p) =>
 
 export const RESOURCES: ResourceRow[] = PATH_DEFS.flatMap((p) =>
   p.nodes.flatMap((n) =>
-    n.resources.map(([name, type, platform, url], i) => ({
+    n.resources.map(([name, type, platform, url, topicIndex = 0], i) => ({
       id: `${n.slug}::r${i}`,
       node_id: n.slug,
-      // Both authored resources currently sit on the first topic (topic 0) —
-      // see the header comment. `admin_upsert_resource` (0030) is what lets
-      // real content move beyond that from here.
-      topic_id: `${n.slug}::topic0`,
-      order: i + 1,
+      topic_id: `${n.slug}::topic${topicIndex}`,
+      order: n.resources
+        .slice(0, i + 1)
+        .filter((resource) => (resource[4] ?? 0) === topicIndex).length,
       name,
       type,
       platform,
@@ -871,12 +879,19 @@ export const TASKS: TaskRow[] = PATH_DEFS.flatMap((p) =>
 export const PATH_IDS = PATHS.map((p) => p.id);
 export const SPECIALIZATION_PATHS = PATHS.filter((p) => p.id !== 'foundations');
 
-// Keep the lightweight content contract executable. This catches accidental
-// curriculum bloat during development without changing the existing data model.
+// Keep the lightweight content contract executable. Resource limits apply per
+// topic now that a node can carry several focused lesson/reference pairs.
 for (const path of PATH_DEFS) {
   for (const node of path.nodes) {
     if (node.skills.length !== 3) throw new Error(`${node.slug} must define exactly 3 competencies.`);
-    if (node.resources.length !== 2) throw new Error(`${node.slug} must define exactly 2 focused resources.`);
+    const resourcesPerTopic = node.resources.reduce<number[]>((counts, resource) => {
+      const topicIndex = resource[4] ?? 0;
+      counts[topicIndex] = (counts[topicIndex] ?? 0) + 1;
+      return counts;
+    }, []);
+    if (node.resources.length === 0 || resourcesPerTopic.some((count) => count > 2)) {
+      throw new Error(`${node.slug} must define 1–2 focused resources per populated topic.`);
+    }
     if (node.tasks.length < 2) throw new Error(`${node.slug} must include learning and applied work.`);
   }
 }

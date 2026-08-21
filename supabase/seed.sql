@@ -97,11 +97,19 @@ from (values
 join n as child on child.slug = edges.child_slug
 join n as parent on parent.slug = edges.parent_slug;
 
+-- ── Topics ─────────────────────────────────────────────────
+-- Migrations create topics for existing nodes, but a fresh reset runs the
+-- migrations before this seed. Create the three authored topics per node here
+-- so the required resources.topic_id can always be populated.
+insert into public.topics (node_id, title, "order")
+select n.id, s.skill, s.ordinality
+from public.nodes n, unnest(n.skills) with ordinality as s(skill, ordinality);
+
 -- ── Resources ──────────────────────────────────────────────
-with n as (select slug, id from public.nodes)
-insert into public.resources (node_id, name, type, platform, url)
-select n.id, r.name, r.type, r.platform, r.url
-from (values
+with n as (select slug, id from public.nodes),
+resource_rows as (
+  select values_list.*, row_number() over () as source_order
+  from (values
   ('found-python', 'Python Tutorial — sections 3–5', 'documentation', 'Python.org', 'https://docs.python.org/3/tutorial/introduction.html'),
   ('found-python', '10 minutes to pandas', 'documentation', 'pandas.pydata.org', 'https://pandas.pydata.org/docs/user_guide/10min.html'),
   ('found-sql', 'SQLBolt — lessons 1–18', 'course', 'SQLBolt', 'https://sqlbolt.com/'),
@@ -133,11 +141,10 @@ from (values
   ('de-vectordb','Great Expectations — introduction','documentation','Great Expectations','https://docs.greatexpectations.io/docs/core/introduction/'),
 
   ('da-eda', 'Pandas — working with missing data', 'documentation', 'pandas.pydata.org', 'https://pandas.pydata.org/docs/user_guide/missing_data.html'),
-  ('da-eda', 'NIST EDA Handbook — introduction', 'documentation', 'NIST', 'https://www.itl.nist.gov/div898/handbook/eda/section1/eda11.htm'),
+  ('da-eda', 'The Aqua Book — analysis design, quality and uncertainty (chapters 6–8)', 'documentation', 'UK Government', 'https://www.gov.uk/guidance/the-aqua-book'),
   ('da-visualization', 'Matplotlib — the lifecycle of a plot', 'documentation', 'Matplotlib', 'https://matplotlib.org/stable/tutorials/lifecycle.html'),
   ('da-visualization', 'Accessible data visualisation guidance', 'article', 'UK Analysis Function', 'https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-charts/'),
   ('da-dashboards', 'Power BI report design tips', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/create-reports/service-dashboards-design-tips'),
-  ('da-dashboards', 'Design Power BI reports for accessibility', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-accessibility-creating-reports'),
   ('da-storytelling', 'Storytelling with Data exercises', 'article', 'Storytelling with Data', 'https://community.storytellingwithdata.com/exercises'),
   ('da-storytelling', 'Communicating quality, uncertainty and change', 'documentation', 'UK Analysis Function', 'https://analysisfunction.civilservice.gov.uk/policy-store/communicating-quality-uncertainty-and-change/'),
   ('da-bi', 'PL-300 Data Analyst study guide', 'course', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/pl-300'),
@@ -183,8 +190,50 @@ from (values
   ('ml-production', 'Feast Documentation', 'documentation', 'Feast', 'https://docs.feast.dev/'),
   ('ml-platform', 'MLOps Zoomcamp — platform capstone', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/mlops-zoomcamp/tree/main/07-project'),
   ('ml-platform', 'MLflow Documentation', 'documentation', 'MLflow', 'https://mlflow.org/docs/latest/index.html')
-) as r(node_slug, name, type, platform, url)
-join n on n.slug = r.node_slug;
+) as values_list(node_slug, name, type, platform, url)
+),
+ranked_resources as (
+  select resource_rows.*,
+    row_number() over (partition by node_slug order by source_order)::integer as resource_order
+  from resource_rows
+)
+insert into public.resources (node_id, topic_id, "order", name, type, platform, url)
+select n.id, first_topic.id, r.resource_order, r.name, r.type, r.platform, r.url
+from ranked_resources r
+join n on n.slug = r.node_slug
+join lateral (
+  select t.id from public.topics t
+  where t.node_id = n.id
+  order by t."order"
+  limit 1
+) first_topic on true;
+
+-- Topic-specific material fills only verified gaps. SQL query validation is
+-- deliberately enforced by SQLBolt plus Stacc's executable checkpoint rather
+-- than a duplicated or lower-quality format-filler resource.
+with curated(node_slug, topic_order, resource_order, name, type, platform, url) as (values
+  ('found-python', 3, 1, 'Validate pandas data with Pandera', 'video', 'ArjanCodes', 'https://www.youtube.com/watch?v=-tU7fuUiq7w'),
+  ('found-python', 3, 2, 'Pandera DataFrame schemas', 'documentation', 'Pandera', 'https://pandera.readthedocs.io/en/stable/dataframe_schemas.html'),
+  ('da-dashboards', 3, 1, 'Design effective reports in Power BI — first 3 modules', 'course', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/training/paths/power-bi-effective/'),
+  ('da-dashboards', 3, 2, 'Design Power BI reports for accessibility', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-accessibility-creating-reports'),
+  ('da-bi', 3, 1, 'Manage and secure Power BI — semantic models and data access', 'course', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/training/paths/manage-secure-power-bi/'),
+  ('da-bi', 3, 2, 'Configure scheduled refresh', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/connect-data/refresh-scheduled-refresh')
+)
+insert into public.resources (node_id, topic_id, "order", name, type, platform, url)
+select n.id, t.id, c.resource_order, c.name, c.type, c.platform, c.url
+from curated c
+join public.nodes n on n.slug = c.node_slug
+join public.topics t on t.node_id = n.id and t."order" = c.topic_order;
+
+-- The analysis-planning reference belongs to the third EDA topic, not the
+-- missing-data topic where legacy resources were initially grouped.
+update public.resources r
+set topic_id = t.id, "order" = 1
+from public.nodes n
+join public.topics t on t.node_id = n.id and t."order" = 3
+where n.slug = 'da-eda'
+  and r.node_id = n.id
+  and r.url = 'https://www.gov.uk/guidance/the-aqua-book';
 
 -- ── Tasks ──────────────────────────────────────────────────
 -- Every node gets a study task, a build task, and a checkpoint (quiz or, where
@@ -230,7 +279,7 @@ from (values
   ('de-vectordb','Learn: study lineage events and executable data-quality expectations','read',1,null,null),
   ('de-vectordb','Build: finish the cumulative platform with freshness/key/business-rule checks, lineage, architecture diagram, data dictionary, setup guide, cost note, failure alert, backfill runbook and one dashboard or query pack proving the data is usable','build',2,null,null),
 
-  ('da-eda', 'Learn: study pandas missing-data handling and the NIST EDA purpose and approach sections', 'read', 1, null, null),
+  ('da-eda', 'Learn: study pandas missing-data handling and use the Aqua Book chapters 6–8 to frame the analysis plan, quality checks and uncertainty', 'read', 1, null, null),
   ('da-eda', 'Build: add brief.md and analysis.ipynb that define the stakeholder, decision, metrics and assumptions, then profile missingness, duplicates, distributions, segments and anomalies with reproducible code', 'build', 2, null, null),
   ('da-visualization', 'Learn: complete the Matplotlib lifecycle tutorial and accessibility guidance', 'read', 1, null, null),
   ('da-visualization', 'Build: remake three misleading charts with justified chart choices, direct labels, colour-safe palettes, alt text and a written note explaining every correction', 'build', 2, null, null),

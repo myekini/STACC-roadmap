@@ -12,11 +12,10 @@ decisions here.
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Scale boundaries, connected-project architecture, operational guardrails, and production readiness | Infrastructure, integration, or scale decisions change |
 | [`CURRICULUM_STANDARD.md`](CURRICULUM_STANDARD.md) | Employability standard, resource policy, evidence rubric, track outcomes, and curriculum rollout rules | The curriculum operating model changes |
 | [`CURRICULUM_DATA_ENGINEERING.md`](CURRICULUM_DATA_ENGINEERING.md) | Detailed Data Engineering track blueprint and lesson-level source recommendations | The Data Engineering track is researched or revised |
+| [`DESIGN.md`](DESIGN.md) | Canonical visual system, tokens, components, responsive rules, and interaction patterns | The interface system or its implementation rules change |
 
 ## Repository-level references
 
-- [`../DESIGN.md`](../DESIGN.md) is the canonical visual system. It remains at the repository root
-  because design-system tooling discovers it there.
 - [`../README.md`](../README.md) is the project entry point and local-development guide.
 - [`../CLAUDE.md`](../CLAUDE.md) contains agent instructions and must remain at the repository root.
 - [`../supabase/README.md`](../supabase/README.md) stays beside the migrations and seed it explains.
