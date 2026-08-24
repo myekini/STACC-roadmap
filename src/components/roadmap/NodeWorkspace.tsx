@@ -22,9 +22,11 @@ import {
   ArrowRight,
   AlertTriangle,
   BookOpen,
+  ChartNoAxesCombined,
   Check,
   ChevronLeft,
   Code2,
+  Compass,
   ExternalLink,
   GitBranch,
   ListChecks,
@@ -32,7 +34,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Play,
+  Route,
   Terminal,
+  UserRound,
 } from 'lucide-react';
 import type { ResourceRow, TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
@@ -303,6 +307,37 @@ function ResourceCard({
   );
 }
 
+function TaskChecklist({ tasks, completedTaskIds, foundation }: { tasks: TaskRow[]; completedTaskIds: string[]; foundation: boolean }) {
+  return (
+    <ul className="space-y-2">
+      {tasks.map((task) => {
+        const done = completedTaskIds.includes(task.id);
+        const label = task.type === 'practice'
+          ? 'Practise'
+          : task.type === 'build'
+            ? foundation ? 'Practise' : 'Ship'
+            : 'Prove';
+        return (
+          <li key={task.id} className="flex gap-3 border border-outline-variant/70 bg-surface-card p-3">
+            <span className={cn(
+              'mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center border',
+              done ? 'border-secondary bg-secondary text-on-secondary-fixed' : 'border-outline-variant bg-surface-container-high',
+            )}>
+              {done && <Check className="h-2.5 w-2.5" />}
+            </span>
+            <span className="min-w-0">
+              <span className="block font-code text-[11px] font-bold uppercase tracking-[0.08em] text-cyan">{label}</span>
+              <span className={cn('mt-1 block text-xs leading-5', done ? 'text-outline line-through' : 'text-on-surface-variant')}>
+                {task.description.replace(/^(Practise|Practice|Build|Checkpoint(?: challenge| quiz)?):\s*/i, '')}
+              </span>
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 type PrimaryAction =
   | 'locked'
   | 'saving'
@@ -569,6 +604,23 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
         </div>
       </header>
 
+      <nav aria-label="Workspace navigation" className="flex shrink-0 overflow-x-auto border-b border-outline-variant bg-surface md:hidden">
+        {[
+          { label: 'Roadmap', href: '/roadmap', icon: Route },
+          { label: 'Progress', href: '/dashboard', icon: ChartNoAxesCombined },
+          { label: 'Paths', href: '/paths', icon: Compass },
+          { label: 'Portfolio', href: `/u/${encodeURIComponent(data.user.username)}`, icon: UserRound },
+        ].map(({ label, href, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className="flex min-h-11 min-w-[5.5rem] flex-1 items-center justify-center gap-1.5 px-3 font-code text-[11px] font-semibold text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan"
+          >
+            <Icon className="h-3.5 w-3.5" aria-hidden /> {label}
+          </Link>
+        ))}
+      </nav>
+
       {/* ──────────────────────────────────────────────────
           BODY  =  Left sidebar  +  Main canvas
       ────────────────────────────────────────────────── */}
@@ -733,9 +785,34 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
               </div>
             </div>
 
+            <nav aria-label="Module sections" className="grid grid-cols-2 border border-outline-variant bg-surface lg:hidden">
+              <a href="#learning-content" className="flex min-h-11 items-center justify-center gap-2 border-r border-outline-variant px-3 font-code text-xs font-bold text-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan">
+                <BookOpen className="h-4 w-4" /> Learn
+              </a>
+              <a href="#required-work" className="flex min-h-11 items-center justify-center gap-2 px-3 font-code text-xs font-bold text-on-surface-variant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan">
+                <ListChecks className="h-4 w-4" /> Tasks
+              </a>
+            </nav>
+
+            {untiedTasks.length > 0 && (
+              <details id="required-work" className="scroll-mt-4 border border-outline-variant bg-surface lg:hidden">
+                <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan">
+                  <span className="flex items-center gap-2 text-sm font-semibold text-on-surface">
+                    <ListChecks className="h-4 w-4 text-cyan" /> Required work
+                  </span>
+                  <span className="font-code text-xs font-bold tabular-nums text-on-surface-variant">
+                    {untiedTasks.filter((task) => data.progress.completedTasks.includes(task.id)).length}/{untiedTasks.length}
+                  </span>
+                </summary>
+                <div className="border-t border-outline-variant p-3">
+                  <TaskChecklist tasks={untiedTasks} completedTaskIds={data.progress.completedTasks} foundation={node.path_id === 'foundations'} />
+                </div>
+              </details>
+            )}
+
             {/* ── Topic breakdown ── */}
             {topics.length > 0 ? (
-              <div className="space-y-8">
+              <div id="learning-content" className="scroll-mt-4 space-y-8">
                 {topics.map((topic) => {
                   const topicResources = resourcesByTopic.get(topic.id) ?? [];
                   return (
@@ -851,6 +928,25 @@ export default function NodeWorkspace({ data, slug }: { data: UserData; slug: st
             <div className="h-4" />
           </div>
         </main>
+
+        {untiedTasks.length > 0 && (
+          <aside className="hidden w-72 shrink-0 border-l border-outline-variant bg-surface xl:flex xl:flex-col" aria-label="Required work">
+            <div className="border-b border-outline-variant px-4 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="flex items-center gap-2 text-sm font-bold text-on-surface">
+                  <ListChecks className="h-4 w-4 text-cyan" /> Required work
+                </h2>
+                <span className="font-code text-xs font-bold tabular-nums text-on-surface-variant">
+                  {untiedTasks.filter((task) => data.progress.completedTasks.includes(task.id)).length}/{untiedTasks.length}
+                </span>
+              </div>
+              <p className="mt-1 text-xs leading-5 text-on-surface-variant">Finish these checks to unlock the next module.</p>
+            </div>
+            <div className="flex-1 overflow-y-auto p-3">
+              <TaskChecklist tasks={untiedTasks} completedTaskIds={data.progress.completedTasks} foundation={node.path_id === 'foundations'} />
+            </div>
+          </aside>
+        )}
       </div>
 
       {/* ──────────────────────────────────────────────────

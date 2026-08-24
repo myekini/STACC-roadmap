@@ -116,10 +116,10 @@ export default function RoadmapPage() {
           ) : (
             pathId && (
               <>
-                <div className="mx-auto max-w-5xl px-4 sm:px-6 md:hidden">
+                <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:hidden">
                   <SkillTree data={data} pathId={pathId} />
                 </div>
-                <div className="mx-auto hidden max-w-5xl px-4 py-6 sm:px-6 md:block">
+                <div className="mx-auto hidden max-w-5xl px-4 py-6 sm:px-6 lg:block">
                   <SkillTree data={data} pathId={pathId} variant="spine" />
                 </div>
               </>

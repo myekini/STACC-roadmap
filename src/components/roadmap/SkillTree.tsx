@@ -85,7 +85,7 @@ function SpinePill({ index, title, done, total }: { index: string; title: string
   );
 }
 
-function FoundationCard({ data, node, status, isCurrent }: { data: UserData; node: NodeRow; status: NodeStatus; isCurrent: boolean }) {
+function FoundationStep({ data, node, index, status, isCurrent }: { data: UserData; node: NodeRow; index: number; status: NodeStatus; isCurrent: boolean }) {
   const router = useRouter();
   const { done, total } = taskProgress(data, node.id);
   const locked = status === 'locked';
@@ -94,35 +94,74 @@ function FoundationCard({ data, node, status, isCurrent }: { data: UserData; nod
     <button
       type="button"
       onClick={() => router.push(`/roadmap/${node.slug}`)}
-      aria-haspopup="dialog"
       className={cn(
-        'group relative flex flex-col border bg-surface/80 p-4 text-left transition-all',
-        locked
-          ? 'border-outline-variant/60 opacity-55'
-          : 'border-outline-variant hover:-translate-y-0.5 hover:border-cyan/40 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]',
-        status === 'complete' && 'border-secondary/35',
-        isCurrent && 'node-active border-cyan/60',
+        'group relative z-10 flex min-w-0 flex-col items-center px-2 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan focus-visible:ring-offset-4 focus-visible:ring-offset-background',
+        locked && 'opacity-50',
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <AppIcon name={node.icon} className={cn('h-6 w-6', status === 'complete' ? 'text-secondary' : isCurrent ? 'text-cyan' : locked ? 'text-outline' : 'text-on-surface-variant')} />
-        <StatusMarker status={status} size="sm" />
-      </div>
-      <h4 className="mt-3 font-display text-sm font-semibold leading-tight text-on-surface">{node.name}</h4>
-      <p className="mt-0.5 font-code text-xs lowercase text-on-surface-variant">{`// ${node.subtitle}`}</p>
-      {total > 0 && (
-        <div className="mt-3 h-1 w-full bg-surface-container-high">
-          <div
-            className={cn('h-full transition-all duration-500', status === 'complete' ? 'bg-secondary' : 'bg-cyan')}
-            style={{ width: `${total ? (done / total) * 100 : 0}%` }}
-          />
-        </div>
-      )}
+      <span className={cn(
+        'flex h-12 w-12 items-center justify-center border bg-background transition-colors',
+        status === 'complete' ? 'border-secondary bg-secondary/10 text-secondary'
+          : isCurrent ? 'border-cyan bg-cyan/10 text-cyan'
+          : 'border-outline-variant text-on-surface-variant group-hover:border-cyan/50 group-hover:text-cyan',
+      )}>
+        <AppIcon name={node.icon} className="h-5 w-5" />
+      </span>
+      <span className="mt-3 font-code text-[11px] font-semibold tabular-nums text-outline">
+        {String(index).padStart(2, '0')}
+      </span>
+      <span className="mt-1 min-h-10 text-sm font-semibold leading-5 text-on-surface">{node.name}</span>
+      <span className="mt-2 h-1 w-full max-w-20 bg-surface-container-high">
+        <span
+          className={cn('block h-full', status === 'complete' ? 'bg-secondary' : 'bg-cyan')}
+          style={{ width: `${total ? (done / total) * 100 : 0}%` }}
+        />
+      </span>
       {isCurrent && (
-        <span className="absolute -top-2 right-2 border border-cyan/50 bg-navy px-1.5 font-code text-[11px] font-bold uppercase tracking-[0.08em] text-cyan">
-          next up
+        <span className="mt-2 border border-cyan/40 bg-cyan/10 px-2 py-1 font-code text-[11px] font-bold uppercase tracking-[0.08em] text-cyan">
+          Next
         </span>
       )}
+    </button>
+  );
+}
+
+function FoundationGate({ data, node, status, isCurrent }: { data: UserData; node: NodeRow; status: NodeStatus; isCurrent: boolean }) {
+  const router = useRouter();
+  const { done, total } = taskProgress(data, node.id);
+  const locked = status === 'locked';
+
+  return (
+    <button
+      type="button"
+      onClick={() => router.push(`/roadmap/${node.slug}`)}
+      className={cn(
+        'group relative grid w-full gap-4 border bg-surface px-5 py-5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:px-6',
+        locked ? 'border-outline-variant/70 opacity-60' : 'border-cyan/35 hover:border-cyan/70',
+        isCurrent && 'border-cyan bg-cyan/[0.04]',
+        status === 'complete' && 'border-secondary/45',
+      )}
+    >
+      <span className={cn(
+        'flex h-12 w-12 items-center justify-center border',
+        status === 'complete' ? 'border-secondary/40 bg-secondary/10 text-secondary' : 'border-cyan/35 bg-cyan/10 text-cyan',
+      )}>
+        <AppIcon name={node.icon} className="h-5 w-5" />
+      </span>
+      <span className="min-w-0">
+        <span className="font-code text-[11px] font-bold uppercase tracking-[0.08em] text-cyan">Foundation gate</span>
+        <span className="mt-1 block font-display text-lg font-bold text-on-surface">{node.name}</span>
+        <span className="mt-1 block max-w-2xl text-sm leading-6 text-on-surface-variant">{node.description}</span>
+      </span>
+      <span className="min-w-32">
+        <span className="flex items-center justify-between font-code text-xs text-on-surface-variant">
+          <span>{locked ? 'Complete the sequence' : isCurrent ? 'Ready to begin' : status === 'complete' ? 'Verified' : 'In progress'}</span>
+          <span className="font-bold tabular-nums text-on-surface">{done}/{total}</span>
+        </span>
+        <span className="mt-2 block h-1.5 bg-surface-container-high">
+          <span className={cn('block h-full', status === 'complete' ? 'bg-secondary' : 'bg-cyan')} style={{ width: `${total ? (done / total) * 100 : 0}%` }} />
+        </span>
+      </span>
     </button>
   );
 }
@@ -368,17 +407,28 @@ function SpineView({ data, pathId }: { data: UserData; pathId: string }) {
   const { foundations, pathNodes, path, statusOf, current, foundationsDone, gateOpen, pathDone, pathProgress, fillPct } = getTreeSections(data, pathId);
 
   const entrance = reduceMotion ? {} : { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 } };
+  const foundationCore = foundations.filter((node) => node.slug !== 'found-capstone');
+  const foundationCapstone = foundations.find((node) => node.slug === 'found-capstone');
 
   return (
     <div>
       {/* SECTION 00 — FOUNDATIONS */}
       <motion.section {...entrance} transition={{ duration: 0.4 }}>
-        <SpinePill index="00 // required" title="Foundations" done={foundationsDone} total={foundations.length} />
-        <div className="mt-6 grid grid-cols-3 gap-3 lg:grid-cols-6">
-          {foundations.map((node) => (
-            <FoundationCard key={node.id} data={data} node={node} status={statusOf(node)} isCurrent={current?.id === node.id} />
-          ))}
+        <SectionHeader index="00 // required" title="Foundations" done={foundationsDone} total={foundations.length} />
+        <div className="relative border-y border-outline-variant/70 bg-surface/35 px-4 py-7">
+          <div aria-hidden className="absolute left-[7%] right-[7%] top-[51px] h-px bg-outline-variant" />
+          <div className="relative grid grid-cols-7 gap-1">
+            {foundationCore.map((node, index) => (
+              <FoundationStep key={node.id} data={data} node={node} index={index + 1} status={statusOf(node)} isCurrent={current?.id === node.id} />
+            ))}
+          </div>
         </div>
+        {foundationCapstone && (
+          <div className="relative mx-auto max-w-3xl pt-8">
+            <div aria-hidden className="absolute left-1/2 top-0 h-8 w-px bg-outline-variant" />
+            <FoundationGate data={data} node={foundationCapstone} status={statusOf(foundationCapstone)} isCurrent={current?.id === foundationCapstone.id} />
+          </div>
+        )}
       </motion.section>
 
       {/* gate between sections */}
@@ -450,16 +500,27 @@ function RailView({ data, pathId }: { data: UserData; pathId: string }) {
   const { foundations, pathNodes, path, statusOf, current, foundationsDone, pathDone, fillPct } = getTreeSections(data, pathId);
 
   const entrance = reduceMotion ? {} : { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 } };
+  const foundationCore = foundations.filter((node) => node.slug !== 'found-capstone');
+  const foundationCapstone = foundations.find((node) => node.slug === 'found-capstone');
 
   return (
     <div className="space-y-10">
       {/* SECTION 00 — FOUNDATIONS */}
       <motion.section {...entrance} transition={{ duration: 0.4 }}>
         <SectionHeader index="00 // required" title="Foundations" done={foundationsDone} total={foundations.length} />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {foundations.map((node) => (
-            <FoundationCard key={node.id} data={data} node={node} status={statusOf(node)} isCurrent={current?.id === node.id} />
+        <div className="relative space-y-3">
+          <div aria-hidden className="absolute bottom-8 left-[26px] top-6 w-px bg-outline-variant sm:left-[34px]" />
+          {foundationCore.map((node, index) => (
+            <MissionRow key={node.id} data={data} node={node} index={index + 1} status={statusOf(node)} isCurrent={current?.id === node.id} />
           ))}
+          {foundationCapstone && (
+            <div className="relative pl-12 pt-2 sm:pl-16">
+              <div className={cn('absolute left-[13px] top-8 z-10 sm:left-[21px]', current?.id === foundationCapstone.id && 'node-active')}>
+                <StatusMarker status={statusOf(foundationCapstone)} />
+              </div>
+              <FoundationGate data={data} node={foundationCapstone} status={statusOf(foundationCapstone)} isCurrent={current?.id === foundationCapstone.id} />
+            </div>
+          )}
         </div>
       </motion.section>
 

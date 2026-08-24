@@ -7,7 +7,7 @@
  */
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, ArrowUpRight, CalendarDays, FolderGit2, Hourglass, Package, Rocket } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUpRight, CalendarDays, FolderGit2, Hourglass, Package, Rocket } from 'lucide-react';
 import { hasSupabaseEnv, supabase } from '@/utils/supabase/client';
 import { useUserData } from '@/hooks/useUserData';
 import type { PublicProfilePayload } from '@/lib/database.types';
@@ -16,6 +16,8 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StaccMark } from '@/components/brand/StaccMark';
+import BottomBar from '@/components/layout/BottomBar';
+import { cn } from '@/lib/utils';
 
 function useProfilePayload(handle: string) {
   const local = useUserData();
@@ -31,7 +33,7 @@ function useProfilePayload(handle: string) {
   });
 
   if (hasSupabaseEnv) {
-    return { payload: remote.data ?? null, isLoading: remote.isLoading, demo: false };
+    return { payload: remote.data ?? null, isLoading: remote.isLoading, demo: false, viewer: local };
   }
 
   // Demo mode: assemble the same payload shape from local content + progress.
@@ -66,19 +68,22 @@ function useProfilePayload(handle: string) {
     ),
     activity: local.activity,
   };
-  return { payload, isLoading: local.isLoading, demo: true };
+  return { payload, isLoading: local.isLoading, demo: true, viewer: local };
 }
 
 const fmtDate = (iso: string | null | undefined) =>
   iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
 
 export default function PublicProfile({ handle }: { handle: string }) {
-  const { payload, isLoading } = useProfilePayload(handle);
+  const { payload, isLoading, viewer } = useProfilePayload(handle);
 
   const shipped = payload?.shipped ?? [];
   const projects = payload?.projects ?? {};
   const artifacts = shipped.reduce((sum, s) => sum + s.evidence.length, 0);
   const hours = shipped.reduce((sum, s) => sum + s.est_hours, 0);
+  const isOwner = Boolean(
+    payload && viewer.isAuthenticated && payload.profile.username.toLocaleLowerCase() === viewer.user.username.toLocaleLowerCase(),
+  );
   const byPath = shipped.reduce<Record<string, { title: string; items: typeof shipped }>>((acc, s) => {
     (acc[s.path_id] ??= { title: s.path_title, items: [] }).items.push(s);
     return acc;
@@ -89,14 +94,21 @@ export default function PublicProfile({ handle }: { handle: string }) {
   }
 
   return (
-    <main className="relative min-h-screen bg-background text-on-background">
+    <main className={cn('relative min-h-screen bg-background text-on-background', isOwner && 'pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0')}>
       <div className="pointer-events-none absolute inset-0 blueprint-grid opacity-40" aria-hidden />
 
       <div className="relative mx-auto max-w-3xl px-4 pb-12 pt-[calc(2rem+env(safe-area-inset-top))] sm:px-8 sm:py-12">
-        <Link href="/" className="mb-10 inline-flex items-center gap-3">
-          <StaccMark className="h-9 w-9" />
-          <span className="font-code text-lg font-bold uppercase tracking-[0.14em] text-on-surface">Stacc</span>
-        </Link>
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <Link href="/" className="inline-flex items-center gap-3">
+            <StaccMark className="h-9 w-9" />
+            <span className="font-code text-lg font-bold uppercase tracking-[0.14em] text-on-surface">Stacc</span>
+          </Link>
+          {isOwner && (
+            <Link href="/roadmap" className="inline-flex min-h-11 items-center gap-2 border border-outline-variant bg-surface-card px-3 font-code text-xs font-semibold text-on-surface-variant transition-colors hover:border-cyan/50 hover:text-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan">
+              <ArrowLeft className="h-4 w-4" /> Back to app
+            </Link>
+          )}
+        </div>
 
         {isLoading ? (
           <div className="space-y-4">
@@ -230,6 +242,7 @@ export default function PublicProfile({ handle }: { handle: string }) {
           </>
         )}
       </div>
+      {isOwner && <BottomBar />}
     </main>
   );
 }
