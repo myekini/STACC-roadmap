@@ -17,12 +17,16 @@ interface YTPlayerEvent {
   target: YTPlayer;
   data: number;
 }
+interface YTPlayerErrorEvent {
+  data: number;
+}
 interface YTNamespace {
   Player: new (
     element: HTMLElement,
     config: {
       events: {
         onStateChange: (event: YTPlayerEvent) => void;
+        onError: (event: YTPlayerErrorEvent) => void;
       };
     },
   ) => YTPlayer;
@@ -113,6 +117,7 @@ export function YouTubeEmbed({
 }) {
   const [loaded, setLoaded] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [embedError, setEmbedError] = useState<number | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const segmentStartSeconds = source.kind === 'video' ? source.startSeconds : undefined;
   const segmentEndSeconds = source.kind === 'video' ? source.endSeconds : undefined;
@@ -160,6 +165,10 @@ export function YouTubeEmbed({
               }
             }, 1000);
           },
+          onError: (event) => {
+            stopPolling();
+            setEmbedError(event.data);
+          },
         },
       });
     });
@@ -173,25 +182,54 @@ export function YouTubeEmbed({
   }, [loaded, source.kind, source.id, segmentStartSeconds, segmentEndSeconds]);
 
   if (loaded) {
+    const youtubeUrl = source.kind === 'video'
+      ? `https://www.youtube.com/watch?v=${source.id}${source.startSeconds != null ? `&t=${source.startSeconds}s` : ''}`
+      : `https://www.youtube.com/playlist?list=${source.id}`;
     return (
       <div className="mt-3">
-        <div className="aspect-video w-full overflow-hidden border border-outline-variant bg-black">
-          <iframe
-            ref={iframeRef}
-            className="h-full w-full"
-            src={embedSrc}
-            title={title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-        {source.kind === 'video' && (
+        {embedError ? (
+          <div className="flex aspect-video w-full flex-col items-center justify-center border border-warning/40 bg-surface-container-low px-6 text-center">
+            <p className="font-semibold text-on-surface">This publisher does not allow embedded playback.</p>
+            <p className="mt-1 max-w-md text-sm leading-6 text-on-surface-variant">
+              Open the selected lesson on YouTube, watch it there, then return to complete this step.
+            </p>
+            <a
+              href={youtubeUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 border border-cyan/50 bg-cyan/10 px-4 py-2 font-code text-xs font-bold text-cyan hover:bg-cyan/20"
+            >
+              Watch on YouTube ↗
+            </a>
+            {onWatchThreshold && (
+              <button
+                type="button"
+                onClick={onWatchThreshold}
+                className="mt-2 font-code text-xs text-on-surface-variant underline decoration-outline-variant underline-offset-4 hover:text-cyan"
+              >
+                I watched the assigned lesson
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="aspect-video w-full overflow-hidden border border-outline-variant bg-black">
+            <iframe
+              ref={iframeRef}
+              className="h-full w-full"
+              src={embedSrc}
+              title={title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        )}
+        {source.kind === 'video' && !embedError && (
           <div className="mt-2 h-1 w-full bg-surface-container-high">
             <div className="h-full bg-cyan transition-all duration-500" style={{ width: `${progress * 100}%` }} />
           </div>
         )}
         <a
-          href={source.kind === 'video' ? `https://www.youtube.com/watch?v=${source.id}${source.startSeconds != null ? `&t=${source.startSeconds}s` : ''}` : `https://www.youtube.com/playlist?list=${source.id}`}
+          href={youtubeUrl}
           target="_blank"
           rel="noreferrer"
           className="mt-2 inline-block font-code text-xs text-on-surface-variant underline decoration-outline-variant underline-offset-2 hover:text-cyan"
@@ -292,4 +330,3 @@ export function TaskTypeBadge({ type, label }: { type: TaskType; label?: string 
     </span>
   );
 }
-

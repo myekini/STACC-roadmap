@@ -255,6 +255,7 @@ export function useUserData() {
   const nodesByPath = useMemo(() => {
     const map: Record<string, NodeRow[]> = {};
     for (const node of data?.nodes ?? []) (map[node.path_id] ??= []).push(node);
+    for (const nodes of Object.values(map)) nodes.sort((a, b) => a.order - b.order);
     return map;
   }, [data?.nodes]);
 

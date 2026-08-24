@@ -337,6 +337,7 @@ join n on n.slug = t.node_slug;
 -- curriculum enrichments now that the seeded tasks and resources exist.
 select public.apply_core_lesson_segments();
 select public.apply_core_project_milestones();
+select public.apply_foundations_mastery_refresh();
 
 -- Bind the advanced MLOps primary lessons, then add one bounded reference and
 -- one small practice step. AI Engineering stays authored but paused.
@@ -361,13 +362,13 @@ select n.id,
        case when r.type = 'video' then 'watch' else 'read' end,
        2, r.id, r.name, 15
 from public.nodes n join public.resources r on r.node_id = n.id
-where n.path_id <> 'ai-engineering'
+where n.path_id not in ('foundations', 'ai-engineering')
   and not exists (select 1 from public.tasks linked where linked.resource_id = r.id);
 
 update public.tasks t
 set "order" = t."order" + case when n.path_id = 'foundations' then 1 else 2 end
 from public.nodes n
-where t.node_id = n.id and n.path_id <> 'ai-engineering'
+where t.node_id = n.id and n.path_id not in ('foundations', 'ai-engineering')
   and t.resource_id is null and t."order" >= 2;
 
 insert into public.tasks (node_id, description, type, "order")

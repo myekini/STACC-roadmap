@@ -114,9 +114,12 @@ retrospective explaining what the learner would improve next.
 
 ### Foundations — professional working baseline
 
-Keep Python, SQL, Git, command line, statistics, and AI literacy, but raise the standard:
+Keep Python, tabular Python, SQL, Git, command line, statistics, and AI literacy, but raise the standard:
 
-- Python: functions, data structures, pandas, environments, errors, tests, and readable modules.
+Teach them in dependency order: command line → Python → Git → tabular Python → SQL → statistics → AI literacy → readiness capstone.
+
+- Python foundations: functions, modules, files, precise errors, environments, tests, and runnable programs.
+- Tabular Python: essential NumPy arrays/vectorisation, practical pandas transformations, and executable data contracts. Advanced broadcasting, linear algebra, and scientific computing stay in Data Science.
 - SQL: joins, aggregation, CTEs, window functions, nulls, query plans, and data-quality queries.
 - Git: branches, pull requests, review, conflicts, rollback, and a clean commit history.
 - Command line: navigation, pipes, processes, permissions, environment variables, and scripts.
@@ -125,6 +128,11 @@ Keep Python, SQL, Git, command line, statistics, and AI literacy, but raise the 
 
 Completion artifact: a small, tested data investigation with SQL, Python, version control, a
 written decision, and a transparent AI-use note. This becomes the shared baseline portfolio item.
+
+The Foundation artifact is a local readiness gate and does not require a connected repository.
+The learner connects one repository when beginning a specialization. Every specialization node
+then adds a meaningful, verified milestone to that same repository; the final node integrates,
+operates, documents, and presents the accumulated system as the track capstone.
 
 ### Data Analysis — from request to decision
 

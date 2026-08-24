@@ -37,7 +37,7 @@ type ResourceDef = [
   topicIndex?: 0 | 1 | 2,
 ];
 interface LessonMeta {
-  resourceIndex: 0 | 1;
+  resourceIndex: number;
   title: string;
   durationMinutes: number;
   startSeconds?: number;
@@ -79,7 +79,16 @@ interface PathDef {
 // unlock or expand it while the core career paths are being strengthened.
 export const PAUSED_PATH_IDS = new Set(['ai-engineering']);
 
-const FOUNDATION_SLUGS = ['found-python', 'found-sql', 'found-git', 'found-cli', 'found-stats', 'found-ai'];
+const FOUNDATION_SLUGS = [
+  'found-cli',
+  'found-python',
+  'found-git',
+  'found-tabular',
+  'found-sql',
+  'found-stats',
+  'found-ai',
+  'found-capstone',
+];
 
 const q = (question: string, options: string[], correctIndex: number, explanation: string): QuizQuestion => ({
   question,
@@ -109,47 +118,81 @@ const PATH_DEFS: PathDef[] = [
   {
     id: 'foundations',
     title: 'Foundations',
-    description: 'The baseline every data role requires. Complete this before branching into a specialization.',
+    description: 'The tested professional baseline every data role requires before a specialization.',
     icon: 'terminal',
-    tags: ['Python', 'SQL', 'Git', 'Statistics', 'AI Literacy'],
+    tags: ['Python', 'NumPy', 'pandas', 'SQL', 'Git', 'Statistics', 'AI Literacy'],
     requiresPaths: [],
     nodes: [
       {
-        slug: 'found-python', name: 'Python Basics', subtitle: 'Variables to pandas',
-        description: 'Write a readable Python program that loads, validates, cleans, and exports a tabular dataset.',
-        icon: 'code', estHours: 12, xp: 100,
-        skills: ['Functions & errors', 'Pandas transformations', 'Data validation'], prereqs: [],
+        slug: 'found-python', name: 'Python Foundations', subtitle: 'Programs you can trust',
+        description: 'Write, test, and run a small Python program with clear functions, deliberate error handling, and a reproducible environment.',
+        icon: 'code', estHours: 10, xp: 100,
+        skills: ['Control flow, functions & modules', 'Files, parsing & errors', 'Environments, dependencies & tests'], prereqs: ['found-cli'],
         resources: [
-          ['Python Tutorial — sections 3–5', 'documentation', 'Python.org', 'https://docs.python.org/3/tutorial/introduction.html'],
-          ['10 minutes to pandas', 'documentation', 'pandas.pydata.org', 'https://pandas.pydata.org/docs/user_guide/10min.html'],
-          ['Validate pandas data with Pandera', 'video', 'ArjanCodes', 'https://www.youtube.com/watch?v=-tU7fuUiq7w', 2],
-          ['Pandera DataFrame schemas', 'documentation', 'Pandera', 'https://pandera.readthedocs.io/en/stable/dataframe_schemas.html', 2],
+          ['Python Tutorial — control flow and functions', 'documentation', 'Python.org', 'https://docs.python.org/3/tutorial/controlflow.html'],
+          ['Python Tutorial — modules', 'documentation', 'Python.org', 'https://docs.python.org/3/tutorial/modules.html'],
+          ['Python Tutorial — input/output and errors', 'documentation', 'Python.org', 'https://docs.python.org/3/tutorial/inputoutput.html', 1],
+          ['Python Tutorial — errors and exceptions', 'documentation', 'Python.org', 'https://docs.python.org/3/tutorial/errors.html', 1],
+          ['Python Tutorial — virtual environments', 'documentation', 'Python.org', 'https://docs.python.org/3/tutorial/venv.html', 2],
+          ['pytest — get started', 'documentation', 'pytest', 'https://docs.pytest.org/en/stable/getting-started.html', 2],
         ],
         tasks: [
-          ['Learn: complete Python Tutorial sections 3–5 and reproduce the examples locally', 'read', undefined, { resourceIndex: 0, title: 'Python essentials: values, control flow and functions', durationMinutes: 45 }],
-          ['Build: create clean_data.py that validates required columns, handles missing values and duplicates, exports a tidy CSV, and documents how to run it', 'build'],
-          ['Checkpoint challenge: clean_scores(values)', 'challenge', challenge(
-            'Write clean_scores(values): drop every None entry and duplicate value, then return what remains sorted ascending. This exact shape — strip the junk, dedupe, sort — is what you do to real data constantly.',
-            'def clean_scores(values):\n    """Remove None entries and duplicates, then return the list sorted ascending."""\n    # your code here\n    pass\n',
-            'assert clean_scores([3, 1, None, 2, 3, None, 1]) == [1, 2, 3]\n'
-              + 'assert clean_scores([]) == []\n'
-              + 'assert clean_scores([5, 5, 5]) == [5]\n'
-              + 'assert clean_scores([None, None]) == []\n'
-              + 'assert clean_scores([-1, 0, None, -1, 2]) == [-1, 0, 2]\n',
+          ['Learn: reproduce the bounded control-flow, function, and module examples', 'read', undefined, { resourceIndex: 0, title: 'Functions, modules, and readable program structure', durationMinutes: 70 }],
+          ['Learn: complete the file I/O and exception-handling examples', 'read', undefined, { resourceIndex: 2, title: 'Files, parsing failures, and precise exceptions', durationMinutes: 55 }],
+          ['Learn: create a virtual environment and complete the pytest getting-started example', 'read', undefined, { resourceIndex: 4, title: 'Reproducible environments and first tests', durationMinutes: 40 }],
+          ['Build: create summarize_csv.py with small functions, argparse input/output paths, specific exceptions, a requirements file, and tests for a valid file, missing file, and malformed row', 'build'],
+          ['Checkpoint challenge: parse_measurements(rows)', 'challenge', challenge(
+            'Write parse_measurements(rows). Each row is "name,value". Ignore blank rows, raise ValueError for malformed rows or non-numeric values, and return a dictionary mapping each name to a float.',
+            'def parse_measurements(rows):\n    """Parse name,value rows into {name: float_value}."""\n    # your code here\n    pass\n',
+            "assert parse_measurements(['cpu,12.5', '', 'memory,8']) == {'cpu': 12.5, 'memory': 8.0}\n"
+              + "assert parse_measurements([]) == {}\n"
+              + "\nfor bad in (['missing-comma'], ['cpu,not-a-number'], ['cpu,1,extra']):\n"
+              + "    try:\n        parse_measurements(bad)\n        raise AssertionError('Expected ValueError')\n    except ValueError:\n        pass\n",
           )],
         ],
       },
       {
-        slug: 'found-sql', name: 'SQL Basics', subtitle: 'Query like you mean it',
-        description: 'Answer business questions with correct joins, aggregations, CTEs, and window functions, then validate the result.',
-        icon: 'database', estHours: 10, xp: 100,
-        skills: ['Joins & CTEs', 'Aggregation & windows', 'Query validation'], prereqs: [],
+        slug: 'found-tabular', name: 'Tabular Python', subtitle: 'NumPy and pandas',
+        description: 'Transform messy tabular data with vectorized NumPy and pandas operations, then enforce an explicit data contract.',
+        icon: 'table_view', estHours: 10, xp: 100,
+        skills: ['NumPy arrays & vectorization', 'pandas cleaning, joins & grouping', 'Schemas & quality checks'], prereqs: ['found-git'],
         resources: [
-          ['SQLBolt — lessons 1–18', 'course', 'SQLBolt', 'https://sqlbolt.com/'],
-          ['PostgreSQL Window Functions Tutorial', 'documentation', 'PostgreSQL', 'https://www.postgresql.org/docs/current/tutorial-window.html'],
+          ['NumPy — absolute basics for beginners', 'documentation', 'NumPy', 'https://numpy.org/doc/stable/user/absolute_beginners.html'],
+          ['NumPy quickstart — shape, axes, and vectorization', 'documentation', 'NumPy', 'https://numpy.org/doc/stable/user/quickstart.html'],
+          ['10 minutes to pandas', 'documentation', 'pandas', 'https://pandas.pydata.org/docs/user_guide/10min.html', 1],
+          ['pandas — group by: split-apply-combine', 'documentation', 'pandas', 'https://pandas.pydata.org/docs/user_guide/groupby.html', 1],
+          ['Validate pandas data with Pandera', 'video', 'ArjanCodes', 'https://www.youtube.com/watch?v=-tU7fuUiq7w', 2],
+          ['Pandera DataFrame schemas', 'documentation', 'Pandera', 'https://pandera.readthedocs.io/en/stable/dataframe_schemas.html', 2],
         ],
         tasks: [
-          ['Learn: complete SQLBolt lessons 1–18 and the PostgreSQL window-functions tutorial', 'read', undefined, { resourceIndex: 0, title: 'SQLBolt core queries and joins', durationMinutes: 75 }],
+          ['Learn: work through array creation, shape, dtype, indexing, boolean masks, aggregation, and broadcasting', 'read', undefined, { resourceIndex: 0, title: 'NumPy arrays without unnecessary scientific-computing depth', durationMinutes: 60 }],
+          ['Learn: reproduce pandas selection, missing-data, merge, groupby, reshape, and export examples', 'read', undefined, { resourceIndex: 2, title: 'Practical DataFrame transformations', durationMinutes: 80 }],
+          ['Learn: watch the bounded Pandera walkthrough and reproduce one DataFrame schema', 'watch', undefined, { resourceIndex: 4, title: 'Executable tabular data contracts', durationMinutes: 30 }],
+          ['Build: create clean_data.py and test_clean_data.py that load a messy CSV, validate types and required columns, handle nulls and duplicates, join a lookup table, calculate grouped metrics, and export a deterministic tidy CSV', 'build'],
+          ['Checkpoint challenge: valid_rows(values)', 'challenge', challenge(
+            'Write valid_rows(values): convert the input to a NumPy float array, keep only finite non-negative values, and return their mean as a float. Return None when no valid values remain.',
+            'def valid_rows(values):\n    """Return the mean of finite, non-negative values, or None."""\n    import numpy as np\n    # your code here\n    pass\n',
+            'import math\nassert valid_rows([1, 2, 3]) == 2.0\nassert valid_rows([-1, float("nan"), 4, 6]) == 5.0\nassert valid_rows([-2, float("inf")]) is None\nassert math.isclose(valid_rows([0, 0.5]), 0.25)\n',
+          )],
+        ],
+      },
+      {
+        slug: 'found-sql', name: 'SQL Foundations', subtitle: 'Questions into queries',
+        description: 'Build from SELECT, filtering, sorting, and grouping to correct joins, CTEs, window functions, and validated business answers.',
+        icon: 'database', estHours: 10, xp: 100,
+        skills: ['SELECT, FROM, WHERE & NULLs', 'Joins, grouping & CTEs', 'Windows, plans & validation'], prereqs: ['found-tabular'],
+        resources: [
+          ['SQLBolt — lessons 1–12', 'course', 'SQLBolt', 'https://sqlbolt.com/'],
+          ['PostgreSQL — querying a table', 'documentation', 'PostgreSQL', 'https://www.postgresql.org/docs/current/tutorial-select.html'],
+          ['PostgreSQL Exercises — joins and subqueries', 'course', 'PGExercises', 'https://pgexercises.com/questions/joins/', 1],
+          ['PostgreSQL — WITH queries', 'documentation', 'PostgreSQL', 'https://www.postgresql.org/docs/current/queries-with.html', 1],
+          ['PostgreSQL — window functions tutorial', 'documentation', 'PostgreSQL', 'https://www.postgresql.org/docs/current/tutorial-window.html', 2],
+          ['PostgreSQL — using EXPLAIN', 'documentation', 'PostgreSQL', 'https://www.postgresql.org/docs/current/using-explain.html', 2],
+        ],
+        tasks: [
+          ['Learn: complete SQLBolt lessons 1–12, including NULLs and query order', 'read', undefined, { resourceIndex: 0, title: 'Relational queries, joins, NULLs, and aggregation', durationMinutes: 80 }],
+          ['Learn: complete the join exercises, then study CTE and window-function examples', 'read', undefined, { resourceIndex: 2, title: 'Multi-step analysis with CTEs and windows', durationMinutes: 75 }],
+          ['Learn: reproduce window-function examples, inspect one query plan, and write uniqueness, not-null, and reconciliation checks', 'read', undefined, { resourceIndex: 4, title: 'Windows, query plans, and validation', durationMinutes: 55 }],
           ['Build: submit five labelled business queries using joins, aggregation, a CTE and a window function, with row-count or total checks for every answer', 'build'],
           ['Checkpoint challenge: paying customers over $50', 'challenge', sqlChallenge(
             "Table orders(id, customer, amount, status). Write a query that returns each customer's total spend from status = 'paid' orders only, as columns customer and total — only customers with total > 50, ordered by total descending.",
@@ -174,13 +217,16 @@ const PATH_DEFS: PathDef[] = [
         slug: 'found-git', name: 'Git & GitHub', subtitle: 'Version everything',
         description: 'Create a focused branch, review its changes, resolve a conflict, and merge it through a clear pull request.',
         icon: 'account_tree', estHours: 6, xp: 75,
-        skills: ['Focused commits', 'Pull-request review', 'Conflict recovery'], prereqs: [],
+        skills: ['Files, staging & commits', 'Branches & pull requests', 'Conflicts & safe recovery'], prereqs: ['found-python'],
         resources: [
           ['Pro Git — Git Basics and Branching', 'documentation', 'git-scm.com', 'https://git-scm.com/book/en/v2'],
-          ['Review pull requests', 'course', 'GitHub Skills', 'https://github.com/skills/review-pull-requests'],
+          ['Review pull requests', 'course', 'GitHub Skills', 'https://github.com/skills/review-pull-requests', 1],
+          ['Resolve merge conflicts', 'course', 'GitHub Skills', 'https://github.com/skills/resolve-merge-conflicts', 2],
+          ['Git tools — reset demystified', 'documentation', 'git-scm.com', 'https://git-scm.com/book/en/v2/Git-Tools-Reset-Demystified', 2],
         ],
         tasks: [
           ['Learn: read Pro Git chapters 2–3 and complete GitHub Skills: Review pull requests', 'read', undefined, { resourceIndex: 0, title: 'Everyday Git: commits, branches and remotes', durationMinutes: 55 }],
+          ['Learn: complete Resolve Merge Conflicts and compare restore, revert, reset, and reflog', 'read', undefined, { resourceIndex: 2, title: 'Conflict resolution and safe recovery', durationMinutes: 45 }],
           ['Build: create a branch with focused commits, open a pull request that explains the change and test evidence, resolve one deliberate conflict, and merge it', 'build'],
           ['Checkpoint quiz', 'quiz', quiz(
             q('Per Pro Git, what does git rebase do compared to merge?', ['Deletes the branch', 'Replays commits onto a new base for linear history', 'Creates a merge commit', 'Pushes to remote'], 1, 'Rebase replays your commits on top of another base commit, producing a linear history; merge preserves both histories with a merge commit.'),
@@ -193,17 +239,21 @@ const PATH_DEFS: PathDef[] = [
         slug: 'found-cli', name: 'Command Line', subtitle: 'Live in the terminal',
         description: 'Inspect files and processes, combine commands with pipes, and automate a repeatable file-processing task safely.',
         icon: 'terminal', estHours: 5, xp: 75,
-        skills: ['Pipes & redirection', 'Processes & permissions', 'Safe shell scripts'], prereqs: [],
+        skills: ['Navigation, files & pipes', 'Processes, permissions & environment', 'Safe shell scripts'], prereqs: [],
         resources: [
-          ['The Missing Semester — The Shell', 'video', 'MIT', 'https://missing.csail.mit.edu/2020/course-shell/'],
-          ['The Linux command line for beginners', 'article', 'Ubuntu', 'https://ubuntu.com/tutorials/command-line-for-beginners'],
+          ['Missing Semester 2026 — Introduction to the Shell', 'video', 'MIT', 'https://missing.csail.mit.edu/2026/course-shell/'],
+          ['Missing Semester 2026 — Command-line Environment', 'video', 'MIT', 'https://missing.csail.mit.edu/2026/command-line-environment/', 1],
+          ['ShellCheck', 'project', 'ShellCheck', 'https://www.shellcheck.net/', 2],
+          ['Google Shell Style Guide', 'documentation', 'Google', 'https://google.github.io/styleguide/shellguide.html', 2],
         ],
         tasks: [
-          ['Learn: complete The Missing Semester shell lecture and Ubuntu tutorial sections 1–6', 'watch', undefined, { resourceIndex: 0, title: 'The shell: navigation, pipes and automation', durationMinutes: 50 }],
+          ['Learn: complete the 2026 shell lecture and exercises on navigation, streams, pipes, quoting, and loops', 'watch', undefined, { resourceIndex: 0, title: 'The shell as a composable programming environment', durationMinutes: 65 }],
+          ['Learn: study arguments, environment variables, return codes, signals, processes, permissions, and safe installer habits', 'watch', undefined, { resourceIndex: 1, title: 'Processes and the command-line environment', durationMinutes: 55 }],
+          ['Learn: run ShellCheck on a script and correct every justified finding', 'read', undefined, { resourceIndex: 2, title: 'Safer shell scripts', durationMinutes: 25 }],
           ['Build: write an idempotent shell script that validates its input directory, organises files by extension, logs its actions, and handles spaces in filenames', 'build'],
           ['Checkpoint quiz', 'quiz', quiz(
             q('In the Missing Semester shell lecture, which operator sends the output of one command into another?', ['>', '>>', '|', '&'], 2, 'The pipe | streams stdout of one command into stdin of the next; > and >> redirect to files.'),
-            q('You need to find every .csv file under a directory tree modified in the last 24 hours and count their lines. Which pipeline does that correctly?', ['cat *.csv | wc -l', 'find . -name "*.csv" -mtime -1 | xargs wc -l', 'ls -R | grep csv | head', 'grep -r csv . | wc -l'], 1, 'find locates files by name/pattern and mtime across a tree; piping to xargs wc -l runs the count over each match — the standard composable shell idiom.'),
+            q('You need to count lines in every .csv file modified in the last 24 hours, including filenames with spaces. Which command is safe?', ['cat *.csv | wc -l', 'find . -name "*.csv" -mtime -1 -exec wc -l {} +', 'ls -R | grep csv | head', 'find . -name "*.csv" | xargs wc -l'], 1, 'find -exec passes paths as arguments without splitting on spaces; plain xargs is unsafe unless paired with null-delimited input.'),
             q('A long-running script you started in a terminal needs to keep running after you close the SSH session. What is the correct approach?', ['Just close the terminal, it keeps running', 'Run it with nohup/disown or inside tmux/screen so it detaches from the session', 'Run it with sudo', 'Pipe it to /dev/null'], 1, 'Closing a terminal sends SIGHUP to child processes by default; nohup or a multiplexer (tmux/screen) detaches the process from the controlling session so it survives disconnect.'),
           )],
         ],
@@ -212,22 +262,22 @@ const PATH_DEFS: PathDef[] = [
         slug: 'found-stats', name: 'Statistics Basics', subtitle: 'Think in distributions',
         description: 'Describe uncertainty in a dataset, choose an appropriate comparison, and communicate what the evidence cannot prove.',
         icon: 'insights', estHours: 10, xp: 100,
-        skills: ['Sampling & uncertainty', 'Effect size & testing', 'Causal limits'], prereqs: ['found-python'],
+        skills: ['Distributions, sampling & uncertainty', 'Intervals, effects & tests', 'Correlation & causal limits'], prereqs: ['found-sql'],
         resources: [
           ['Seeing Theory — distributions and inference', 'article', 'Brown University', 'https://seeing-theory.brown.edu/'],
-          ['OpenIntro Statistics — chapters 2, 4 and 5', 'documentation', 'OpenIntro', 'https://www.openintro.org/book/os/'],
+          ['OpenIntro Statistics — study design and inference', 'documentation', 'OpenIntro', 'https://www.openintro.org/book/os/', 1],
+          ['Correlation vs. causation', 'video', 'Khan Academy', 'https://www.khanacademy.org/math/ap-statistics/xfb5d9a27:inference-in-experiments/regression/v/correlation-vs-causation', 2],
+          ['Correlation and causality', 'article', 'Khan Academy', 'https://www.khanacademy.org/math/statistics-probability/designing-studies/study-design/a/correlation-and-causality', 2],
         ],
         tasks: [
-          ['Learn: complete Seeing Theory distributions/inference and OpenIntro chapters 2, 4 and 5', 'read', undefined, { resourceIndex: 0, title: 'Distributions, sampling and inference', durationMinutes: 60 }],
+          ['Learn: complete Seeing Theory probability, distributions, and inference interactives', 'read', undefined, { resourceIndex: 0, title: 'Distributions, sampling, and uncertainty', durationMinutes: 75 }],
+          ['Learn: study OpenIntro sections 1.1–1.4, 5.1–5.3, and 7.1–7.4; reproduce one interval and one test in Python', 'read', undefined, { resourceIndex: 1, title: 'Study design, confidence intervals, tests, and power', durationMinutes: 150 }],
+          ['Learn: complete the causal-limits lesson and identify confounding in two observational claims', 'watch', undefined, { resourceIndex: 2, title: 'Correlation, confounding, and causal restraint', durationMinutes: 25 }],
           ['Build: analyse one comparison with distribution plots, confidence interval, effect size, assumptions, and a plain-language statement of what cannot be concluded', 'build'],
-          ['Checkpoint challenge: describe(values)', 'challenge', challenge(
-            'Write describe(values): return a (mean, median, population-stdev) tuple. These three numbers are the first thing you compute on any new dataset — mean and median tell you if it is skewed, stdev tells you how spread out it is.',
-            'from statistics import mean, median, pstdev\n\ndef describe(values):\n    """Return (mean, median, population-stdev) as a tuple of floats."""\n    # your code here\n    pass\n',
-            'assert describe([2, 4, 4, 4, 5, 5, 7, 9]) == (5.0, 4.5, 2.0)\n'
-              + 'assert describe([10, 10, 10]) == (10.0, 10.0, 0.0)\n'
-              + 'import math\n'
-              + 'm, md, sd = describe([1, 2, 3, 4])\n'
-              + 'assert m == 2.5 and md == 2.5 and math.isclose(sd, 1.1180339887498949, rel_tol=1e-9)\n',
+          ['Checkpoint quiz', 'quiz', quiz(
+            q('A 95% confidence interval for a mean difference is 1.2 to 4.8. What is the defensible conclusion?', ['The groups are identical', 'The estimated difference is positive, with plausible values from 1.2 to 4.8 under the method assumptions', 'There is a 95% probability every future observation lies in that range', 'The treatment caused the difference'], 1, 'A confidence interval quantifies uncertainty in the estimated parameter under assumptions; it is neither a prediction interval nor proof of causation.'),
+            q('A huge sample produces p < 0.001 for an average improvement of 0.02 seconds. What must be checked before recommending the change?', ['Only the p-value', 'Practical importance, effect size, uncertainty, cost, and study validity', 'Whether the mean is positive', 'Whether the sample is larger than 30'], 1, 'Statistical detectability does not establish practical value. Effect size, uncertainty, costs, and validity determine whether the result supports action.'),
+            q('Users chose whether to enable a feature, and enabled users retained better. Why can this not establish that the feature caused retention?', ['Retention cannot be measured', 'Self-selection can create confounding differences between the groups', 'The sample is necessarily too small', 'Correlation is always useless'], 1, 'Without random assignment or a defensible causal design, pre-existing differences may explain the association.'),
           )],
         ],
       },
@@ -235,18 +285,49 @@ const PATH_DEFS: PathDef[] = [
         slug: 'found-ai', name: 'AI Literacy', subtitle: 'Work with the machines',
         description: 'Use an AI assistant on a bounded data task while protecting sensitive data, testing its output, and documenting its contribution.',
         icon: 'auto_awesome', estHours: 6, xp: 75,
-        skills: ['Model limitations', 'Output verification', 'Safe AI-assisted work'], prereqs: ['found-python'],
+        skills: ['How models work & fail', 'Claims & code verification', 'Privacy, injection & disclosure'], prereqs: ['found-stats'],
         resources: [
           ['Intro to Large Language Models', 'video', 'YouTube (Andrej Karpathy)', 'https://www.youtube.com/watch?v=zjkBMFhNj_g'],
-          ['OWASP Top 10 for LLM Applications — prompt injection', 'documentation', 'OWASP', 'https://genai.owasp.org/llmrisk/llm01-prompt-injection/'],
+          ['Google ML glossary — language models', 'documentation', 'Google for Developers', 'https://developers.google.com/machine-learning/glossary/language-model'],
+          ['Fact-checking AI output with lateral reading', 'documentation', 'University of Maryland Libraries', 'https://lib.guides.umd.edu/AI/fact-checking', 1],
+          ['Reduce hallucinations', 'documentation', 'Anthropic', 'https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations', 1],
+          ['OWASP LLM01 — prompt injection', 'documentation', 'OWASP', 'https://genai.owasp.org/llmrisk/llm01-prompt-injection/', 2],
+          ['NIST AI RMF — Generative AI Profile', 'documentation', 'NIST', 'https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence', 2],
         ],
         tasks: [
-          ['Learn: watch Intro to LLMs and read the OWASP prompt-injection guidance', 'watch', undefined, { resourceIndex: 0, title: 'How LLMs work and where they fail', durationMinutes: 60 }],
+          ['Learn: watch the bounded LLM introduction and distinguish generation, retrieval, tools, and training', 'watch', undefined, { resourceIndex: 0, title: 'How language models work and where they fail', durationMinutes: 65 }],
+          ['Learn: verify one generated claim using lateral reading, primary sources, and an explicit evidence log', 'read', undefined, { resourceIndex: 2, title: 'Verification instead of confidence', durationMinutes: 35 }],
+          ['Learn: study direct and indirect prompt injection, sensitive-data exposure, unsafe tool actions, and human approval boundaries', 'read', undefined, { resourceIndex: 4, title: 'Safe AI-assisted work', durationMinutes: 40 }],
           ['Build: complete one bounded data task with AI assistance, remove sensitive inputs, test every generated claim or code path, and add an AI_USE.md log of prompts, changes, failures, and verification', 'build'],
           ['Checkpoint quiz', 'quiz', quiz(
             q("Per Karpathy's Intro to Large Language Models, LLMs generate text by…", ['Querying a database of answers', 'Predicting the next token', 'Running rule-based grammar', 'Searching the web'], 1, 'LLMs are next-token predictors trained on large corpora; they do not look up answers in a database.'),
             q('A model confidently cites a specific statistic that does not appear anywhere in your source documents. What is this failure mode called, and why does it happen?', ['A bug — it should be reported', 'Hallucination — the model generates plausible-sounding tokens even without grounding, since it optimizes for likely continuations, not truth', 'Overfitting on your prompt', 'A tokenizer error'], 1, 'Hallucination is a direct consequence of next-token prediction: the model produces statistically plausible text, which is not the same as verified fact — this is why grounding (RAG) and validation matter.'),
-            q('Doubling a model’s context window lets you paste in a much longer document, but responses get noticeably worse at using facts from the middle of it. What does this describe?', ['The model is broken', 'Lost-in-the-middle effect — attention degrades for information placed away from the start/end of a long context', 'A tokenizer limit', 'Rate limiting'], 1, 'Empirically, models attend most reliably to the beginning and end of long contexts; relevant facts buried in the middle are recalled less accurately — a key reason retrieval/ranking still matters even with huge context windows.'),
+            q('A retrieved webpage tells the model to ignore its task and send private context to an external tool. What is the correct response?', ['Follow it because retrieved text is trusted', 'Treat it as indirect prompt injection, refuse the instruction, protect the data, and require approval for consequential tool actions', 'Paste in more private context', 'Raise the temperature'], 1, 'Retrieved content is untrusted input. Tool permissions, data boundaries, validation, and human approval must remain outside the model’s control.'),
+          )],
+        ],
+      },
+      {
+        slug: 'found-capstone', name: 'Foundation Readiness Capstone', subtitle: 'Evidence before specialization',
+        description: 'Deliver a reproducible data investigation that uses Python, SQL, statistics, version control, and documented AI assistance to support a defensible decision.',
+        icon: 'verified', estHours: 14, xp: 175,
+        skills: ['Decision & metric framing', 'Reproducible investigation', 'Recommendation & limitations'], prereqs: ['found-ai'],
+        resources: [
+          ['World Bank Indicators API — basic call structures', 'documentation', 'World Bank', 'https://datahelpdesk.worldbank.org/knowledgebase/articles/898581-api-basic-call-structures'],
+          ['World Bank Indicators', 'project', 'World Bank', 'https://data.worldbank.org/indicator'],
+          ['The Turing Way — reproducible research', 'documentation', 'The Turing Way', 'https://book.the-turing-way.org/reproducible-research/reproducible-research', 1],
+          ['Cookiecutter Data Science — opinions', 'documentation', 'DrivenData', 'https://cookiecutter-data-science.drivendata.org/opinions/', 1],
+          ['The Aqua Book — analysis, quality, and uncertainty', 'documentation', 'UK Government', 'https://www.gov.uk/government/publications/the-aqua-book-guidance-on-producing-quality-analysis-for-government', 2],
+          ['Communicating quality, uncertainty and change', 'documentation', 'UK Government Analysis Function', 'https://analysisfunction.civilservice.gov.uk/policy-store/communicating-quality-uncertainty-and-change/', 2],
+        ],
+        tasks: [
+          ['Learn: choose a region and frame a decision about where limited development research or intervention should be prioritised using 2–4 World Bank indicators; define the decision, users, unit of analysis, and limitations before downloading data', 'read', undefined, { resourceIndex: 0, title: 'Capstone brief: a real allocation decision using public indicators', durationMinutes: 45 }],
+          ['Learn: create the required project structure and a one-command reproducibility check', 'read', undefined, { resourceIndex: 2, title: 'A project another analyst can rerun', durationMinutes: 35 }],
+          ['Learn: apply the quality and uncertainty checklist before writing the recommendation', 'read', undefined, { resourceIndex: 4, title: 'Communicate evidence without overstating it', durationMinutes: 40 }],
+          ['Build: complete a local foundation-capstone folder containing README.md, requirements.txt, data/raw, data/processed, src/clean_data.py, tests/test_clean_data.py, analysis/queries.sql, analysis/findings.md, and AI_USE.md; include provenance, data dictionary, validation and reconciliation checks, one confidence interval or uncertainty analysis, a ranked recommendation, limitations, and exact rerun instructions', 'build'],
+          ['Checkpoint quiz', 'quiz', quiz(
+            q('A reviewer reruns the capstone after the source data changes. What best protects reproducibility?', ['A screenshot of the result', 'Pinned dependencies, preserved raw inputs or source version, deterministic transformations, tests, and exact run commands', 'A longer conclusion', 'More charts'], 1, 'Reproducibility depends on recoverable inputs, environment, deterministic code, executable checks, and documented commands.'),
+            q('Your ranking changes completely when one indicator is removed. What should the recommendation say?', ['Hide the sensitivity check', 'Report that the result is fragile, show the alternative, and avoid a strong recommendation without better justification', 'Choose the more dramatic ranking', 'Average both rankings without explanation'], 1, 'Decision-grade analysis exposes sensitivity and limits confidence when reasonable choices materially change the result.'),
+            q('An AI assistant wrote a plausible paragraph containing two numbers. What makes it acceptable evidence?', ['The wording sounds professional', 'Each number is traced to the data or a primary source, recomputed where possible, and the AI contribution is disclosed', 'The model is popular', 'The prompt was long'], 1, 'Generated confidence is not provenance. Claims require traceable evidence and independent verification.'),
           )],
         ],
       },
@@ -776,7 +857,7 @@ export const NODES: NodeRow[] = PATH_DEFS.flatMap((p) =>
     subtitle: n.subtitle,
     description: n.description,
     icon: n.icon,
-    order: i + 1,
+    order: p.id === 'foundations' ? FOUNDATION_SLUGS.indexOf(n.slug) + 1 : i + 1,
     est_hours: n.estHours,
     xp_reward: n.xp,
     skills: n.skills,
@@ -829,7 +910,7 @@ export const TASKS: TaskRow[] = PATH_DEFS.flatMap((p) =>
       node_id: n.slug,
       description,
       type,
-      order: i === 0 ? 1 : i + (PAUSED_PATH_IDS.has(p.id) ? 1 : p.id === 'foundations' ? 2 : 3),
+      order: p.id === 'foundations' ? i + 1 : i === 0 ? 1 : i + (PAUSED_PATH_IDS.has(p.id) ? 1 : 3),
       quiz: type === 'quiz' ? (payload as QuizPayload) ?? null : null,
       challenge: type === 'challenge' ? (payload as ChallengePayload) ?? null : null,
       resource_id: lesson
@@ -844,7 +925,7 @@ export const TASKS: TaskRow[] = PATH_DEFS.flatMap((p) =>
       start_seconds: lesson?.startSeconds ?? null,
       end_seconds: lesson?.endSeconds ?? null,
       })),
-      ...(!PAUSED_PATH_IDS.has(p.id) ? [{
+      ...(!PAUSED_PATH_IDS.has(p.id) && p.id !== 'foundations' ? [{
         id: `${n.slug}::lesson-reference`,
         node_id: n.slug,
         description: `Read: complete the bounded reference step from ${n.resources[1][0]}.`,

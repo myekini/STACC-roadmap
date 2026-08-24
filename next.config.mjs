@@ -26,11 +26,12 @@ const securityHeaders = [
       "default-src 'self'",
       // Next.js inline runtime scripts require 'unsafe-inline'; Pyodide/Monaco
       // are loaded from jsdelivr and need eval for their WASM runtimes.
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.youtube.com https://www.youtube-nocookie.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://vitals.vercel-insights.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://vitals.vercel-insights.com https://www.youtube.com https://www.youtube-nocookie.com",
+      "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
       "worker-src 'self' blob:",
       "frame-ancestors 'none'",
       "base-uri 'self'",
