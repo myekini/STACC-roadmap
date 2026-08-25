@@ -458,7 +458,7 @@ const PATH_DEFS: PathDef[] = [
   {
     id: 'da',
     title: 'Data Analysis',
-    description: 'Turn messy data into decisions. Master exploration, visualization, dashboards, and data storytelling.',
+    description: 'Turn ambiguous questions and messy data into trustworthy, decision-ready products.',
     icon: 'bar_chart',
     tags: ['EDA', 'Visualization', 'BI Tools', 'Storytelling'],
     requiresPaths: [],
@@ -474,7 +474,7 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: study pandas missing-data handling and use the Aqua Book chapters 6–8 to frame the analysis plan, quality checks and uncertainty', 'read', undefined, { resourceIndex: 0, title: 'A disciplined exploratory analysis', durationMinutes: 45 }],
-          ['Build: add brief.md and analysis.ipynb that define the stakeholder, decision, metrics and assumptions, then profile missingness, duplicates, distributions, segments and anomalies with reproducible code', 'build'],
+          ['Build milestone 1: initialise one cumulative repository with brief.md and analysis.ipynb defining the stakeholder, decision, metrics and assumptions, then profile missingness, duplicates, distributions, segments and anomalies', 'build'],
         ],
       },
       {
@@ -488,7 +488,7 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: complete the Matplotlib lifecycle tutorial and accessibility guidance', 'read', undefined, { resourceIndex: 0, title: 'Chart construction and accessible encoding', durationMinutes: 40 }],
-          ['Build: remake three misleading charts with justified chart choices, direct labels, colour-safe palettes, alt text and a written note explaining every correction', 'build'],
+          ['Build milestone 2: extend the repository with three decision-relevant charts, justified encodings, direct labels, colour-safe palettes, alt text and a visual QA note', 'build'],
         ],
       },
       {
@@ -503,7 +503,7 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: study Microsoft report-design and accessibility guidance', 'read', undefined, { resourceIndex: 0, title: 'Decision-first dashboard design', durationMinutes: 40 }],
-          ['Build: produce desktop and mobile dashboard views for three stakeholder questions, with metric definitions, useful defaults, keyboard order, alt text and a five-person usability checklist', 'build'],
+          ['Build milestone 3: prototype desktop and mobile dashboard views for three stakeholder questions, with metric definitions, useful defaults, keyboard order, alt text and a five-person usability test', 'build'],
         ],
       },
       {
@@ -517,11 +517,11 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: complete one Storytelling with Data exercise and study the uncertainty guidance', 'read', undefined, { resourceIndex: 0, title: 'From evidence to a decision narrative', durationMinutes: 40 }],
-          ['Build: create a five-slide decision narrative and one-page executive memo covering context, evidence, recommendation, uncertainty, limitations and next action', 'build'],
+          ['Build milestone 4: add a five-slide decision narrative and one-page executive memo covering context, evidence, recommendation, uncertainty, limitations and next action', 'build'],
         ],
       },
       {
-        slug: 'da-bi', name: 'BI Tools', subtitle: 'Looker, Power BI, Metabase',
+        slug: 'da-bi', name: 'Governed BI Delivery', subtitle: 'Power BI from model to release',
         description: 'Prepare data with Power Query, model facts and dimensions, write dependable DAX measures, and publish a governed report.',
         icon: 'query_stats', estHours: 12, xp: 200,
         skills: ['Power Query', 'Semantic models & DAX', 'Security & refresh'], prereqs: ['da-storytelling'],
@@ -533,7 +533,7 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: cover the PL-300 prepare/model/manage objectives and complete the DAX basics tutorial', 'read', undefined, { resourceIndex: 0, title: 'Semantic models, measures and governed BI', durationMinutes: 55 }],
-          ['Build: publish a star-schema report with documented Power Query steps, a date table, explicit DAX measures, row-level security, scheduled refresh notes and a shared metric dictionary', 'build'],
+          ['Build milestone 5: implement the approved dashboard in Power BI with documented Power Query steps, a star schema, date table, explicit DAX measures, row-level security, refresh notes and a shared metric dictionary', 'build'],
         ],
       },
       {
@@ -547,7 +547,21 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: review the NIST generative-AI risk profile and one documented AI analysis workflow', 'read', undefined, { resourceIndex: 0, title: 'Verifiable AI-assisted analysis', durationMinutes: 40 }],
-          ['Build: repeat one prior analysis with AI assistance, preserve prompts and generated code, remove sensitive data, independently verify every number and citation, and compare time saved against new risks', 'build'],
+          ['Build milestone 6: repeat one bounded part of the analysis with AI assistance, preserve prompts and generated code, exclude sensitive data, independently verify every number and citation, and compare time saved against new risks', 'build'],
+        ],
+      },
+      {
+        slug: 'da-capstone', name: 'Decision Intelligence Capstone', subtitle: 'Evidence to action',
+        description: 'Release a cumulative development-outcomes decision product that joins public indicators, exposes uncertainty, and gives a real stakeholder a defensible next action.',
+        icon: 'verified', estHours: 18, xp: 300,
+        skills: ['Reproducible evidence chain', 'Decision-ready product', 'Governed release'], prereqs: ['da-ai-analysis'],
+        resources: [
+          ['World Bank Indicators API — documentation', 'documentation', 'World Bank', 'https://datahelpdesk.worldbank.org/knowledgebase/articles/889392'],
+          ['The Aqua Book — quality analysis guidance', 'documentation', 'UK Government', 'https://www.gov.uk/government/publications/the-aqua-book-guidance-on-producing-quality-analysis-for-government'],
+        ],
+        tasks: [
+          ['Learn: inspect the World Bank Indicators API and use the Aqua Book checklist to plan analytical quality assurance', 'read', undefined, { resourceIndex: 0, title: 'A defensible evidence-to-decision release', durationMinutes: 45 }],
+          ['Capstone: release the cumulative repository with a reproducible indicator pipeline, analysis, accessible visual system, tested desktop/mobile dashboard, governed semantic model, executive memo, uncertainty and limitations register, AI audit, QA checklist and public portfolio walkthrough', 'build'],
         ],
       },
     ],

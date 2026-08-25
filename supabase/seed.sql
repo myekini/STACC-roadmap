@@ -8,7 +8,7 @@ begin;
 insert into public.paths (id, title, description, icon, tags, "order", requires_paths) values
   ('foundations', 'Foundations', 'The baseline every data role requires. Complete this before branching into a specialization.', 'terminal', '{Python,SQL,Git,Statistics,AI Literacy}', 0, '{}'),
   ('de', 'Data Engineering', 'Build the infrastructure. Design robust pipelines, manage massive datasets, and ensure data quality and accessibility.', 'database', '{ETL,dbt,Airflow,Cloud,Spark,Kafka}', 1, '{}'),
-  ('da', 'Data Analysis', 'Turn messy data into decisions. Master exploration, visualization, dashboards, and data storytelling.', 'bar_chart', '{EDA,Visualization,BI Tools,Storytelling}', 2, '{}'),
+  ('da', 'Data Analysis', 'Turn ambiguous questions and messy data into trustworthy, decision-ready products.', 'bar_chart', '{EDA,Visualization,Power BI,Communication,Decision making}', 2, '{}'),
   ('ds', 'Data Science', 'Model, test, and explain predictions. From ML fundamentals through deployment and LLM fine-tuning.', 'model_training', '{ML,Experimentation,Deployment,Deep Learning}', 3, '{}'),
   ('ai-engineering', 'AI Engineering', 'Build useful AI products. LLM orchestration, RAG systems, agents, and production AI architecture.', 'smart_toy', '{LLM APIs,RAG,Agents,LLMOps}', 4, '{de,ds}'),
   ('mlops', 'MLOps', 'Ship and run models in production. Containers, CI/CD for ML, monitoring, and platform design.', 'settings_suggest', '{Docker,CI/CD,Monitoring,Platforms}', 5, '{de,ds}');
@@ -38,8 +38,9 @@ insert into public.nodes (slug, path_id, name, subtitle, description, icon, "ord
   ('da-visualization', 'da', 'Data Visualization', 'Matplotlib, Seaborn', 'Choose honest visual encodings and produce accessible charts that make the comparison and uncertainty clear.', 'bar_chart', 2, 10, 150, '{Chart selection,Honest encoding,Accessible visualisation}'),
   ('da-dashboards',    'da', 'Dashboard Design', 'Interfaces for decisions', 'Build a focused dashboard that answers three defined questions on desktop and mobile without hiding context or accessibility.', 'dashboard', 3, 10, 150, '{Decision-led layout,KPI definitions,Accessible interaction}'),
   ('da-storytelling',  'da', 'Data Storytelling', 'Insight to action', 'Turn analysis into a concise recommendation that separates evidence, uncertainty, limitations, and the decision required.', 'edit_note', 4, 8, 150, '{Executive synthesis,Evidence & uncertainty,Recommendation delivery}'),
-  ('da-bi',            'da', 'BI Tools', 'Looker, Power BI, Metabase', 'Prepare data with Power Query, model facts and dimensions, write dependable DAX measures, and publish a governed report.', 'query_stats', 5, 12, 200, '{Power Query,Semantic models & DAX,Security & refresh}'),
+  ('da-bi',            'da', 'Governed BI Delivery', 'Power BI from model to release', 'Prepare data with Power Query, model facts and dimensions, write dependable DAX measures, and publish a governed report.', 'query_stats', 5, 12, 200, '{Power Query,Semantic models & DAX,Security & refresh}'),
   ('da-ai-analysis',   'da', 'AI-Assisted Analysis', 'Analyst + LLM', 'Use AI to accelerate an analysis while preserving reproducibility, privacy, source traceability, and human accountability.', 'auto_awesome', 6, 8, 200, '{AI-assisted workflow,Claim verification,Audit trail}'),
+  ('da-capstone',      'da', 'Decision Intelligence Capstone', 'Evidence to action', 'Release a cumulative development-outcomes decision product that joins public indicators, exposes uncertainty, and gives a real stakeholder a defensible next action.', 'verified', 7, 18, 300, '{Reproducible evidence chain,Decision-ready product,Governed release}'),
 
   -- DATA SCIENCE
   ('ds-ml','ds','ML Fundamentals','Supervised learning core','Frame a prediction problem, define its target and cost of error, and build a reproducible baseline before tuning models.','model_training',1,14,200,'{Problem & target framing,Baselines,Reproducible pipelines}'),
@@ -84,7 +85,7 @@ from (values
   ('de-cloud', 'de-orchestration'), ('de-spark', 'de-cloud'), ('de-streaming', 'de-spark'), ('de-vectordb', 'de-streaming'),
   -- DA chain
   ('da-visualization', 'da-eda'), ('da-dashboards', 'da-visualization'), ('da-storytelling', 'da-dashboards'),
-  ('da-bi', 'da-storytelling'), ('da-ai-analysis', 'da-bi'),
+  ('da-bi', 'da-storytelling'), ('da-ai-analysis', 'da-bi'), ('da-capstone', 'da-ai-analysis'),
   -- DS chain
   ('ds-features', 'ds-ml'), ('ds-evaluation', 'ds-features'), ('ds-experiments', 'ds-evaluation'),
   ('ds-deployment', 'ds-experiments'), ('ds-deeplearning', 'ds-deployment'), ('ds-llm', 'ds-deeplearning'),
@@ -151,6 +152,8 @@ resource_rows as (
   ('da-bi', 'Learn DAX basics in Power BI Desktop', 'documentation', 'Microsoft Learn', 'https://learn.microsoft.com/en-us/power-bi/transform-model/desktop-quickstart-learn-dax-basics'),
   ('da-ai-analysis', 'NIST AI RMF Generative AI Profile', 'documentation', 'NIST', 'https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence'),
   ('da-ai-analysis', 'Generative AI Framework for government', 'documentation', 'UK Government', 'https://www.gov.uk/government/publications/generative-ai-framework-for-hmg/generative-ai-framework-for-hmg-html'),
+  ('da-capstone', 'World Bank Indicators API — documentation', 'documentation', 'World Bank', 'https://datahelpdesk.worldbank.org/knowledgebase/articles/889392'),
+  ('da-capstone', 'The Aqua Book — quality analysis guidance', 'documentation', 'UK Government', 'https://www.gov.uk/government/publications/the-aqua-book-guidance-on-producing-quality-analysis-for-government'),
 
   ('ds-ml','Machine Learning Crash Course — linear and logistic regression','course','Google for Developers','https://developers.google.com/machine-learning/crash-course'),
   ('ds-ml','scikit-learn — pipelines and composite estimators','documentation','scikit-learn','https://scikit-learn.org/stable/modules/compose.html'),
@@ -280,17 +283,19 @@ from (values
   ('de-vectordb','Capstone: harden and release the cumulative platform with freshness/key/business-rule checks, lineage, CI, architecture diagram, data dictionary, setup guide, cost note, failure alert, demonstrated recovery runbook and one decision-ready data product','build',2,null,null),
 
   ('da-eda', 'Learn: study pandas missing-data handling and use the Aqua Book chapters 6–8 to frame the analysis plan, quality checks and uncertainty', 'read', 1, null, null),
-  ('da-eda', 'Build: add brief.md and analysis.ipynb that define the stakeholder, decision, metrics and assumptions, then profile missingness, duplicates, distributions, segments and anomalies with reproducible code', 'build', 2, null, null),
+  ('da-eda', 'Build milestone 1: initialise one cumulative repository with brief.md and analysis.ipynb defining the stakeholder, decision, metrics and assumptions, then profile missingness, duplicates, distributions, segments and anomalies', 'build', 2, null, null),
   ('da-visualization', 'Learn: complete the Matplotlib lifecycle tutorial and accessibility guidance', 'read', 1, null, null),
-  ('da-visualization', 'Build: remake three misleading charts with justified chart choices, direct labels, colour-safe palettes, alt text and a written note explaining every correction', 'build', 2, null, null),
+  ('da-visualization', 'Build milestone 2: extend the repository with three decision-relevant charts, justified encodings, direct labels, colour-safe palettes, alt text and a visual QA note', 'build', 2, null, null),
   ('da-dashboards', 'Learn: study Microsoft report-design and accessibility guidance', 'read', 1, null, null),
-  ('da-dashboards', 'Build: produce desktop and mobile dashboard views for three stakeholder questions, with metric definitions, useful defaults, keyboard order, alt text and a five-person usability checklist', 'build', 2, null, null),
+  ('da-dashboards', 'Build milestone 3: prototype desktop and mobile dashboard views for three stakeholder questions, with metric definitions, useful defaults, keyboard order, alt text and a five-person usability test', 'build', 2, null, null),
   ('da-storytelling', 'Learn: complete one Storytelling with Data exercise and study the uncertainty guidance', 'read', 1, null, null),
-  ('da-storytelling', 'Build: create a five-slide decision narrative and one-page executive memo covering context, evidence, recommendation, uncertainty, limitations and next action', 'build', 2, null, null),
+  ('da-storytelling', 'Build milestone 4: add a five-slide decision narrative and one-page executive memo covering context, evidence, recommendation, uncertainty, limitations and next action', 'build', 2, null, null),
   ('da-bi', 'Learn: cover the PL-300 prepare/model/manage objectives and complete the DAX basics tutorial', 'read', 1, null, null),
-  ('da-bi', 'Build: publish a star-schema report with documented Power Query steps, a date table, explicit DAX measures, row-level security, scheduled refresh notes and a shared metric dictionary', 'build', 2, null, null),
+  ('da-bi', 'Build milestone 5: implement the approved dashboard in Power BI with documented Power Query steps, a star schema, date table, explicit DAX measures, row-level security, refresh notes and a shared metric dictionary', 'build', 2, null, null),
   ('da-ai-analysis', 'Learn: review the NIST generative-AI risk profile and one documented AI analysis workflow', 'read', 1, null, null),
-  ('da-ai-analysis', 'Build: repeat one prior analysis with AI assistance, preserve prompts and generated code, remove sensitive data, independently verify every number and citation, and compare time saved against new risks', 'build', 2, null, null),
+  ('da-ai-analysis', 'Build milestone 6: repeat one bounded part of the analysis with AI assistance, preserve prompts and generated code, exclude sensitive data, independently verify every number and citation, and compare time saved against new risks', 'build', 2, null, null),
+  ('da-capstone', 'Learn: inspect the World Bank Indicators API and use the Aqua Book checklist to plan analytical quality assurance', 'read', 1, null, null),
+  ('da-capstone', 'Capstone: release the cumulative repository with a reproducible indicator pipeline, analysis, accessible visual system, tested desktop/mobile dashboard, governed semantic model, executive memo, uncertainty and limitations register, AI audit, QA checklist and public portfolio walkthrough', 'build', 2, null, null),
 
   ('ds-ml','Learn: complete the Google linear/logistic regression modules and scikit-learn pipeline guide','read',1,null,null),
   ('ds-ml','Build: add problem_statement.md with user, target, prediction time, cost of errors and naive baseline, then train two reproducible pipeline-based models without touching the test set','build',2,null,null),
@@ -338,6 +343,7 @@ join n on n.slug = t.node_slug;
 select public.apply_core_lesson_segments();
 select public.apply_core_project_milestones();
 select public.apply_foundations_mastery_refresh();
+select public.apply_data_analysis_mastery_refresh();
 
 -- Bind the advanced MLOps primary lessons, then add one bounded reference and
 -- one small practice step. AI Engineering stays authored but paused.

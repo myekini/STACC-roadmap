@@ -136,17 +136,15 @@ operates, documents, and presents the accumulated system as the track capstone.
 
 ### Data Analysis — from request to decision
 
-The current path is visually oriented and misses too much of the actual analyst job. Rebuild it
-as:
+The implemented path grows one decision product through:
 
-1. **Business questions and metric design** — stakeholder brief, KPI tree, definitions, and acceptance criteria.
-2. **Data preparation with SQL and Power Query** — types, joins, reshaping, nulls, reconciliation, and refresh-safe steps.
-3. **Exploratory analysis and statistical reasoning** — profiling, segments, uncertainty, outliers, and avoiding causal overclaiming.
-4. **Semantic modelling and DAX** — facts/dimensions, relationships, date tables, measures, filter context, and performance.
-5. **Visualisation and accessible dashboard UX** — chart choice, hierarchy, interaction, mobile layout, colour, keyboard and screen-reader considerations.
-6. **Insight communication** — executive summary, recommendation, limitations, and an oral walkthrough.
-7. **Governance and delivery** — workspaces, refresh, row-level security, ownership, metric documentation, and handover.
-8. **Capstone** — a decision product built from a real stakeholder brief, not a decorative dashboard.
+1. **Exploratory analysis** — stakeholder decision, metric definitions, data quality, segments, uncertainty, and causal limits.
+2. **Visualisation** — honest encodings, comparison, annotation, accessibility, and visual QA.
+3. **Dashboard design** — decision-led information architecture, KPI contracts, interaction, mobile layout, and usability testing.
+4. **Decision communication** — executive synthesis, recommendation, limitations, uncertainty, and next action.
+5. **Governed BI delivery** — Power Query, semantic modelling, DAX, security, refresh, ownership, and metric documentation.
+6. **AI-assisted analysis** — bounded assistance, privacy, traceability, independent verification, and an auditable contribution log.
+7. **Capstone** — a development-outcomes decision product built from public indicators and a real stakeholder brief, not a decorative dashboard.
 
 The cumulative project must include `brief.md`, a data dictionary, analysis queries/notebook,
 the semantic model, dashboard, QA checklist, and a one-page decision memo.
