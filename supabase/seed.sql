@@ -9,7 +9,7 @@ insert into public.paths (id, title, description, icon, tags, "order", requires_
   ('foundations', 'Foundations', 'The baseline every data role requires. Complete this before branching into a specialization.', 'terminal', '{Python,SQL,Git,Statistics,AI Literacy}', 0, '{}'),
   ('de', 'Data Engineering', 'Build the infrastructure. Design robust pipelines, manage massive datasets, and ensure data quality and accessibility.', 'database', '{ETL,dbt,Airflow,Cloud,Spark,Kafka}', 1, '{}'),
   ('da', 'Data Analysis', 'Turn ambiguous questions and messy data into trustworthy, decision-ready products.', 'bar_chart', '{EDA,Visualization,Power BI,Communication,Decision making}', 2, '{}'),
-  ('ds', 'Data Science', 'Model, test, and explain predictions. From ML fundamentals through deployment and LLM fine-tuning.', 'model_training', '{ML,Experimentation,Deployment,Deep Learning}', 3, '{}'),
+  ('ds', 'Data Science', 'Frame, validate, deploy, and responsibly operate predictive systems whose complexity is earned by evidence.', 'model_training', '{ML,Experimentation,Deployment,Responsible AI}', 3, '{}'),
   ('ai-engineering', 'AI Engineering', 'Build useful AI products. LLM orchestration, RAG systems, agents, and production AI architecture.', 'smart_toy', '{LLM APIs,RAG,Agents,LLMOps}', 4, '{de,ds}'),
   ('mlops', 'MLOps', 'Ship and run models in production. Containers, CI/CD for ML, monitoring, and platform design.', 'settings_suggest', '{Docker,CI/CD,Monitoring,Platforms}', 5, '{de,ds}');
 
@@ -48,7 +48,7 @@ insert into public.nodes (slug, path_id, name, subtitle, description, icon, "ord
   ('ds-evaluation','ds','Model Building & Evaluation','Beyond accuracy','Evaluate errors with business-aligned metrics, calibration, subgroup analysis, and an untouched final test set.','verified',3,12,200,'{Metrics & thresholds,Calibration,Error & subgroup analysis}'),
   ('ds-experiments','ds','Experimentation & A/B Testing','Causal by design','Design a powered experiment with a decision rule, guardrail metrics, validity checks, and an honest interpretation of uncertainty.','biotech',4,12,200,'{Experiment design,Power & effect size,Validity & decision rules}'),
   ('ds-deployment','ds','Model Deployment','Models as services','Package the chosen model behind a tested API with versioned artifacts, input validation, latency measurement, and rollback instructions.','publish',5,12,200,'{Validated inference API,Artifact versioning,Latency & rollback}'),
-  ('ds-deeplearning','ds','Deep Learning — Advanced','Neural networks','Fine-tune a pretrained neural network only when it beats the simpler baseline enough to justify its added cost and risk.','psychology',6,18,250,'{Transfer learning,Training discipline,Complexity trade-offs}'),
+  ('ds-deeplearning','ds','Advanced Modeling','Complexity must earn its place','Choose an advanced method that matches the data structure, validate it correctly, and ship it only when measured value justifies added cost and risk.','psychology',6,16,250,'{Problem-shaped model choice,Grouped & temporal validation,Complexity trade-offs}'),
   ('ds-llm','ds','Responsible Production Capstone','From model to decision system','Ship the cumulative project with reproducible training, a model card, monitored inference, responsible-use checks, and a stakeholder decision memo.','verified',7,16,250,'{Model documentation,Monitoring contract,Responsible release}'),
 
   -- AI ENGINEERING (unlocks after DE + DS)
@@ -164,9 +164,9 @@ resource_rows as (
   ('ds-experiments','Online controlled experiments — key concepts','article','Microsoft Research','https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/'),
   ('ds-experiments','statsmodels — power and sample size','documentation','statsmodels','https://www.statsmodels.org/stable/stats.html#power-and-sample-size-calculations'),
   ('ds-deployment','FastAPI — first steps','documentation','FastAPI','https://fastapi.tiangolo.com/tutorial/first-steps/'),
-  ('ds-deployment','MLflow Model Registry','documentation','MLflow','https://mlflow.org/docs/latest/ml/model-registry/'),
-  ('ds-deeplearning','Practical Deep Learning — lessons 1–3','course','fast.ai','https://course.fast.ai/'),
-  ('ds-deeplearning','PyTorch transfer learning tutorial','documentation','PyTorch','https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html'),
+  ('ds-deployment','MLflow Model Registry workflows','documentation','MLflow','https://mlflow.org/docs/latest/ml/model-registry/workflow'),
+  ('ds-deeplearning','Choosing the right estimator','documentation','scikit-learn','https://scikit-learn.org/stable/machine_learning_map.html'),
+  ('ds-deeplearning','Ensembles — gradient boosting, forests, and stacking','documentation','scikit-learn','https://scikit-learn.org/stable/modules/ensemble.html'),
   ('ds-llm','Production ML systems','course','Google for Developers','https://developers.google.com/machine-learning/crash-course/production-ml-systems'),
   ('ds-llm','Model Card Toolkit','documentation','Google Research','https://github.com/tensorflow/model-card-toolkit'),
 
@@ -298,19 +298,19 @@ from (values
   ('da-capstone', 'Capstone: release the cumulative repository with a reproducible indicator pipeline, analysis, accessible visual system, tested desktop/mobile dashboard, governed semantic model, executive memo, uncertainty and limitations register, AI audit, QA checklist and public portfolio walkthrough', 'build', 2, null, null),
 
   ('ds-ml','Learn: complete the Google linear/logistic regression modules and scikit-learn pipeline guide','read',1,null,null),
-  ('ds-ml','Build: add problem_statement.md with user, target, prediction time, cost of errors and naive baseline, then train two reproducible pipeline-based models without touching the test set','build',2,null,null),
+  ('ds-ml','Build milestone 1: initialise one cumulative repository with problem_statement.md defining the user, target, prediction time, cost of errors and naive baseline, then train two reproducible pipelines without touching the test set','build',2,null,null),
   ('ds-features','Learn: study preprocessing pipelines, inconsistent transformation and leakage pitfalls','read',1,null,null),
-  ('ds-features','Build: add typed preprocessing inside the training pipeline, a leakage audit and an ablation table showing which features improve cross-validation and by how much','build',2,null,null),
+  ('ds-features','Build milestone 2: extend the repository with typed preprocessing inside the training pipeline, a leakage audit and an ablation table proving which features improve cross-validation','build',2,null,null),
   ('ds-evaluation','Learn: study scoring, cross-validation, threshold metrics and probability calibration','read',1,null,null),
-  ('ds-evaluation','Build: add evaluation.md with baseline comparison, cross-validation uncertainty, chosen metric and threshold, calibration plot, error slices, subgroup results and one final test-set evaluation','build',2,null,null),
+  ('ds-evaluation','Build milestone 3: add evaluation.md with baseline comparison, cross-validation uncertainty, a cost-based metric and threshold, calibration, error slices, subgroup results and one final test-set evaluation','build',2,null,null),
   ('ds-experiments','Learn: study experiment validity, guardrails, power and sample-size calculations','read',1,null,null),
-  ('ds-experiments','Build: add experiment_plan.md with hypothesis, randomisation unit, primary and guardrail metrics, minimum detectable effect, sample size, duration, stopping rule, validity threats and ship/no-ship decision rule','build',2,null,null),
+  ('ds-experiments','Build milestone 4: design a post-deployment intervention experiment with hypothesis, randomisation unit, primary and guardrail metrics, minimum detectable effect, sample size, stopping rule, validity threats and ship/no-ship rule','build',2,null,null),
   ('ds-deployment','Learn: complete FastAPI first steps and the MLflow registry workflow','read',1,null,null),
-  ('ds-deployment','Build: add a container-ready prediction API with schema validation, health endpoint, unit/integration tests, versioned model artifact, latency measurement and documented rollback','build',2,null,null),
-  ('ds-deeplearning','Learn: complete fast.ai lessons 1–3 and the PyTorch transfer-learning tutorial','watch',1,null,null),
-  ('ds-deeplearning','Build: fine-tune a pretrained model with fixed seeds, tracked runs and error analysis, then compare quality, latency and cost against the simpler baseline and justify whether it should ship','build',2,null,null),
+  ('ds-deployment','Build milestone 5: add a container-ready prediction API with schema validation, health and version endpoints, unit/integration tests, a registered model alias, latency evidence and executable rollback','build',2,null,null),
+  ('ds-deeplearning','Learn: study estimator selection, ensembles, grouped/time-aware validation, clustering and transfer learning; choose only the branch appropriate to the project','read',1,null,null),
+  ('ds-deeplearning','Build milestone 6: benchmark one justified advanced approach with tracked runs and correct validation, then compare quality, latency, interpretability and cost against the simpler champion and record a ship/reject decision','build',2,null,null),
   ('ds-llm','Learn: complete Production ML Systems and study the Model Card Toolkit','read',1,null,null),
-  ('ds-llm','Build: finish the cumulative project with reproducible training, data/version lineage, model card, API or batch inference, service/data/model/business monitoring plan, alert thresholds, privacy/fairness review and a plain-language decision memo','build',2,null,null),
+  ('ds-llm','Capstone: release the cumulative decision system with reproducible training, data/model lineage, model card, tested inference, CI, service/data/model/business monitoring, alert thresholds, privacy/fairness review, rollback evidence and a plain-language stakeholder decision memo','build',2,null,null),
 
   ('ai-llm-apis', 'Study tool use, structured outputs, and streaming in the API docs', 'read', 1, null, null),
   ('ai-llm-apis', 'Build: a CLI app using tool calls and streamed responses', 'build', 2, null, null),
@@ -344,6 +344,7 @@ select public.apply_core_lesson_segments();
 select public.apply_core_project_milestones();
 select public.apply_foundations_mastery_refresh();
 select public.apply_data_analysis_mastery_refresh();
+select public.apply_data_science_mastery_refresh();
 
 -- Bind the advanced MLOps primary lessons, then add one bounded reference and
 -- one small practice step. AI Engineering stays authored but paused.

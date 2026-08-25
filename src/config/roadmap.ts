@@ -569,7 +569,7 @@ const PATH_DEFS: PathDef[] = [
   {
     id: 'ds',
     title: 'Data Science',
-    description: 'Model, test, and explain predictions. From ML fundamentals through deployment and LLM fine-tuning.',
+    description: 'Frame, validate, deploy, and responsibly operate predictive systems whose complexity is earned by evidence.',
     icon: 'model_training',
     tags: ['ML', 'Experimentation', 'Deployment', 'Deep Learning'],
     requiresPaths: [],
@@ -585,7 +585,7 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: complete the Google linear/logistic regression modules and scikit-learn pipeline guide', 'read', undefined, { resourceIndex: 0, title: 'Prediction framing and baseline models', durationMinutes: 55 }],
-          ['Build: add problem_statement.md with user, target, prediction time, cost of errors and naive baseline, then train two reproducible pipeline-based models without touching the test set', 'build'],
+          ['Build milestone 1: initialise one cumulative repository with problem_statement.md defining the user, target, prediction time, cost of errors and naive baseline, then train two reproducible pipelines without touching the test set', 'build'],
         ],
       },
       {
@@ -599,7 +599,7 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: study preprocessing pipelines, inconsistent transformation and leakage pitfalls', 'read', undefined, { resourceIndex: 0, title: 'Leakage-safe feature pipelines', durationMinutes: 45 }],
-          ['Build: add typed preprocessing inside the training pipeline, a leakage audit and an ablation table showing which features improve cross-validation and by how much', 'build'],
+          ['Build milestone 2: extend the repository with typed preprocessing inside the training pipeline, a leakage audit and an ablation table proving which features improve cross-validation', 'build'],
         ],
       },
       {
@@ -613,7 +613,7 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: study scoring, cross-validation, threshold metrics and probability calibration', 'read', undefined, { resourceIndex: 0, title: 'Evaluation beyond accuracy', durationMinutes: 50 }],
-          ['Build: add evaluation.md with baseline comparison, cross-validation uncertainty, chosen metric and threshold, calibration plot, error slices, subgroup results and one final test-set evaluation', 'build'],
+          ['Build milestone 3: add evaluation.md with baseline comparison, cross-validation uncertainty, a cost-based metric and threshold, calibration, error slices, subgroup results and one final test-set evaluation', 'build'],
         ],
       },
       {
@@ -627,7 +627,7 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: study experiment validity, guardrails, power and sample-size calculations', 'read', undefined, { resourceIndex: 0, title: 'Experiments that support causal decisions', durationMinutes: 50 }],
-          ['Build: add experiment_plan.md with hypothesis, randomisation unit, primary and guardrail metrics, minimum detectable effect, sample size, duration, stopping rule, validity threats and ship/no-ship decision rule', 'build'],
+          ['Build milestone 4: design a post-deployment intervention experiment with hypothesis, randomisation unit, primary and guardrail metrics, minimum detectable effect, sample size, stopping rule, validity threats and ship/no-ship rule', 'build'],
         ],
       },
       {
@@ -637,25 +637,25 @@ const PATH_DEFS: PathDef[] = [
         skills: ['Validated inference API', 'Artifact versioning', 'Latency & rollback'], prereqs: ['ds-experiments'],
         resources: [
           ['FastAPI — first steps', 'documentation', 'FastAPI', 'https://fastapi.tiangolo.com/tutorial/first-steps/'],
-          ['MLflow Model Registry', 'documentation', 'MLflow', 'https://mlflow.org/docs/latest/ml/model-registry/'],
+          ['MLflow Model Registry workflows', 'documentation', 'MLflow', 'https://mlflow.org/docs/latest/ml/model-registry/workflow'],
         ],
         tasks: [
           ['Learn: complete FastAPI first steps and the MLflow registry workflow', 'read', undefined, { resourceIndex: 0, title: 'Serving and versioning a model', durationMinutes: 50 }],
-          ['Build: add a container-ready prediction API with schema validation, health endpoint, unit/integration tests, versioned model artifact, latency measurement and documented rollback', 'build'],
+          ['Build milestone 5: add a container-ready prediction API with schema validation, health and version endpoints, unit/integration tests, a registered model alias, latency evidence and executable rollback', 'build'],
         ],
       },
       {
-        slug: 'ds-deeplearning', name: 'Deep Learning — Advanced', subtitle: 'Neural networks',
-        description: 'Fine-tune a pretrained neural network only when it beats the simpler baseline enough to justify its added cost and risk.',
+        slug: 'ds-deeplearning', name: 'Advanced Modeling', subtitle: 'Complexity must earn its place',
+        description: 'Choose an advanced method that matches the data structure, validate it correctly, and ship it only when measured value justifies added cost and risk.',
         icon: 'psychology', estHours: 18, xp: 250,
-        skills: ['Transfer learning', 'Training discipline', 'Complexity trade-offs'], prereqs: ['ds-deployment'],
+        skills: ['Problem-shaped model choice', 'Grouped & temporal validation', 'Complexity trade-offs'], prereqs: ['ds-deployment'],
         resources: [
-          ['Practical Deep Learning — lessons 1–3', 'course', 'fast.ai', 'https://course.fast.ai/'],
-          ['PyTorch transfer learning tutorial', 'documentation', 'PyTorch', 'https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html'],
+          ['Choosing the right estimator', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/machine_learning_map.html'],
+          ['Ensembles — gradient boosting, forests, and stacking', 'documentation', 'scikit-learn', 'https://scikit-learn.org/stable/modules/ensemble.html'],
         ],
         tasks: [
-          ['Learn: complete fast.ai lessons 1–3 and the PyTorch transfer-learning tutorial', 'watch', undefined, { resourceIndex: 0, title: 'Transfer learning and disciplined experiments', durationMinutes: 90 }],
-          ['Build: fine-tune a pretrained model with fixed seeds, tracked runs and error analysis, then compare quality, latency and cost against the simpler baseline and justify whether it should ship', 'build'],
+          ['Learn: study estimator selection, ensembles, grouped/time-aware validation, clustering and transfer learning; choose only the branch appropriate to the project', 'read', undefined, { resourceIndex: 0, title: 'Advanced models chosen by problem shape', durationMinutes: 60 }],
+          ['Build milestone 6: benchmark one justified advanced approach with tracked runs and correct validation, then compare quality, latency, interpretability and cost against the simpler champion and record a ship/reject decision', 'build'],
         ],
       },
       {
@@ -669,7 +669,7 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: complete Production ML Systems and study the Model Card Toolkit', 'read', undefined, { resourceIndex: 0, title: 'Operate, monitor and explain an ML system', durationMinutes: 60 }],
-          ['Build: finish the cumulative project with reproducible training, data/version lineage, model card, API or batch inference, service/data/model/business monitoring plan, alert thresholds, privacy/fairness review and a plain-language decision memo', 'build'],
+          ['Capstone: release the cumulative decision system with reproducible training, data/model lineage, model card, tested inference, CI, service/data/model/business monitoring, alert thresholds, privacy/fairness review, rollback evidence and a plain-language stakeholder decision memo', 'build'],
         ],
       },
     ],
