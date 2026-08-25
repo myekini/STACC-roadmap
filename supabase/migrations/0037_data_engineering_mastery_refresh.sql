@@ -42,11 +42,41 @@ begin
   ) v(slug,ord,title)
   where n.slug=v.slug and t.node_id=n.id and t."order"=v.ord;
 
-  -- Replace the two weak first-topic assignments with bounded official material.
-  delete from public.resources r using public.nodes n, public.topics t
-  where n.slug in ('de-etl','de-cloud') and t.node_id=n.id and t."order"=1
-    and r.node_id=n.id and r.topic_id=t.id;
+  -- Retarget the existing first-topic rows in place. Lesson tasks reference
+  -- these resource IDs, so deleting them would null tasks.resource_id while
+  -- leaving lesson metadata behind and violate tasks_lesson_resource_check.
+  with curated(slug,topic_order,resource_order,name,type,platform,url) as (values
+    ('de-etl',1,1,'Docker — 45-minute workshop','course','Docker','https://docs.docker.com/get-started/workshop/'),
+    ('de-etl',1,2,'Docker Compose — how it works','documentation','Docker','https://docs.docker.com/compose/intro/compose-application-model/'),
+    ('de-cloud',1,1,'Terraform on Google Cloud — get started','course','HashiCorp','https://developer.hashicorp.com/terraform/tutorials/gcp-get-started'),
+    ('de-cloud',1,2,'Terraform language — resources','documentation','HashiCorp','https://developer.hashicorp.com/terraform/language/resources')
+  ), ranked_existing as (
+    select r.id, n.slug,
+      row_number() over (
+        partition by n.slug
+        order by r."order", r.created_at, r.id
+      )::integer as resource_order
+    from public.resources r
+    join public.nodes n on n.id=r.node_id
+    join public.topics t on t.id=r.topic_id and t.node_id=n.id
+    where n.slug in ('de-etl','de-cloud') and t."order"=1
+  )
+  update public.resources r set
+    name=c.name, type=c.type, platform=c.platform, url=c.url,
+    "order"=c.resource_order
+  from ranked_existing existing
+  join curated c on c.slug=existing.slug
+    and c.resource_order=existing.resource_order
+  where r.id=existing.id;
 
+  update public.tasks task set lesson_title=r.name
+  from public.resources r
+  join public.nodes n on n.id=r.node_id
+  join public.topics topic on topic.id=r.topic_id and topic.node_id=n.id
+  where task.resource_id=r.id
+    and n.slug in ('de-etl','de-cloud') and topic."order"=1;
+
+  -- Fresh or unusually sparse databases may not have both legacy rows.
   with curated(slug,topic_order,resource_order,name,type,platform,url) as (values
     ('de-etl',1,1,'Docker — 45-minute workshop','course','Docker','https://docs.docker.com/get-started/workshop/'),
     ('de-etl',1,2,'Docker Compose — how it works','documentation','Docker','https://docs.docker.com/compose/intro/compose-application-model/'),
@@ -56,7 +86,11 @@ begin
   insert into public.resources(node_id,topic_id,"order",name,type,platform,url)
   select n.id,t.id,c.resource_order,c.name,c.type,c.platform,c.url
   from curated c join public.nodes n on n.slug=c.slug
-  join public.topics t on t.node_id=n.id and t."order"=c.topic_order;
+  join public.topics t on t.node_id=n.id and t."order"=c.topic_order
+  where not exists(
+    select 1 from public.resources existing
+    where existing.topic_id=t.id and existing.url=c.url
+  );
 
   update public.tasks t set description=v.description
   from public.nodes n, (values
