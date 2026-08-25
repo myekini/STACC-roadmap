@@ -1,7 +1,8 @@
 # Data Engineering Track — Curriculum Blueprint
 
-**Status:** Curriculum draft for review  
-**Last researched:** 11 August 2026  
+**Status:** Mastery refresh implemented
+
+**Last researched:** 25 August 2026
 **Audience:** Learners who completed Stacc Foundations  
 **Target outcome:** Build, test, orchestrate, and explain a production-shaped batch data platform, then add one streaming workload.
 
@@ -32,15 +33,15 @@ Long external courses remain useful source libraries, but “complete this entir
 
 ## Proposed track
 
-### Module 1 — Reproducible data environments
+### Module 1 — Local data platform and ingestion
 
-**Outcome:** Run PostgreSQL locally in containers and provision a small cloud environment from code.
+**Outcome:** Run PostgreSQL locally in containers and ingest a paginated API safely. Terraform is deliberately deferred until the cloud node.
 
 | Order | Exact learning unit | Why it earns a place | Time | Learner output |
 |---|---|---|---:|---|
-| 1 | [DE Zoomcamp: Module 1 — Containerization and IaC](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/01-docker-terraform) — complete the Docker, PostgreSQL, Docker Compose, and Terraform sections in order | A maintained, free, end-to-end setup tied to later pipeline work | 4h | PostgreSQL running through Compose |
-| 2 | [Docker: Images and containers](https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-an-image/) | Precise mental model for the objects used in the lab | 20m | Written explanation of image vs container |
-| 3 | [Terraform: What is infrastructure as code?](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/infrastructure-as-code) | Explains state and declarative infrastructure without requiring the full certification path | 25m | One reviewed Terraform plan |
+| 1 | [Docker: 45-minute workshop](https://docs.docker.com/get-started/workshop/) | A bounded official lab covering images, containers, volumes, multi-container applications, and Compose | 45m | PostgreSQL and the ingestion service running through Compose |
+| 2 | [Docker Compose application model](https://docs.docker.com/compose/intro/compose-application-model/) | Precise reference for services, networks, volumes, configuration, and secrets | 25m | Annotated Compose configuration |
+| 3 | [dlt: Cursor-based incremental loading](https://dlthub.com/docs/general-usage/incremental/cursor) | Focused reference for stateful incremental API ingestion | 35m | Incremental cursor with duplicate-safe reruns |
 
 **Practice:** Containerize a Python ingestion script and PostgreSQL.  
 **Checkpoint:** Explain volumes, networks, image layers, Terraform state, and why credentials stay outside source control.
@@ -98,9 +99,9 @@ Long external courses remain useful source libraries, but “complete this entir
 **Practice:** Orchestrate ingestion → quality checks → dbt build, with retries and a deliberate failure test.  
 **Checkpoint:** Diagnose a failed run and explain logical dates, data intervals, catchup, retries, and idempotency.
 
-### Module 6 — Cloud data platform fundamentals
+### Module 6 — Cloud and infrastructure as code
 
-**Outcome:** Deploy the batch platform with basic security, cost, and operations discipline.
+**Outcome:** Provision and deploy the batch platform with Terraform, security, cost, and operations discipline.
 
 | Order | Exact learning unit | Why it earns a place | Time | Learner output |
 |---|---|---|---:|---|

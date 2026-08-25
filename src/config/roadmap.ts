@@ -342,17 +342,17 @@ const PATH_DEFS: PathDef[] = [
     requiresPaths: [],
     nodes: [
       {
-        slug: 'de-etl', name: 'Reproducible Ingestion', subtitle: 'Docker, APIs, and safe reruns',
-        description: 'Containerise an API-to-PostgreSQL pipeline that validates inputs and can be rerun without duplicating data.',
+        slug: 'de-etl', name: 'Local Data Platform', subtitle: 'Docker, PostgreSQL, and ingestion',
+        description: 'Run the project locally, then build an API-to-PostgreSQL pipeline that validates inputs and reruns without duplicate data.',
         icon: 'transform', estHours: 10, xp: 150,
-        skills: ['Docker & environments', 'Incremental ingestion', 'Idempotency & quality'], prereqs: FOUNDATION_SLUGS,
+        skills: ['Docker & PostgreSQL', 'API ingestion', 'Idempotency & quality'], prereqs: FOUNDATION_SLUGS,
         resources: [
-          ['DE Zoomcamp — Docker and Terraform', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/01-docker-terraform'],
-          ['dlt — incremental loading', 'documentation', 'dltHub', 'https://dlthub.com/docs/general-usage/incremental-loading'],
+          ['Docker — 45-minute workshop', 'course', 'Docker', 'https://docs.docker.com/get-started/workshop/'],
+          ['dlt — cursor-based incremental loading', 'documentation', 'dltHub', 'https://dlthub.com/docs/general-usage/incremental/cursor'],
         ],
         tasks: [
-          ['Learn: complete the Docker, PostgreSQL and Terraform sections, then study cursor-based incremental loading', 'read', undefined, { resourceIndex: 0, title: 'Containerised ingestion and safe reruns', durationMinutes: 55 }],
-          ['Build: add a containerised API-to-PostgreSQL pipeline with configuration outside source control, pagination, schema checks, an incremental cursor, duplicate-safe reruns and a documented local setup', 'build'],
+          ['Learn: complete the Docker workshop, run PostgreSQL with Compose, and study paginated and cursor-based API ingestion', 'read', undefined, { resourceIndex: 0, title: 'A local platform and safe ingestion', durationMinutes: 55 }],
+          ['Build milestone 1: initialise one cumulative repository with a containerised API-to-PostgreSQL pipeline, configuration outside source control, pagination, schema checks, an incremental cursor, duplicate-safe reruns and automated tests', 'build'],
         ],
       },
       {
@@ -366,7 +366,7 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: study grain, facts, dimensions, surrogate keys, SCDs, partitioning and clustering', 'read', undefined, { resourceIndex: 0, title: 'Grain, facts and dimensional decisions', durationMinutes: 50 }],
-          ['Build: add a grain statement, bus matrix, fact table, conformed dimensions, one SCD Type 2 dimension and a partition choice with cost/query justification', 'build'],
+          ['Build milestone 2: extend the same repository with a grain statement, bus matrix, fact table, conformed dimensions, one SCD Type 2 dimension and a partition choice justified by measured queries', 'build'],
         ],
       },
       {
@@ -380,7 +380,7 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: complete the staging, intermediate, marts and data-tests guidance', 'read', undefined, { resourceIndex: 0, title: 'Layered dbt models and trustworthy tests', durationMinutes: 45 }],
-          ['Build: add sources, staging/intermediate/mart layers, key and relationship tests, one business-rule test, generated docs and separate development/production targets', 'build'],
+          ['Build milestone 3: extend the repository with dbt sources, staging/intermediate/mart layers, key and relationship tests, one business-rule test, generated docs and separate development/production targets', 'build'],
         ],
       },
       {
@@ -394,21 +394,21 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: complete the Airflow fundamentals tutorial and backfill guide', 'read', undefined, { resourceIndex: 0, title: 'Airflow DAGs, retries and backfills', durationMinutes: 50 }],
-          ['Build: orchestrate ingestion, validation and dbt as separate tasks with retries, failure notification, a deliberate failure test and a documented seven-day backfill procedure', 'build'],
+          ['Build milestone 4: orchestrate the existing ingestion, validation and dbt workflow as separate tasks with retries, failure notification, a deliberate failure test and a demonstrated seven-day backfill', 'build'],
         ],
       },
       {
-        slug: 'de-cloud', name: 'Cloud Platforms', subtitle: 'AWS / GCP',
+        slug: 'de-cloud', name: 'Cloud & Infrastructure as Code', subtitle: 'GCP, Terraform, security, and cost',
         description: 'Deploy the batch platform with least-privilege identities, separated environments, and documented storage and query costs.',
         icon: 'deployed_code', estHours: 14, xp: 200,
-        skills: ['Object storage & warehouse', 'IAM & secrets', 'Cost & environment control'], prereqs: ['de-orchestration'],
+        skills: ['Terraform & environments', 'IAM & secrets', 'Storage, warehouse & cost'], prereqs: ['de-orchestration'],
         resources: [
+          ['Terraform on Google Cloud quickstart', 'documentation', 'HashiCorp', 'https://developer.hashicorp.com/terraform/tutorials/gcp-get-started'],
           ['Google Cloud IAM overview', 'documentation', 'Google Cloud', 'https://cloud.google.com/iam/docs/overview'],
-          ['BigQuery — optimise query computation', 'documentation', 'Google Cloud', 'https://cloud.google.com/bigquery/docs/best-practices-performance-compute'],
         ],
         tasks: [
-          ['Learn: study IAM identities/policies and BigQuery computation-cost guidance', 'read', undefined, { resourceIndex: 0, title: 'Cloud identity, storage and cost controls', durationMinutes: 45 }],
-          ['Build: deploy the platform with raw/processed storage zones, separate developer and scheduler identities, secrets outside code, least-privilege roles and a before/after query-cost comparison', 'build'],
+          ['Learn: provision a small GCP environment with Terraform, then study IAM, secrets, storage lifecycle and BigQuery cost controls', 'read', undefined, { resourceIndex: 0, title: 'Infrastructure, identity, storage and cost', durationMinutes: 55 }],
+          ['Build milestone 5: deploy the same platform from Terraform with raw/processed storage zones, separate developer and scheduler identities, secrets outside code, least-privilege roles, budgets and a before/after query-cost comparison', 'build'],
         ],
       },
       {
@@ -422,7 +422,7 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: complete Spark SQL getting started and the partitioning, join and adaptive-execution tuning sections', 'read', undefined, { resourceIndex: 0, title: 'Spark execution, partitions and joins', durationMinutes: 55 }],
-          ['Build: add a PySpark batch job, compare it with a local baseline, capture the explain plan, demonstrate partition choices and remove one measured shuffle or skew problem', 'build'],
+          ['Build milestone 6: add a PySpark workload to the same repository, justify it against a local baseline, capture the explain plan and remove one measured shuffle, skew or partition problem', 'build'],
         ],
       },
       {
@@ -436,11 +436,11 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: complete Kafka 101 and the consumers lesson', 'read', undefined, { resourceIndex: 0, title: 'Kafka topics, partitions and consumer groups', durationMinutes: 45 }],
-          ['Build: add keyed events, multiple partitions and a consumer group, then demonstrate replay from an earlier offset and document ordering scope, rebalancing and chosen delivery semantics', 'build'],
+          ['Build milestone 7: add one bounded Kafka workload with keyed events, multiple partitions and a consumer group; demonstrate replay and document ordering scope, rebalancing and delivery semantics', 'build'],
         ],
       },
       {
-        slug: 'de-vectordb', name: 'Reliability & Capstone', subtitle: 'Operate the whole platform',
+        slug: 'de-vectordb', name: 'Production Readiness Capstone', subtitle: 'Prove the whole platform works',
         description: 'Ship the cumulative data platform with quality gates, lineage, observability, recovery procedures, and documentation another engineer can use.',
         icon: 'verified', estHours: 16, xp: 250,
         skills: ['Data observability', 'Failure recovery', 'Technical documentation'], prereqs: ['de-streaming'],
@@ -450,7 +450,7 @@ const PATH_DEFS: PathDef[] = [
         ],
         tasks: [
           ['Learn: study lineage events and executable data-quality expectations', 'read', undefined, { resourceIndex: 0, title: 'Lineage, quality checks and recovery', durationMinutes: 45 }],
-          ['Build: finish the cumulative platform with freshness/key/business-rule checks, lineage, architecture diagram, data dictionary, setup guide, cost note, failure alert, backfill runbook and one dashboard or query pack proving the data is usable', 'build'],
+          ['Capstone: harden and release the cumulative platform with freshness/key/business-rule checks, lineage, CI, architecture diagram, data dictionary, setup guide, cost note, failure alert, demonstrated recovery runbook and one decision-ready data product', 'build'],
         ],
       },
     ],
