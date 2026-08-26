@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, Clock, LockKeyhole } from 'lucide-react';
+import { ArrowRight, Clock, Hourglass, LockKeyhole } from 'lucide-react';
 
 import { JsonLd } from '@/components/seo/JsonLd';
 import { StaccMark } from '@/components/brand/StaccMark';
@@ -10,15 +10,14 @@ import { Button } from '@/components/ui/button';
 import { NODES, PATHS, PAUSED_PATH_IDS } from '@/config/roadmap';
 import { absoluteUrl, SITE_NAME, SITE_URL } from '@/lib/seo';
 
-const INDEXABLE_PATHS = PATHS.filter((path) => !PAUSED_PATH_IDS.has(path.id));
-
 export function generateStaticParams() {
-  return INDEXABLE_PATHS.map((path) => ({ path: path.id }));
+  return PATHS.map((path) => ({ path: path.id }));
 }
 
 export function generateMetadata({ params }: { params: { path: string } }): Metadata {
-  const path = INDEXABLE_PATHS.find((candidate) => candidate.id === params.path);
+  const path = PATHS.find((candidate) => candidate.id === params.path);
   if (!path) return { robots: { index: false, follow: false } };
+  if (PAUSED_PATH_IDS.has(path.id)) return { title: `${path.title} — Coming Soon`, description: path.description, robots: { index: false, follow: true } };
 
   const title = `${path.title} Learning Roadmap`;
   const description = `${path.description} See every module in the free Stacc ${path.title} roadmap, in prerequisite order.`;
@@ -34,8 +33,22 @@ export function generateMetadata({ params }: { params: { path: string } }): Meta
 }
 
 export default function PublicPathPage({ params }: { params: { path: string } }) {
-  const path = INDEXABLE_PATHS.find((candidate) => candidate.id === params.path);
+  const path = PATHS.find((candidate) => candidate.id === params.path);
   if (!path) notFound();
+
+  if (PAUSED_PATH_IDS.has(path.id)) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-background px-5 text-on-background">
+        <section className="w-full max-w-2xl rounded-2xl border border-dashed border-cyan/35 bg-surface p-7 sm:p-10">
+          <Link href="/tree" className="font-code text-xs text-on-surface-variant hover:text-cyan">← All roadmaps</Link>
+          <div className="mt-10 flex size-12 items-center justify-center rounded-xl bg-cyan/10 text-cyan"><Hourglass className="size-6" /></div>
+          <h1 className="mt-6 text-balance font-display text-3xl font-bold tracking-[-0.03em] text-on-surface sm:text-5xl">AI Engineering is coming soon.</h1>
+          <p className="mt-4 max-w-xl text-base leading-7 text-on-surface-variant">Its curriculum is preserved, but we are deliberately shipping the complete data and MLOps ecosystem first. When this opens, it will build on that production foundation—not compete with it.</p>
+          <Button asChild className="mt-7 rounded-xl"><Link href="/learn/mlops">Explore MLOps first <ArrowRight /></Link></Button>
+        </section>
+      </main>
+    );
+  }
 
   const nodes = NODES.filter((node) => node.path_id === path.id).sort((a, b) => a.order - b.order);
   const totalHours = nodes.reduce((sum, node) => sum + node.est_hours, 0);

@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, CheckCircle2, Clock, Layers, Lock, Route, Target } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Clock, Hourglass, Layers, Lock, Route, Target } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,8 +48,10 @@ export default function PathSelectionPage() {
 
   const specializations = useMemo(() => paths.filter((path) => path.id !== 'foundations'), [paths]);
   const orderedPaths = useMemo(() => {
-    if (!focusedTrack) return specializations;
+    if (!focusedTrack || PAUSED_PATH_IDS.has(focusedTrack)) return specializations;
     return [...specializations].sort((a, b) => {
+      if (PAUSED_PATH_IDS.has(a.id)) return 1;
+      if (PAUSED_PATH_IDS.has(b.id)) return -1;
       if (a.id === focusedTrack) return -1;
       if (b.id === focusedTrack) return 1;
       return a.order - b.order;
@@ -87,7 +89,7 @@ export default function PathSelectionPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, delay: reduceMotion ? 0 : Math.min(0.1, index * 0.04) }}
         className={cn(
-          'group flex min-w-0 flex-col border bg-surface-card p-4 transition-colors sm:p-5',
+          'group flex min-w-0 flex-col rounded-2xl border bg-surface-card p-4 transition-colors sm:p-5',
           isActive || isFocused ? 'border-cyan ring-1 ring-cyan/30' : 'border-outline-variant',
           locked ? 'bg-surface-container-low/55' : 'hover:border-cyan/55',
         )}
@@ -103,7 +105,11 @@ export default function PathSelectionPage() {
                 <CheckCircle2 className="h-3 w-3" /> Active
               </Badge>
             )}
-            {locked && (
+            {isPaused ? (
+              <Badge variant="outline" className="border-cyan/35 bg-cyan/[0.08] px-2 py-1 text-cyan">
+                <Hourglass className="h-3 w-3" /> Coming soon
+              </Badge>
+            ) : locked && (
               <Badge variant="outline" className="border-warning/45 bg-warning/10 px-2 py-1 text-on-surface">
                 <Lock className="h-3 w-3" /> Later
               </Badge>
@@ -129,13 +135,13 @@ export default function PathSelectionPage() {
           <div className="mt-4 flex flex-1 flex-col justify-end">
             <p className="text-sm leading-6 text-on-surface-variant">
               {isPaused ? (
-                <>This advanced path is paused while we strengthen and validate the core career paths.</>
+                <>The curriculum is preserved while we finish the complete data ecosystem first. Join it after MLOps when it opens.</>
               ) : (
                 <>Complete <strong className="font-semibold text-on-surface">{gateTitles}</strong> to unlock this path.</>
               )}
             </p>
             <Button disabled className="mt-4 w-full justify-center border border-outline-variant bg-surface text-outline">
-              {isPaused ? 'Coming later' : 'Locked'}
+              {isPaused ? <><Hourglass className="size-4" /> Coming soon</> : 'Locked'}
             </Button>
           </div>
         ) : (
@@ -226,9 +232,9 @@ export default function PathSelectionPage() {
       {futurePaths.length > 0 && (
         <section aria-labelledby="future-heading" className="space-y-4 border-t border-outline-variant pt-7">
           <div className="max-w-2xl">
-            <h2 id="future-heading" className="font-display text-xl font-bold text-on-surface">Unlock later</h2>
+            <h2 id="future-heading" className="font-display text-xl font-bold text-on-surface">Next in the ecosystem</h2>
             <p className="mt-1 text-sm leading-6 text-on-surface-variant">
-              Advanced paths combine Data Engineering and Data Science. They will open automatically when both are complete.
+              MLOps opens after Data Engineering and Data Science. AI Engineering remains visibly held for a later release.
             </p>
           </div>
           <div className="grid grid-cols-1 gap-4 min-[1180px]:grid-cols-2">

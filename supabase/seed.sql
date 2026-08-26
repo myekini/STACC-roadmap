@@ -10,8 +10,8 @@ insert into public.paths (id, title, description, icon, tags, "order", requires_
   ('de', 'Data Engineering', 'Build the infrastructure. Design robust pipelines, manage massive datasets, and ensure data quality and accessibility.', 'database', '{ETL,dbt,Airflow,Cloud,Spark,Kafka}', 1, '{}'),
   ('da', 'Data Analysis', 'Turn ambiguous questions and messy data into trustworthy, decision-ready products.', 'bar_chart', '{EDA,Visualization,Power BI,Communication,Decision making}', 2, '{}'),
   ('ds', 'Data Science', 'Frame, validate, deploy, and responsibly operate predictive systems whose complexity is earned by evidence.', 'model_training', '{ML,Experimentation,Deployment,Responsible AI}', 3, '{}'),
-  ('ai-engineering', 'AI Engineering', 'Build useful AI products. LLM orchestration, RAG systems, agents, and production AI architecture.', 'smart_toy', '{LLM APIs,RAG,Agents,LLMOps}', 4, '{de,ds}'),
-  ('mlops', 'MLOps', 'Ship and run models in production. Containers, CI/CD for ML, monitoring, and platform design.', 'settings_suggest', '{Docker,CI/CD,Monitoring,Platforms}', 5, '{de,ds}');
+  ('mlops', 'MLOps', 'Turn a validated model into a tested, deployable, observable production system with a safe path for continuous improvement.', 'settings_suggest', '{Tracking,CI/CD/CT,Serving,Monitoring}', 4, '{de,ds}'),
+  ('ai-engineering', 'AI Engineering', 'Build useful AI products. LLM orchestration, RAG systems, agents, and production AI architecture.', 'smart_toy', '{LLM APIs,RAG,Agents,LLMOps}', 5, '{de,ds}');
 
 -- ── Nodes ──────────────────────────────────────────────────
 insert into public.nodes (slug, path_id, name, subtitle, description, icon, "order", est_hours, xp_reward, skills) values

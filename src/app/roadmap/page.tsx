@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, Lock, Route } from 'lucide-react';
+import { ArrowRight, Hourglass, Lock, Route } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 import SkillTree from '@/components/roadmap/SkillTree';
 import { GithubStatusToast } from '@/components/roadmap/GithubStatusToast';
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CardListSkeleton } from '@/components/ui/loading-skeletons';
 import { cn } from '@/lib/utils';
+import { PAUSED_PATH_IDS } from '@/config/roadmap';
 
 export default function RoadmapPage() {
   const data = useUserData();
@@ -85,22 +86,26 @@ export default function RoadmapPage() {
               const done = pathNodes.filter((n) => progress.completedNodes[n.id]).length;
               const locked = !data.pathUnlocked(path.id);
               const active = path.id === pathId;
+              const paused = PAUSED_PATH_IDS.has(path.id);
               return (
                 <button
                   key={path.id}
                   type="button"
-                  onClick={() => data.selectPath(path.id)}
+                  onClick={() => { if (!paused) void data.selectPath(path.id); }}
+                  disabled={paused}
                   className={cn(
                     'flex shrink-0 items-center gap-2 px-3 py-2 text-xs font-semibold transition-colors',
-                    active
+                    paused
+                      ? 'cursor-not-allowed border border-dashed border-outline-variant text-outline'
+                      : active
                       ? 'bg-cyan/10 text-cyan'
                       : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface',
                   )}
                 >
-                  {locked ? <Lock className="h-3 w-3 text-outline" /> : <AppIcon name={path.icon} className="h-3.5 w-3.5" />}
+                  {paused ? <Hourglass className="h-3 w-3 text-cyan" /> : locked ? <Lock className="h-3 w-3 text-outline" /> : <AppIcon name={path.icon} className="h-3.5 w-3.5" />}
                   {path.title}
-                  <span className={cn('font-bold', done === pathNodes.length && pathNodes.length > 0 ? 'text-secondary' : 'text-outline')}>
-                    {done}/{pathNodes.length}
+                  <span className={cn('font-bold', paused ? 'text-cyan' : done === pathNodes.length && pathNodes.length > 0 ? 'text-secondary' : 'text-outline')}>
+                    {paused ? 'Soon' : `${done}/${pathNodes.length}`}
                   </span>
                 </button>
               );

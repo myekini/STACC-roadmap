@@ -771,79 +771,79 @@ const PATH_DEFS: PathDef[] = [
   {
     id: 'mlops',
     title: 'MLOps',
-    description: 'Ship and run models in production. Containers, CI/CD for ML, monitoring, and platform design.',
+    description: 'Turn a validated model into a tested, deployable, observable production system with a safe path for continuous improvement.',
     icon: 'settings_suggest',
-    tags: ['Docker', 'CI/CD', 'Monitoring', 'Platforms'],
+    tags: ['Tracking', 'CI/CD/CT', 'Serving', 'Monitoring'],
     requiresPaths: ['de', 'ds'],
     nodes: [
       {
-        slug: 'ml-docker', name: 'Docker & Containerization', subtitle: 'Reproducible everything',
-        description: 'Images, layers, and packaging ML workloads that run the same everywhere.',
-        icon: 'deployed_code', estHours: 10, xp: 200,
-        skills: ['Dockerfiles & layers', 'Compose', 'Registries'], prereqs: [],
+        slug: 'ml-docker', name: 'Experiments & Reproducible Pipelines', subtitle: 'From notebook to repeatable run',
+        description: 'Track experiments, version artifacts, orchestrate training, and package the same workflow for local and automated execution.',
+        icon: 'deployed_code', estHours: 14, xp: 200,
+        skills: ['Experiment tracking', 'Pipeline orchestration', 'Reproducible containers'], prereqs: [],
         resources: [
-          ['Docker Getting Started', 'documentation', 'Docker', 'https://docs.docker.com/get-started/'],
-          ['Docker Compose Documentation', 'documentation', 'Docker', 'https://docs.docker.com/compose/'],
+          ['MLOps Zoomcamp — video course', 'video', 'YouTube · DataTalksClub', 'https://www.youtube.com/playlist?list=PL3MmuxUbc_hIUISrluw_A7wDSmfOhErJK'],
+          ['Experiment tracking and orchestration', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/mlops-zoomcamp/tree/main/02-experiment-tracking'],
         ],
         tasks: [
-          ['Work through Docker getting started', 'read'],
-          ['Build: containerize a model service with a slim, reproducible image', 'build'],
+          ['Learn: study experiment tracking, model registry, orchestration and reproducible packaging', 'watch', undefined, { resourceIndex: 0, title: 'Track and reproduce the full training run', durationMinutes: 60 }],
+          ['Build milestone 1: initialise one cumulative production-ML repository with a tracked baseline, versioned data contract, orchestrated train/evaluate flow and reproducible container', 'build'],
         ],
       },
       {
         slug: 'ml-cicd', name: 'CI/CD for ML', subtitle: 'Automate the path to prod',
-        description: 'Pipelines that test data, code, and models before anything ships.',
-        icon: 'published_with_changes', estHours: 12, xp: 200,
-        skills: ['GitHub Actions', 'Model & data tests', 'Artifacts'], prereqs: ['ml-docker'],
+        description: 'Gate every change with code, data, model, integration, security, and artifact checks before a release can move forward.',
+        icon: 'published_with_changes', estHours: 14, xp: 200,
+        skills: ['ML quality gates', 'Immutable artifacts', 'Release automation'], prereqs: ['ml-docker'],
         resources: [
-          ['GitHub Actions Docs', 'documentation', 'GitHub', 'https://docs.github.com/en/actions'],
-          ['Made With ML', 'course', 'Made With ML', 'https://madewithml.com/'],
+          ['MLOps Zoomcamp — video course', 'video', 'YouTube · DataTalksClub', 'https://www.youtube.com/playlist?list=PL3MmuxUbc_hIUISrluw_A7wDSmfOhErJK'],
+          ['Testing machine-learning systems', 'course', 'Made With ML', 'https://madewithml.com/courses/mlops/testing/'],
         ],
         tasks: [
-          ['Study GitHub Actions pipelines', 'read'],
-          ['Build: a CI pipeline that tests data, code, and model quality before deploy', 'build'],
+          ['Learn: study ML-specific testing and CI/CD quality gates', 'watch', undefined, { resourceIndex: 0, title: 'Build quality gates for code, data and models', durationMinutes: 55 }],
+          ['Build milestone 2: extend the repository with code, data, model and service tests; CI must publish immutable artifacts and block regressions', 'build'],
         ],
       },
       {
-        slug: 'ml-monitoring', name: 'Monitoring & Drift', subtitle: 'Know when models rot',
-        description: 'Data drift, concept drift, and alerting on the metrics that predict failure.',
-        icon: 'analytics', estHours: 12, xp: 250,
-        skills: ['Data drift', 'Concept drift', 'Alerting'], prereqs: ['ml-cicd'],
+        slug: 'ml-monitoring', name: 'Serving & Safe Release', subtitle: 'Ship without gambling production',
+        description: 'Implement batch and online inference, deployment health checks, progressive delivery, load evidence, and executable rollback.',
+        icon: 'analytics', estHours: 14, xp: 250,
+        skills: ['Batch & online serving', 'Progressive delivery', 'Rollback engineering'], prereqs: ['ml-cicd'],
         resources: [
-          ['Evidently AI: ML Monitoring Guides', 'article', 'Evidently', 'https://www.evidentlyai.com/ml-in-production/model-monitoring'],
-          ['Evidently AI Documentation', 'documentation', 'Evidently', 'https://docs.evidentlyai.com/'],
+          ['MLOps Zoomcamp — video course', 'video', 'YouTube · DataTalksClub', 'https://www.youtube.com/playlist?list=PL3MmuxUbc_hIUISrluw_A7wDSmfOhErJK'],
+          ['Model deployment module', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/mlops-zoomcamp/tree/main/04-deployment'],
         ],
         tasks: [
-          ['Study drift detection and ML monitoring', 'read'],
-          ['Build: a monitoring dashboard that alerts on input drift', 'build'],
+          ['Learn: study batch, web and streaming deployment plus safe release patterns', 'watch', undefined, { resourceIndex: 0, title: 'Serve models through production-shaped interfaces', durationMinutes: 60 }],
+          ['Build milestone 3: add batch and online inference using one versioned artifact, contract tests, health probes, load evidence, a staged release and tested rollback', 'build'],
         ],
       },
       {
-        slug: 'ml-production', name: 'Production ML Systems', subtitle: 'Serving at scale',
-        description: 'Batch vs online serving, feature stores, and latency/throughput tradeoffs.',
+        slug: 'ml-production', name: 'Monitoring & Incident Response', subtitle: 'Know, decide, recover',
+        description: 'Observe service, data, model, and business behavior; connect alerts to ownership, diagnosis, rollback, and retraining decisions.',
         icon: 'memory', estHours: 14, xp: 250,
-        skills: ['Serving patterns', 'Feature stores', 'Scaling & caching'], prereqs: ['ml-monitoring'],
+        skills: ['Four-layer monitoring', 'Drift & delayed labels', 'Incident response'], prereqs: ['ml-monitoring'],
         resources: [
-          ['Designing Machine Learning Systems (notes)', 'article', 'Chip Huyen', 'https://huyenchip.com/machine-learning-systems-design/toc.html'],
-          ['Feast Documentation', 'documentation', 'Feast', 'https://docs.feast.dev/'],
+          ['MLOps Zoomcamp — video course', 'video', 'YouTube · DataTalksClub', 'https://www.youtube.com/playlist?list=PL3MmuxUbc_hIUISrluw_A7wDSmfOhErJK'],
+          ['Model monitoring module', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/mlops-zoomcamp/tree/main/05-monitoring'],
         ],
         tasks: [
-          ['Study serving patterns and feature stores', 'read'],
-          ['Build: an online + batch serving path for the same model', 'build'],
+          ['Learn: study service, data and model monitoring with actionable alert design', 'watch', undefined, { resourceIndex: 0, title: 'Detect failure and operate the response loop', durationMinutes: 60 }],
+          ['Build milestone 4: add service, data, model and business dashboards; delayed-label evaluation; owned alerts; an incident runbook; and a rehearsed rollback or retraining decision', 'build'],
         ],
       },
       {
-        slug: 'ml-platform', name: 'ML Platform Design', subtitle: 'End-to-end ownership',
-        description: 'Design the platform: from experiment tracking to deployment paths for a whole team.',
-        icon: 'schema', estHours: 16, xp: 300,
-        skills: ['Experiment tracking', 'Model registries', 'Platform architecture'], prereqs: ['ml-production'],
+        slug: 'ml-platform', name: 'Continuous ML Platform Capstone', subtitle: 'Operate the whole lifecycle',
+        description: 'Complete a production-grade continuous-training system with governed promotion, infrastructure, observability, recovery, and evidence.',
+        icon: 'schema', estHours: 18, xp: 300,
+        skills: ['Continuous training', 'Governed promotion', 'Platform ownership'], prereqs: ['ml-production'],
         resources: [
-          ['MLOps Zoomcamp — platform capstone', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/mlops-zoomcamp/tree/main/07-project'],
-          ['MLflow Documentation', 'documentation', 'MLflow', 'https://mlflow.org/docs/latest/index.html'],
+          ['MLOps Zoomcamp — video course', 'video', 'YouTube · DataTalksClub', 'https://www.youtube.com/playlist?list=PL3MmuxUbc_hIUISrluw_A7wDSmfOhErJK'],
+          ['MLOps Zoomcamp — final project', 'course', 'DataTalksClub', 'https://github.com/DataTalksClub/mlops-zoomcamp/tree/main/07-project'],
         ],
         tasks: [
-          ['Read the bounded MLOps Zoomcamp capstone brief', 'read'],
-          ['Build: an end-to-end platform design doc — tracking, registry, deploy paths', 'build'],
+          ['Learn: study the final-project standard and continuous ML maturity model', 'watch', undefined, { resourceIndex: 0, title: 'Join the lifecycle into one operable platform', durationMinutes: 55 }],
+          ['Capstone: ship the cumulative system with triggered training, lineage, registry promotion, CI/CD/CT, infrastructure as code, SLOs, monitoring, incident evidence, rollback and an operator-grade README', 'build'],
         ],
       },
     ],
@@ -852,15 +852,17 @@ const PATH_DEFS: PathDef[] = [
 
 // ── Flattened, DB-row-shaped exports (id === slug in local mode) ──
 
-export const PATHS: PathRow[] = PATH_DEFS.map((p, i) => ({
+const PATH_ORDER = ['foundations', 'de', 'da', 'ds', 'mlops', 'ai-engineering'];
+
+export const PATHS: PathRow[] = PATH_DEFS.map((p) => ({
   id: p.id,
   title: p.title,
   description: p.description,
   icon: p.icon,
   tags: p.tags,
-  order: i,
+  order: PATH_ORDER.indexOf(p.id),
   requires_paths: p.requiresPaths,
-}));
+})).sort((a, b) => a.order - b.order);
 
 export const NODES: NodeRow[] = PATH_DEFS.flatMap((p) =>
   p.nodes.map((n, i) => ({

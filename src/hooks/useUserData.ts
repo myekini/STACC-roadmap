@@ -451,6 +451,14 @@ export function useUserData() {
     queryClient.invalidateQueries();
   };
 
+  // A member may still have AI Engineering stored as their last selection
+  // from before the release hold. Treat it as unselected without deleting
+  // history; admins retain direct audit access to the authored path.
+  const storedActivePath = activePathQuery.data ?? null;
+  const effectiveActivePath = !isAdmin && storedActivePath && PAUSED_PATH_IDS.has(storedActivePath)
+    ? null
+    : storedActivePath;
+
   return {
     // mode
     isSupabaseConnected: connected,
@@ -481,8 +489,8 @@ export function useUserData() {
     nodeStatus,
     pathUnlocked,
     pathFullyComplete,
-    activePath: activePathQuery.data ?? null,
-    hasSelectedPath: Boolean(activePathQuery.data),
+    activePath: effectiveActivePath,
+    hasSelectedPath: Boolean(effectiveActivePath),
     // actions
     selectPath,
     startNode,

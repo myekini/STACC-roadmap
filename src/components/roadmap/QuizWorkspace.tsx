@@ -56,7 +56,7 @@ export function QuizWorkspace({
 
   return (
     <Dialog open onOpenChange={(open) => !open && !saving && onClose()}>
-      <DialogContent className="fixed inset-0 left-0 top-0 z-[80] flex min-h-[100dvh] w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden border-0 bg-background p-0 text-on-background shadow-none duration-0 sm:rounded-none [&>button]:hidden" onEscapeKeyDown={(event) => saving && event.preventDefault()}>
+      <DialogContent className="fixed inset-0 left-0 top-0 z-[80] flex h-[100dvh] max-h-none w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden border-0 bg-background p-0 text-on-background shadow-none duration-0 sm:rounded-none [&>button]:hidden" onEscapeKeyDown={(event) => saving && event.preventDefault()}>
         <header className="flex min-h-[calc(3.75rem+env(safe-area-inset-top))] shrink-0 items-center gap-3 border-b border-outline-variant bg-navy px-3 pt-[env(safe-area-inset-top)] sm:px-5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-secondary/35 bg-secondary/10 text-secondary">
             <CircleHelp className="h-4 w-4" />

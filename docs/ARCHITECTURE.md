@@ -13,7 +13,9 @@ Stacc has two deliberately different learning environments:
 
 The specialization loop is `Learn → Build in the track repository → Verify latest commit → Continue`. Foundations instead use `Learn → Practise → Pass`, with full-screen executable challenges only for reliably testable skills.
 
-The node workspace derives one ordered step sequence from lesson-linked resources and required tasks. Only the selected step renders in the main canvas; the outline is navigation, not a duplicate checklist. GitHub connection and verification render only for the active specialization Build step.
+The node workspace derives one ordered step sequence from lesson-linked resources and required tasks. Learn is one collapsible group containing its topic lessons; Practise, Pass, Build, and Verify remain explicit actions. Only the selected step renders in the main canvas; the outline is navigation, not a duplicate checklist. A topic's video leads the canvas when available and its reading/documentation remains under Supporting links. GitHub connection and verification render only for the active specialization Build step.
+
+MLOps precedes AI Engineering in path order. AI Engineering content remains stored and admin-auditable, but `PAUSED_PATH_IDS` blocks member selection and every public/member discovery surface presents the same Coming Soon state.
 
 ## Connected-project MVP
 

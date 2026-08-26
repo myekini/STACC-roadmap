@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, Lock } from 'lucide-react';
+import { ArrowRight, Hourglass, Lock } from 'lucide-react';
 import { NODES, PATHS, PAUSED_PATH_IDS } from '@/config/roadmap';
 import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
@@ -21,8 +21,8 @@ export const metadata: Metadata = {
 };
 
 export default function PublicTreePage() {
-  const publicPaths = PATHS.filter((path) => !PAUSED_PATH_IDS.has(path.id));
-  const publicPathIds = new Set(publicPaths.map((path) => path.id));
+  const publicPaths = PATHS;
+  const publicPathIds = new Set(publicPaths.filter((path) => !PAUSED_PATH_IDS.has(path.id)).map((path) => path.id));
   const publicNodes = NODES.filter((node) => publicPathIds.has(node.path_id));
   const totalHours = publicNodes.reduce((sum, node) => sum + node.est_hours, 0);
   const structuredData = {
@@ -60,7 +60,8 @@ export default function PublicTreePage() {
 
         <div className="space-y-10">
           {publicPaths.map((path) => {
-            const pathNodes = NODES.filter((n) => n.path_id === path.id);
+            const paused = PAUSED_PATH_IDS.has(path.id);
+            const pathNodes = paused ? [] : NODES.filter((n) => n.path_id === path.id);
             const gated = path.requires_paths.length > 0;
             const gateTitles = path.requires_paths
               .map((id) => PATHS.find((p) => p.id === id)?.title)
@@ -77,13 +78,15 @@ export default function PublicTreePage() {
                       </Link>
                     </h2>
                   </div>
-                  {gated && (
+                  {gated && !paused && (
                     <span className="inline-flex items-center gap-1.5 border border-outline-variant bg-surface-container-low px-2 py-1 font-code text-xs uppercase tracking-[0.08em] text-outline">
                       <Lock className="h-3 w-3" /> unlocks after {gateTitles}
                     </span>
                   )}
+                  {paused && <span className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-cyan/35 bg-cyan/[0.06] px-2 py-1 font-code text-xs uppercase tracking-[0.08em] text-cyan"><Hourglass className="size-3" /> Coming soon</span>}
                 </div>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-on-surface-variant">{path.description}</p>
+                {paused && <p className="mt-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">Curriculum preserved. Release held until the complete data and MLOps ecosystem is ready.</p>}
                 <ol className="mt-4 grid gap-2 sm:grid-cols-2">
                   {pathNodes.map((node, i) => (
                     <li key={node.id} className="flex items-center gap-3 border border-outline-variant/70 bg-surface/70 px-3.5 py-2.5">

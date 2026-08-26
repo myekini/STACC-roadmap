@@ -110,7 +110,7 @@ Curriculum: starts/completions/completion-rate per node
 | Prerequisite gates | ✅ Shipped | Node-level (fan-in supported — a node can require several prerequisites) + path-level gates. |
 | Resource ratings | ❌ Removed from UI | Schema/RPC (`rate_resource`, `resources.avg_rating`) still exist dormant, but the client no longer reads or writes ratings — not needed at this stage. Reinstate deliberately if/when it earns its place. |
 | **Evidence shipping** | ✅ Shipped | Specialization build tasks require a public URL inside the learner's path project. Foundations build exercises stay lightweight checklist completions and do not require GitHub setup or evidence. Enforced server-side in `complete_task`. |
-| **Short learning steps** | ✅ Shipped | Foundations adapt to Learn → Practise → Pass; specialization nodes use Learn → Build → Verify. The labels remain quiet, while resource-, topic-, node-, and path-level completion derive from the same task truth. Full playlists are not assigned as one lesson. |
+| **Short learning steps** | ✅ Shipped | Foundations adapt to Learn → Practise → Pass; specialization nodes use Learn → Build → Verify. Learn is one collapsible topic group, a video leads when available, and bounded documentation sits under Supporting links. Resource-, topic-, node-, and path-level completion derive from the same task truth. |
 | **Projects (per-path)** | ✅ Code complete; configuration required | One connected GitHub repository per specialization. The installation callback stores stable repository identity; **Check my work** verifies a new, unreused commit and content-owned file requirements before completing the milestone. Requires migrations through `0010` and the GitHub App environment values. |
 | **Public portfolio** | ✅ Shipped | `/u/[handle]` — each path renders as a build-log timeline (oldest → newest) under its project repo link, not a flat recency feed. Powered by an anon-callable `get_public_profile` RPC that exposes only username/avatar/shipped work/project repos, never XP/rank/role. |
 | **Code challenges** | ✅ Shipped (Foundations) | Monaco plus client-only Pyodide/sql.js runs Python and SQL checks without server execution. Challenges open as a focused full-screen workspace and return the learner to the exact module step. They replace quizzes only where the skill has a dependable executable pass condition. |
@@ -155,26 +155,26 @@ DATA ENGINEERING                    DATA ANALYSIS
 ├── Event Streaming with Kafka      └── Decision Intelligence Capstone
 └── Production Readiness Capstone
 
-DATA SCIENCE                        AI ENGINEERING ← unlocks after DE + DS
-├── ML Fundamentals                 ├── LLM APIs & Orchestration
-├── Feature Engineering             ├── RAG System Design
-├── Model Building & Evaluation     ├── AI Agents & Tool Use
-├── Experimentation & A/B Testing   ├── Multimodal Systems
-├── Model Deployment                ├── LLMOps & Evaluation
-├── Advanced Modeling               └── AI Product Design
+DATA SCIENCE                        MLOPS ← unlocks after DE + DS
+├── ML Fundamentals                 ├── Experiments & Reproducible Pipelines
+├── Feature Engineering             ├── CI/CD for ML
+├── Model Building & Evaluation     ├── Serving & Safe Release
+├── Experimentation & A/B Testing   ├── Monitoring & Incident Response
+├── Model Deployment                └── Continuous ML Platform Capstone
+├── Advanced Modeling
 └── Responsible Production Capstone
 
-MLOPS ← unlocks after DE + DS
-├── Docker & Containerization
-├── CI/CD for ML
-├── Monitoring & Drift
-├── Production ML Systems
-└── ML Platform Design
+AI ENGINEERING ← COMING SOON; curriculum preserved, member access held
+├── LLM APIs & Orchestration
+├── RAG System Design
+├── AI Agents & Tool Use
+├── Multimodal Systems
+├── LLMOps & Evaluation
+└── AI Product Design
 ```
 
-41 modules total. Every node ships with three authored topics and bounded primary/reference resources. The focused workspace shows one required step at a time; see
-`src/config/roadmap.ts` for the editorial rule and content, which mirrors `supabase/seed.sql`
-exactly.
+41 authored modules total. Every node ships with three authored topics and bounded primary/reference resources. The focused workspace shows one required step at a time; see
+`src/config/roadmap.ts` for local-mode content and `supabase/migrations/` for the deployed source of truth.
 
 ---
 
@@ -234,9 +234,11 @@ Follows Stacc's **Technical Field Manual** design language with a calmer layered
   any node count. Mobile keeps the single-column left rail.
   Clicking a node navigates to `/roadmap/[slug]`, a focused learning cockpit. It resumes the first
   incomplete task, displays one active lesson/practice/build step, and uses one compact progress
-  dial plus a collapsible step rail. The collapsed desktop rail retains a visible edge handle;
-  mobile opens the same sequence as a sheet. References remain inside their topic and never block
-  progress. Foundation challenges open a full-screen client-only editor. Specialization Build
+  dial plus a collapsible step rail. Learn expands once into its topic lessons instead of repeating
+  a stage tag for every resource. The collapsed desktop rail retains a visible edge handle;
+  mobile opens the same sequence as a sheet. A video leads the lesson when the topic has one;
+  reference links remain quietly disclosed inside the topic and never block progress. Foundation
+  challenges open a true viewport-height client-only editor. Specialization Build
   steps contain the one-track repository connection, milestone brief, required artifacts, and
   explicit latest-commit verification; GitHub does not compete with Learn steps.
 - **Sidebar** — collapsible to a 76px icon rail (persisted), one continuous navy/cyan-border

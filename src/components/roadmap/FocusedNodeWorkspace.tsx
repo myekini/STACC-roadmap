@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   CircleDot,
@@ -97,9 +98,16 @@ export default function FocusedNodeWorkspace({ data, slug }: { data: UserData; s
   const activeTopic = activeResource
     ? topics.find((topic) => topic.id === activeResource.topic_id) ?? null
     : null;
-  const references = activeTopic
-    ? data.resources.filter((resource) => resource.topic_id === activeTopic.id && resource.id !== activeResource?.id)
+  const topicResources = activeTopic
+    ? data.resources.filter((resource) => resource.topic_id === activeTopic.id)
     : [];
+  const primaryResource = topicResources.find((resource) => resource.type === 'video' || /youtu(?:\.be|be\.com)/i.test(resource.url))
+    ?? activeResource;
+  const references = activeTopic
+    ? topicResources.filter((resource) => resource.id !== primaryResource?.id)
+    : [];
+  const learnTasks = tasks.filter((task) => stageFor(task, foundation) === 'Learn');
+  const actionTasks = tasks.filter((task) => stageFor(task, foundation) !== 'Learn');
   const doneCount = tasks.filter((task) => completed.includes(task.id)).length;
   const allDone = tasks.length > 0 && doneCount === tasks.length;
   const canWork = !(data.isSupabaseConnected && !data.isAuthenticated)
@@ -217,10 +225,43 @@ export default function FocusedNodeWorkspace({ data, slug }: { data: UserData; s
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-3">
-            <ol className="space-y-1">
-              {tasks.map((task, index) => {
+            <ol className="space-y-2">
+              {learnTasks.length > 0 && (
+                <li>
+                  <details open className="group/learn rounded-xl bg-surface-container-low">
+                    <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 rounded-xl px-3 py-2.5 text-left marker:content-none">
+                      <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-cyan/40 bg-cyan/10 font-code text-[11px] font-bold text-cyan">
+                        {learnTasks.filter((task) => completed.includes(task.id)).length}/{learnTasks.length}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold text-on-surface">Learn</span>
+                        <span className="block text-xs text-on-surface-variant">Topics and lesson resources</span>
+                      </span>
+                      <ChevronDown className="size-4 text-on-surface-variant transition-transform group-open/learn:rotate-180" />
+                    </summary>
+                    <ol className="space-y-1 border-t border-outline-variant/70 p-2">
+                      {learnTasks.map((task) => {
+                        const done = completed.includes(task.id);
+                        const active = task.id === activeTask?.id;
+                        const resource = task.resource_id ? data.resources.find((item) => item.id === task.resource_id) : null;
+                        const topic = resource ? topics.find((item) => item.id === resource.topic_id) : null;
+                        return (
+                          <li key={task.id}>
+                            <button type="button" onClick={() => { setActiveTaskId(task.id); if (window.innerWidth < 1024) setOutlineOpen(false); }} className={cn('flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors', active ? 'bg-surface-container-high text-on-surface' : 'text-on-surface-variant hover:bg-surface hover:text-on-surface')}>
+                              <span className={cn('mt-0.5 grid size-5 shrink-0 place-items-center rounded-md border text-[10px]', done ? 'border-secondary/40 bg-secondary/15 text-secondary' : active ? 'border-cyan/50 text-cyan' : 'border-outline-variant')}>{done ? <Check className="size-3" /> : topic?.order ?? '·'}</span>
+                              <span className="min-w-0"><span className="block text-xs font-semibold text-on-surface">{topic?.title ?? stepTitle(task)}</span>{topic && <span className="mt-0.5 block line-clamp-2 text-xs leading-5">{stepTitle(task)}</span>}</span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  </details>
+                </li>
+              )}
+              {actionTasks.map((task) => {
                 const done = completed.includes(task.id);
                 const active = task.id === activeTask?.id;
+                const index = tasks.findIndex((item) => item.id === task.id);
                 return (
                   <li key={task.id}>
                     <button
@@ -298,15 +339,15 @@ export default function FocusedNodeWorkspace({ data, slug }: { data: UserData; s
               </div>
 
               <div className="p-4 sm:p-6">
-                {activeTask && activeResource ? (
+                {activeTask && primaryResource ? (
                   <>
-                    <ResourceCard resource={activeResource} lessonTask={activeTask} completed={activeDone} onCompleteLesson={(task) => { void completeTask(task); }} showCompletionAction={false} />
+                    <ResourceCard resource={primaryResource} lessonTask={activeTask} completed={activeDone} onCompleteLesson={(task) => { void completeTask(task); }} showCompletionAction={false} />
                     {references.length > 0 && (
                       <details className="mt-4 rounded-xl border border-outline-variant bg-surface-container-low">
-                        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-on-surface">Additional references · {references.length}</summary>
+                        <summary className="cursor-pointer px-4 py-3 text-sm text-on-surface-variant hover:text-on-surface">Supporting links · {references.length}</summary>
                         <div className="space-y-2 border-t border-outline-variant p-3">
                           {references.map((reference) => (
-                            <a key={reference.id} href={reference.url} target="_blank" rel="noreferrer" className="flex items-center justify-between gap-3 rounded-xl px-3 py-3 text-sm text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface">
+                            <a key={reference.id} href={reference.url} target="_blank" rel="noreferrer" className="flex items-center justify-between gap-3 rounded-xl px-3 py-3 text-sm font-normal text-on-surface-variant underline decoration-outline-variant underline-offset-4 hover:bg-surface-container-high hover:text-on-surface">
                               <span className="min-w-0 truncate">{reference.name}</span><ExternalLink className="size-3.5 shrink-0" />
                             </a>
                           ))}

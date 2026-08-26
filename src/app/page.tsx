@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { absoluteUrl, SITE_URL } from '@/lib/seo';
+import { PAUSED_PATH_IDS } from '@/config/roadmap';
 
 const NAV_LINKS = [
   { href: '/paths', label: 'Explore Paths' },
@@ -376,15 +377,17 @@ export default function LandingPage() {
             aria-labelledby={`track-tab-${activeTab}`}
             className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
           >
-            {featuredPaths.map((path) => (
+            {featuredPaths.map((path) => {
+              const paused = PAUSED_PATH_IDS.has(path.id);
+              return (
               <article
                 key={path.id}
-                className="group flex flex-col justify-between border border-outline-variant bg-surface-card rounded-none p-6 transition-[border-color,background-color] hover:border-cyan/40 hover:bg-surface-container-low"
+                className={cn('group flex flex-col justify-between rounded-2xl border bg-surface-card p-6 transition-[border-color,background-color]', paused ? 'border-dashed border-cyan/30 bg-cyan/[0.025]' : 'border-outline-variant hover:border-cyan/40 hover:bg-surface-container-low')}
               >
                 <div className="space-y-4">
                   <p className="font-code text-[11px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
                     <span className="text-cyan">
-                      {path.id === 'foundations' ? 'Prerequisite' : path.requires_paths.length > 0 ? 'Advanced' : 'Specialization'}
+                      {paused ? 'Coming soon' : path.id === 'foundations' ? 'Prerequisite' : path.requires_paths.length > 0 ? 'Advanced' : 'Specialization'}
                     </span>
                     <span className="mx-2 text-outline" aria-hidden="true">/</span>
                     {path.tags[0] ?? 'Data'}
@@ -405,15 +408,17 @@ export default function LandingPage() {
                     <span className="flex items-center gap-1"><Layers className="h-3.5 w-3.5 text-secondary" /> {nodes.filter((n) => n.path_id === path.id).length} modules</span>
                   </div>
 
-                  <Button asChild variant="outline" className="w-full justify-between group-hover:border-cyan font-code text-xs uppercase tracking-wider rounded-none">
-                    <Link href={`/learn/${path.id}`}>
-                      <span>View roadmap</span>
-                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  </Button>
+                  {paused ? (
+                    <Button disabled variant="outline" className="w-full justify-between rounded-xl border-dashed border-cyan/30 font-code text-xs uppercase tracking-wider text-cyan"><span>Held for release</span><Hourglass className="size-4" /></Button>
+                  ) : (
+                    <Button asChild variant="outline" className="w-full justify-between rounded-xl font-code text-xs uppercase tracking-wider group-hover:border-cyan">
+                      <Link href={`/learn/${path.id}`}><span>View roadmap</span><ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></Link>
+                    </Button>
+                  )}
                 </div>
               </article>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
