@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { SignOutButton } from '@/components/ui/sign-out-button';
 import { PageFrame, PageHeader } from '@/components/ui/page-layout';
+import { GithubLogo } from '@/components/icons/GithubLogo';
 
 export default function MemberSettingsPage() {
   const userData = useUserData();
@@ -45,6 +46,7 @@ export default function MemberSettingsPage() {
   const [busy, setBusy] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [embedCopied, setEmbedCopied] = useState(false);
 
   const completedCount = Object.keys(progress.completedNodes).length;
   const hoursInvested = nodes
@@ -52,7 +54,10 @@ export default function MemberSettingsPage() {
     .reduce((sum, n) => sum + n.est_hours, 0);
 
   const activePathInfo = paths.find((p) => p.id === activePath);
-  const publicUrl = typeof window !== 'undefined' ? `${window.location.origin}/u/${encodeURIComponent(user.username)}` : `/u/${user.username}`;
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const publicUrl = origin ? `${origin}/u/${encodeURIComponent(user.username)}` : `/u/${user.username}`;
+  const badgeUrl = `${origin}/api/badge/${encodeURIComponent(user.username)}.svg`;
+  const embedSnippet = `[![Stacc progress](${badgeUrl})](${publicUrl})`;
 
   const handleSaveUsername = async () => {
     if (newUsername.trim() === user.username) {
@@ -75,6 +80,12 @@ export default function MemberSettingsPage() {
     navigator.clipboard.writeText(publicUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyEmbed = () => {
+    navigator.clipboard.writeText(embedSnippet);
+    setEmbedCopied(true);
+    setTimeout(() => setEmbedCopied(false), 2000);
   };
 
   return (
@@ -255,6 +266,30 @@ export default function MemberSettingsPage() {
               </Link>
             </Button>
           </section>
+
+          {isSupabaseConnected && (
+            <section className="border border-outline-variant bg-surface p-6 space-y-4">
+              <h3 className="font-display text-base font-bold text-on-surface flex items-center gap-2">
+                <GithubLogo className="h-4 w-4 text-outline" />
+                Embed on GitHub
+              </h3>
+              <p className="text-xs leading-5 text-on-surface-variant">
+                Drop this into your GitHub profile README (the repo named after your username) —
+                it stays current on its own, the same way GitHub stats/streak badges work.
+              </p>
+              {/* eslint-disable-next-line @next/next/no-img-element -- external, dynamically-generated SVG; next/image can't proxy this */}
+              <img src={badgeUrl} alt="Preview of your Stacc badge" className="w-full border border-outline-variant" width={480} height={168} />
+              <div className="flex items-center gap-2">
+                <code className="flex-1 overflow-x-auto whitespace-nowrap rounded-none border border-outline-variant bg-surface-container-low px-2.5 py-2 font-code text-[11px] text-on-surface-variant">
+                  {embedSnippet}
+                </code>
+                <Button type="button" variant="outline" size="sm" onClick={handleCopyEmbed} className="shrink-0 gap-1.5 text-xs">
+                  {embedCopied ? <Check className="h-3.5 w-3.5 text-secondary" /> : <Copy className="h-3.5 w-3.5" />}
+                  {embedCopied ? 'Copied' : 'Copy'}
+                </Button>
+              </div>
+            </section>
+          )}
 
           <section className="border border-outline-variant bg-surface p-6 space-y-4">
             <h3 className="font-display text-base font-bold text-on-surface flex items-center gap-2">
