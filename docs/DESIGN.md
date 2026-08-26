@@ -70,9 +70,9 @@ typography:
     fontWeight: 500
     lineHeight: 1.3
 rounded:
-  structural: "0"
-  control: "4px"
-  overlay: "6px"
+  structural: "16px"
+  control: "12px"
+  overlay: "16px"
   circular: "9999px"
 spacing:
   xs: "4px"
@@ -88,14 +88,14 @@ components:
     backgroundColor: "{colors.action-orange-dark}"
     textColor: "{colors.dark-background}"
     typography: "{typography.label}"
-    rounded: "{rounded.structural}"
+    rounded: "{rounded.control}"
     padding: "12px 16px"
     height: "44px"
   button-secondary:
     backgroundColor: "{colors.dark-surface}"
     textColor: "{colors.text-dark}"
     typography: "{typography.label}"
-    rounded: "{rounded.structural}"
+    rounded: "{rounded.control}"
     padding: "12px 16px"
     height: "44px"
   card:
@@ -115,9 +115,9 @@ components:
 
 ## Overview
 
-**Creative North Star: “The Technical Field Manual”**
+**Creative North Star: “The Layered Technical Field Manual”**
 
-Stacc uses **Modern Technical Brutalism** to make a demanding learning journey feel precise, credible, and navigable. It borrows the discipline of terminal interfaces, field manuals, and operational dashboards without imitating their friction. Structure is visible, states are explicit, and every highlighted element must help a learner decide, act, recover, or understand progress.
+Stacc uses a restrained technical workspace aesthetic to make a demanding learning journey feel precise, credible, and navigable. It combines the discipline of field manuals with calm, nested application surfaces: generous spacing, low-contrast navy layers, soft active states, and rounded workspace shells. Structure remains visible, and every highlighted element must help a learner decide, act, recover, or understand progress.
 
 The marketing surface may be expressive; the authenticated member and admin surfaces are operational and quieter. Brand character comes from sharp geometry, restrained mono labels, exact borders, purposeful signals, and evidence-led language—not from ornamental glow, excessive badges, or decorative motion.
 
@@ -126,7 +126,7 @@ This file is the visual source of truth. Product behavior and feature scope rema
 **Key characteristics:**
 
 - Dark-first but fully designed for light and dark mode.
-- Sharp structural surfaces with selectively softened controls.
+- Rounded workspace shells with disciplined, low-radius internal controls.
 - Orange commits; cyan guides; semantic colors report state.
 - Geist Sans carries reading; Geist Mono carries system meaning.
 - Dense enough for serious work, never cramped enough to obscure it.
@@ -211,9 +211,9 @@ Stacc is flat by default. Depth comes from tonal surface layering, borders, and 
 
 ## Shapes
 
-Structural geometry is sharp: cards, curriculum workspaces, stat panels, alerts, and major navigation surfaces use square corners. Small controls may use a 4px radius when it improves affordance. Dialogs and menus may use up to 6px. Avatars, status dots, switches, and other inherently circular objects remain fully rounded.
+Primary application shells and focused learning surfaces use 12–16px radii to separate nested workspace layers without ornamental shadows. Internal controls generally use 8–12px radii; dense data tables and code surfaces may remain square. Avatars, status dots, switches, and other inherently circular objects remain fully rounded.
 
-Do not neutralize shape semantics by making every object square or every object pill-shaped. Pills are reserved for toggles and compact binary or status controls—not general badges, buttons, tabs, or cards.
+Do not neutralize shape semantics by making every object a pill. Full pills remain reserved for compact filters, toggles, and binary/status controls; cards and workspaces use consistent rounded rectangles.
 
 ## Components
 

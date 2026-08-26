@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { useUserData } from '@/hooks/useUserData';
-import NodeWorkspace from '@/components/roadmap/NodeWorkspace';
+import NodeWorkspace from '@/components/roadmap/FocusedNodeWorkspace';
 import { GithubStatusToast } from '@/components/roadmap/GithubStatusToast';
 
 export default function NodeWorkspacePage({ params }: { params: { slug: string } }) {

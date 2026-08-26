@@ -11,7 +11,9 @@ Stacc has two deliberately different learning environments:
 - **Foundations:** short inline Python, SQL, and knowledge checkpoints. No GitHub project is required.
 - **Specializations:** one cumulative GitHub project per track. Every build milestone adds a meaningful commit to the same repository until it becomes an end-to-end portfolio project.
 
-The specialization loop is `Learn → Practise → Implement → Sync commit → Verify milestone → Continue`.
+The specialization loop is `Learn → Build in the track repository → Verify latest commit → Continue`. Foundations instead use `Learn → Practise → Pass`, with full-screen executable challenges only for reliably testable skills.
+
+The node workspace derives one ordered step sequence from lesson-linked resources and required tasks. Only the selected step renders in the main canvas; the outline is navigation, not a duplicate checklist. GitHub connection and verification render only for the active specialization Build step.
 
 ## Connected-project MVP
 

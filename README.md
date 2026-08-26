@@ -8,7 +8,7 @@
 The Roadmap Tracker for [Stacc](https://www.getstacc.org), a data-career community — *"Not learning. Just shipping."*
 A visual skill tree that answers the three questions that stop most learners: **What do I learn next? Am I on track? What does ready look like?**
 
-- 38 modules across Foundations + 5 specialization paths (DE, DA, DS, AI Engineering, MLOps)
+- 41 modules across Foundations + 5 specialization paths (DE, DA, DS, AI Engineering, MLOps)
 - Responsive roadmap list, sequenced learning material, real tasks, and Foundation coding challenges
 - Prerequisite gating — modules unlock in order; AI Engineering and MLOps unlock after DE + DS
 - Foundations practise inline; each specialization accumulates into one GitHub portfolio project
@@ -24,7 +24,8 @@ A visual skill tree that answers the three questions that stop most learners: **
 | `/` | public | Landing with the live roadmap rail |
 | `/tree` | public | Server-rendered full skill tree (SEO) |
 | `/paths` | member | Path selection |
-| `/roadmap` | member | The skill tree + module workspace |
+| `/roadmap` | member | Responsive learning roadmap |
+| `/roadmap/[slug]` | member | Focused step-by-step module workspace |
 | `/dashboard` | member | Progress, streak, heatmap, milestones |
 | `/u/[handle]` | public | Member's shipped-work portfolio |
 | `/admin` | admin | Cohort health, stuck alerts, exports |

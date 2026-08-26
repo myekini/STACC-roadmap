@@ -71,7 +71,7 @@ Schema lives in `migrations/`, content in `seed.sql`. Types: `src/lib/database.t
   and the result rows must exactly match `expectedRows` in order. Both are entirely
   client-executed — no new RPC, the pass/fail decision never touches the server, only the
   resulting `complete_task` call does. Live on the three Foundations topics that are genuinely
-  code-testable (Python Basics, Statistics Basics, SQL Basics) — Git/CLI/AI Literacy stay quizzes.
+  code-testable (Python Foundations, Statistics Basics, SQL Foundations) — Git/CLI/AI Literacy stay quizzes.
 - **GitHub sign-in (migration `0007`):** replaces Discord as the only OAuth provider.
   `handle_new_user()` now reads GitHub's metadata shape (`user_name`/`preferred_username` for the
   handle, `provider_id`/`sub` for the immutable id) instead of Discord's, and `profiles` gains

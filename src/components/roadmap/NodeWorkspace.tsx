@@ -61,7 +61,7 @@ function shortShaFromCommitUrl(url: string): string {
 /* ─────────────────────────────────────────────────────────
    ProjectMilestone — GitHub commit verifier (inline)
 ───────────────────────────────────────────────────────── */
-function ProjectMilestone({
+export function ProjectMilestone({
   task,
   data,
   pathId,
@@ -214,16 +214,18 @@ function ProjectMilestone({
    every topic goes through this exact same path — nothing is hardcoded by
    position ("primary"/"secondary" is just which slot the admin put it in).
 ───────────────────────────────────────────────────────── */
-function ResourceCard({
+export function ResourceCard({
   resource,
   lessonTask,
   completed,
   onCompleteLesson,
+  showCompletionAction = true,
 }: {
   resource: ResourceRow;
   lessonTask: TaskRow | null;
   completed: boolean;
   onCompleteLesson: (task: TaskRow) => void;
+  showCompletionAction?: boolean;
 }) {
   const parsedYouTubeRef = getYouTubeRef(resource.url);
   const youTubeRef = parsedYouTubeRef?.kind === 'video' && lessonTask
@@ -235,7 +237,7 @@ function ResourceCard({
     : parsedYouTubeRef;
 
   return (
-    <div id={`resource-${resource.id}`} className="scroll-mt-6 overflow-hidden rounded-none border border-outline-variant bg-surface-card">
+    <div id={`resource-${resource.id}`} className="scroll-mt-6 overflow-hidden rounded-xl border border-outline-variant bg-surface-card">
       <div className="flex items-center justify-between gap-3 border-b border-outline-variant bg-surface px-4 py-2.5">
         <div className="flex min-w-0 items-center gap-2 text-xs font-semibold text-on-surface">
           {completed ? (
@@ -270,7 +272,7 @@ function ResourceCard({
             onWatchThreshold={lessonTask?.type === 'watch' && !completed ? () => onCompleteLesson(lessonTask) : undefined}
           />
         ) : lessonTask ? (
-          <div className="flex flex-col items-center gap-4 border border-outline-variant bg-surface px-4 py-8 text-center sm:py-12">
+          <div className="flex flex-col items-center gap-4 rounded-lg border border-outline-variant bg-surface px-4 py-8 text-center sm:py-12">
             <div className="max-w-md text-center">
               <p className="font-semibold text-on-surface">Study this selected source</p>
               <p className="mt-1 text-sm leading-6 text-on-surface-variant">
@@ -278,24 +280,24 @@ function ResourceCard({
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2">
-              <Button asChild className="gap-2 rounded-none bg-cyan font-bold text-on-primary-fixed hover:bg-cyan/90">
+              <Button asChild className="gap-2 rounded-lg bg-cyan font-bold text-on-primary-fixed hover:bg-cyan/90">
                 <a href={resource.url} target="_blank" rel="noreferrer">
                   Read on {resource.platform} <ExternalLink className="h-4 w-4" />
                 </a>
               </Button>
-              {!completed && (
-                <Button variant="outline" className="rounded-none" onClick={() => onCompleteLesson(lessonTask)}>
+              {!completed && showCompletionAction && (
+                <Button variant="outline" className="rounded-lg" onClick={() => onCompleteLesson(lessonTask)}>
                   Mark read
                 </Button>
               )}
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-3 border border-outline-variant bg-surface px-4 py-6 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-lg border border-outline-variant bg-surface px-4 py-6 text-center">
             <p className="text-sm leading-6 text-on-surface-variant">
               Reference material — use it when this topic leaves a question. It doesn&apos;t block progress.
             </p>
-            <Button asChild variant="outline" className="gap-2 rounded-none">
+            <Button asChild variant="outline" className="gap-2 rounded-lg">
               <a href={resource.url} target="_blank" rel="noreferrer">
                 Open on {resource.platform} <ExternalLink className="h-4 w-4" />
               </a>

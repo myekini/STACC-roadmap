@@ -105,15 +105,15 @@ Curriculum: starts/completions/completion-rate per node
 |---|---|---|
 | Roadmap progression | ✅ Shipped | One responsive list experience: a zigzag center spine on desktop and a compact vertical rail on mobile. The former React Flow canvas was archived to reduce interaction and bundle complexity. Public, structure-only version at `/tree` remains for SEO. |
 | Path selection | ✅ Shipped | Foundations + Data Engineering, Data Analysis, Data Science, AI Engineering, MLOps. MLOps unlocks after DE + DS. AI Engineering remains visible but is paused for members while the core paths are strengthened; admins retain audit access. |
-| Node detail | ✅ Shipped | Description, a topic breakdown (each topic carrying up to 2 curated resources), bounded lesson titles/durations, a small practice step, tasks, and estimated hours. |
+| Node detail | ✅ Shipped | A focused step workspace that resumes the next required action. A collapsible desktop rail/mobile sheet provides navigation; only the selected lesson, practice, checkpoint, or build milestone occupies the canvas. |
 | Progress tracking | ✅ Shipped | Per-node and per-path completion; derived status `locked \| available \| in_progress \| complete`. |
 | Prerequisite gates | ✅ Shipped | Node-level (fan-in supported — a node can require several prerequisites) + path-level gates. |
 | Resource ratings | ❌ Removed from UI | Schema/RPC (`rate_resource`, `resources.avg_rating`) still exist dormant, but the client no longer reads or writes ratings — not needed at this stage. Reinstate deliberately if/when it earns its place. |
 | **Evidence shipping** | ✅ Shipped | Specialization build tasks require a public URL inside the learner's path project. Foundations build exercises stay lightweight checklist completions and do not require GitHub setup or evidence. Enforced server-side in `complete_task`. |
-| **Short learning steps** | ✅ Shipped | Available modules follow bounded Learn → Practise → Ship steps. `practice` is manually completed and low-risk; `build` remains the cumulative repository-verified milestone. Admins can edit lesson title, duration, resource, and optional video segment boundaries. Full playlists are not assigned as a single lesson. |
+| **Short learning steps** | ✅ Shipped | Foundations adapt to Learn → Practise → Pass; specialization nodes use Learn → Build → Verify. The labels remain quiet, while resource-, topic-, node-, and path-level completion derive from the same task truth. Full playlists are not assigned as one lesson. |
 | **Projects (per-path)** | ✅ Code complete; configuration required | One connected GitHub repository per specialization. The installation callback stores stable repository identity; **Check my work** verifies a new, unreused commit and content-owned file requirements before completing the milestone. Requires migrations through `0010` and the GitHub App environment values. |
 | **Public portfolio** | ✅ Shipped | `/u/[handle]` — each path renders as a build-log timeline (oldest → newest) under its project repo link, not a flat recency feed. Powered by an anon-callable `get_public_profile` RPC that exposes only username/avatar/shipped work/project repos, never XP/rank/role. |
-| **Code challenges** | ✅ Shipped (Foundations) | `challenge` task type, Monaco editor + a client-only runtime — Pyodide (CPython/WASM) for Python, sql.js (SQLite/WASM) for SQL — both loaded lazily from CDN, no server execution. Opening a challenge enters a focused full-screen workspace: problem/editor/console split on desktop and Problem/Code/Results tabs on mobile. These **replace**, not supplement, the checkpoint quiz on the three Foundations topics that are genuinely code-testable: Python Basics (`clean_scores`), Statistics Basics (`describe`), SQL Basics (aggregate query, min. 3 assertions each). Git & GitHub, Command Line, and AI Literacy stay multiple-choice — none of them reduce to a clean in-browser pass/fail check without a much bigger build (a simulated git/shell environment). Every other node's checkpoint is still a quiz — this hasn't rolled out past Foundations. |
+| **Code challenges** | ✅ Shipped (Foundations) | Monaco plus client-only Pyodide/sql.js runs Python and SQL checks without server execution. Challenges open as a focused full-screen workspace and return the learner to the exact module step. They replace quizzes only where the skill has a dependable executable pass condition. |
 | XP system | ⚙️ Backend only | Accrues server-side, never shown (see §2). |
 | AI Study Assistant | ❌ Removed | See §2. |
 
@@ -136,22 +136,24 @@ Curriculum: starts/completions/completion-rate per node
 
 ```
 FOUNDATIONS  (required before any specialization)
-├── Python Basics
-├── SQL Basics
-├── Git & GitHub
 ├── Command Line
+├── Python Foundations
+├── Git & GitHub
+├── Tabular Python
+├── SQL Foundations
 ├── Statistics Basics
-└── AI Literacy
+├── AI Literacy
+└── Foundation Readiness Capstone
 
 DATA ENGINEERING                    DATA ANALYSIS
-├── ETL Concepts                    ├── Exploratory Data Analysis
-├── Data Modeling                   ├── Data Visualization
-├── dbt                             ├── Dashboard Design
+├── Local Data Platform             ├── Exploratory Data Analysis
+├── Warehouse Modeling              ├── Data Visualization
+├── Analytics Engineering with dbt  ├── Dashboard Design
 ├── Workflow Orchestration          ├── Data Storytelling
-├── Cloud Platforms                 ├── BI Tools
-├── Spark — Advanced                └── AI-Assisted Analysis
-├── Real-time Streaming (Kafka)
-└── Vector DBs & LLM Infra
+├── Cloud & Infrastructure as Code  ├── Governed BI Delivery
+├── Distributed Batch with Spark    ├── AI-Assisted Analysis
+├── Event Streaming with Kafka      └── Decision Intelligence Capstone
+└── Production Readiness Capstone
 
 DATA SCIENCE                        AI ENGINEERING ← unlocks after DE + DS
 ├── ML Fundamentals                 ├── LLM APIs & Orchestration
@@ -159,8 +161,8 @@ DATA SCIENCE                        AI ENGINEERING ← unlocks after DE + DS
 ├── Model Building & Evaluation     ├── AI Agents & Tool Use
 ├── Experimentation & A/B Testing   ├── Multimodal Systems
 ├── Model Deployment                ├── LLMOps & Evaluation
-├── Deep Learning — Advanced        └── AI Product Design
-└── LLM Fine-tuning & RAG
+├── Advanced Modeling               └── AI Product Design
+└── Responsible Production Capstone
 
 MLOPS ← unlocks after DE + DS
 ├── Docker & Containerization
@@ -170,8 +172,7 @@ MLOPS ← unlocks after DE + DS
 └── ML Platform Design
 ```
 
-38 modules total. Every node ships with exactly 3 skills and 2 curated resources — kept
-deliberately capped so the roadmap stays readable and the node workspace stays scannable; see
+41 modules total. Every node ships with three authored topics and bounded primary/reference resources. The focused workspace shows one required step at a time; see
 `src/config/roadmap.ts` for the editorial rule and content, which mirrors `supabase/seed.sql`
 exactly.
 
@@ -183,8 +184,8 @@ The real schema lives in `supabase/migrations/` — treat that as source of trut
 below. Two deliberate deviations from the earliest spec sketch:
 
 - **`node_prerequisites` join table**, not a single `parent_id` — real content has fan-in (a
-  node can require several prerequisites, e.g. every specialization's first node requires all
-  six Foundations nodes).
+  node can require several prerequisites, e.g. every specialization's first node requires the
+  complete eight-node Foundations sequence).
 - **Nodes break into `topics`** (migration `0030`), each with up to 2 curated resources
   (primary + secondary) — resources belong to a topic, not directly to a node. Every node
   currently has exactly 3 topics, seeded 1:1 from its 3 `skills` (which stay a separate, unrelated
@@ -223,9 +224,7 @@ only inside the RPCs — a client can never write its own XP.
 
 ## 7. UI
 
-Follows the landing page's **Modern Technical Brutalism** design language: deep navy surfaces,
-orange primary actions, cyan for progress/signal, `rounded-none`, uppercase Geist Mono
-micro-labels, `// comment`-style captions.
+Follows Stacc's **Technical Field Manual** design language with a calmer layered-workspace treatment: deep navy surfaces, orange commitment actions, cyan orientation signals, restrained rounded shells, and Geist Mono reserved for system meaning.
 
 - **`/roadmap`** — compact header (overall progress and path switcher) + one progression list.
   Desktop uses a zigzag spine adapted from the landing-page roadmap preview:
@@ -233,15 +232,13 @@ micro-labels, `// comment`-style captions.
   module cards alternating sides, and skill chips fanning out on curved dashed connectors
   opposite each card. Connector geometry is row-local (fixed chip heights), so it holds for
   any node count. Mobile keeps the single-column left rail.
-  Clicking a node navigates to `/roadmap/[slug]` — a topic-structured workspace: the primary
-  column stacks one section per topic (each with its own primary + secondary resources), with a
-  matching topic outline alongside it. A real YouTube lesson gates only its matching watch task;
-  a resource with no lesson task attached renders as non-blocking reference material.
-  Specialization build tasks add milestones to one cumulative track project. A narrowly
-  permissioned GitHub App connects the repository; **Check my work** verifies the latest commit
-  without asking the learner to paste a URL. Challenge tasks
-  open a Monaco editor and run entirely client-side — Pyodide (WASM CPython) for Python,
-  sql.js (WASM SQLite) for SQL — both loaded lazily from CDN, no server execution.
+  Clicking a node navigates to `/roadmap/[slug]`, a focused learning cockpit. It resumes the first
+  incomplete task, displays one active lesson/practice/build step, and uses one compact progress
+  dial plus a collapsible step rail. The collapsed desktop rail retains a visible edge handle;
+  mobile opens the same sequence as a sheet. References remain inside their topic and never block
+  progress. Foundation challenges open a full-screen client-only editor. Specialization Build
+  steps contain the one-track repository connection, milestone brief, required artifacts, and
+  explicit latest-commit verification; GitHub does not compete with Learn steps.
 - **Sidebar** — collapsible to a 76px icon rail (persisted), one continuous navy/cyan-border
   shell with the TopBar (no duplicate branding, no mismatched tokens). Carries only
   workspace navigation (Roadmap, Progress, Explore paths, Admin) — account-level links
@@ -373,7 +370,7 @@ on both sides.
 
 ### Design DNA
 
-- **Modern Technical Brutalism** — terminal/mono, `rounded-none`, uppercase mono micro-labels,
+- **Layered Technical Field Manual** — restrained mono labels, nested navy surfaces, rounded workspace shells,
   `// comment`-style captions, bento-box grids.
 - Colors: deep navy surfaces; **orange** = primary action; **cyan** = signal/focus/progress.
   Style via CSS-var design tokens in `globals.css` / Tailwind theme mappings — never hardcoded
