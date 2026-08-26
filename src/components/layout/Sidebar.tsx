@@ -98,33 +98,29 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Bottom Section: Sign Out */}
-        <div className={cn('mt-auto rounded-2xl border border-outline-variant bg-surface-container-low p-2', sidebarCollapsed && 'p-1.5')}>
+        {/* Compact account controls */}
+        <div className={cn('mt-auto rounded-2xl border border-outline-variant bg-surface-container-low p-1.5', sidebarCollapsed ? 'flex flex-col items-center gap-1' : 'flex items-center gap-2')}>
+          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-cyan/10 text-xs font-bold text-cyan" aria-hidden="true">
+            {user.username.slice(0, 2).toUpperCase()}
+          </span>
           {!sidebarCollapsed && (
-            <div className="mb-2 flex items-center gap-3 px-2 py-2">
-              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-cyan/10 text-sm font-bold text-cyan">{user.username.slice(0, 2).toUpperCase()}</span>
-              <div className="min-w-0"><p className="truncate text-sm font-semibold text-on-surface">{user.username}</p><p className="text-xs text-on-surface-variant">Member workspace</p></div>
+            <div className="min-w-0 flex-1 py-1">
+              <p className="truncate text-sm font-semibold leading-5 text-on-surface">{user.username}</p>
+              <p className="truncate text-xs leading-4 text-on-surface-variant">Member</p>
             </div>
           )}
-          {sidebarCollapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <SignOutButton
-                  onSignOut={signOut}
-                  compact
-                  className="w-full rounded-xl text-error hover:bg-error-container/20 hover:text-error"
-                />
-              </TooltipTrigger>
-              <TooltipContent side="right" className="bg-surface-container-high font-code text-[11px] text-on-surface">
-                Sign out
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <SignOutButton
-              onSignOut={signOut}
-              className="w-full justify-start gap-3 rounded-xl px-3 py-2 text-sm font-medium text-error hover:bg-error-container/20 hover:text-error"
-            />
-          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <SignOutButton
+                onSignOut={signOut}
+                compact
+                className="size-9 min-h-9 shrink-0 rounded-xl text-on-surface-variant hover:bg-error-container/20 hover:text-error"
+              />
+            </TooltipTrigger>
+            <TooltipContent side="right" className="bg-surface-container-high font-code text-[11px] text-on-surface">
+              Sign out
+            </TooltipContent>
+          </Tooltip>
         </div>
       </aside>
     </TooltipProvider>
