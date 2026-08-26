@@ -175,6 +175,7 @@ AI ENGINEERING ← COMING SOON; curriculum preserved, member access held
 
 41 authored modules total. Every node ships with three authored topics and bounded primary/reference resources. The focused workspace shows one required step at a time; see
 `src/config/roadmap.ts` for local-mode content and `supabase/migrations/` for the deployed source of truth.
+The project identity, node-by-node contribution, final demonstration, and cross-path review rubric live in `docs/PORTFOLIO_PROJECTS.md`.
 
 ---
 
