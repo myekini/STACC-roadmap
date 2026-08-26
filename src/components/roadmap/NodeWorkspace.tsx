@@ -98,7 +98,7 @@ export function ProjectMilestone({
 
   if (!data.isSupabaseConnected) {
     return (
-      <div className="rounded-none border border-outline-variant bg-surface-card p-4 text-xs text-on-surface-variant">
+      <div className="rounded-xl border border-outline-variant bg-surface-card p-5 text-xs text-on-surface-variant">
         <p className="font-semibold text-on-surface">GitHub verification is available in the live app.</p>
         <p className="mt-1 leading-5">Sign in to connect one repository to this track and verify your milestone commits.</p>
       </div>
@@ -107,7 +107,7 @@ export function ProjectMilestone({
 
   if (!connected) {
     return (
-      <div className="rounded-none border border-outline-variant bg-surface-card p-4 text-xs">
+      <div className="rounded-xl border border-outline-variant bg-surface-card p-5 text-xs">
         <p className="flex items-center gap-2 font-semibold text-on-surface">
           <GithubLogo className="h-4 w-4 text-cyan" />
           Connect your {pathTitle} project repo
@@ -115,7 +115,7 @@ export function ProjectMilestone({
         <p className="mt-1 leading-5 text-on-surface-variant">
           Choose one GitHub repository. Stacc reads commits from that repo only to verify your work.
         </p>
-        <Button asChild size="sm" className={cn('mt-3 rounded-none font-code gap-2 bg-surface-card border border-outline-variant hover:border-cyan text-on-surface', connecting && 'pointer-events-none opacity-60')}>
+        <Button asChild size="sm" className={cn('mt-4 rounded-lg font-code gap-2 bg-surface-card border border-outline-variant hover:border-cyan text-on-surface', connecting && 'pointer-events-none opacity-60')}>
           <a
             href={`/api/github/install?path=${encodeURIComponent(pathId)}&returnTo=${encodeURIComponent(`/roadmap/${nodeSlug}`)}`}
             onClick={(e) => { if (connecting) { e.preventDefault(); return; } setConnecting(true); }}
@@ -129,21 +129,32 @@ export function ProjectMilestone({
   }
 
   return (
-    <div className="rounded-none border border-outline-variant bg-surface-card p-4 text-xs">
-      <div className="mb-4">
-        <p className="font-code text-[11px] font-bold uppercase tracking-wide text-cyan">Milestone brief</p>
-        <p className="mt-1 text-sm leading-6 text-on-surface">{task.description.replace(/^Build:\s*/i, '')}</p>
+    <div className="rounded-xl border border-outline-variant bg-surface-card p-5 text-xs sm:p-6">
+      <div className="mb-5">
+        <p className="font-code text-[11px] font-bold uppercase tracking-wide text-cyan">Project milestone</p>
+        <h3 className="mt-2 text-base font-bold text-on-surface">What you are shipping</h3>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-on-surface-variant">{task.description.replace(/^(Build(?: milestone \d+)?|Capstone):\s*/i, '')}</p>
         {task.project_requirements?.requiredPaths?.length ? (
-          <div className="mt-3 border border-outline-variant bg-surface-container-low p-3">
+          <div className="mt-5 rounded-xl bg-surface-container-low p-4">
             <p className="font-code text-xs font-bold uppercase tracking-[0.08em] text-on-surface">Automated checks</p>
             <p className="mt-1 text-xs leading-5 text-on-surface-variant">
               Push a new commit after starting this module. Stacc will confirm that commit is new and these artifacts exist:
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {task.project_requirements.requiredPaths.map((path) => (
-                <code key={path} className="border border-outline-variant bg-surface px-2 py-1 text-[11px] text-on-surface">{path}</code>
+                <code key={path} className="rounded-md border border-outline-variant bg-surface px-2 py-1 text-[11px] text-on-surface">{path}</code>
               ))}
             </div>
+          </div>
+        ) : null}
+        {task.project_requirements?.manualReview?.length ? (
+          <div className="mt-5">
+            <p className="font-code text-xs font-bold uppercase tracking-[0.08em] text-on-surface">Done well means</p>
+            <ul className="mt-3 space-y-2">
+              {task.project_requirements.manualReview.map((criterion) => (
+                <li key={criterion} className="flex gap-2.5 text-sm leading-6 text-on-surface-variant"><Check className="mt-1 size-3.5 shrink-0 text-secondary" /><span>{criterion}</span></li>
+              ))}
+            </ul>
           </div>
         ) : null}
       </div>
@@ -162,7 +173,7 @@ export function ProjectMilestone({
         <Button
           size="sm"
           disabled={disabled || busy || Boolean(verifiedState)}
-          className="rounded-none font-code text-xs"
+          className="rounded-lg font-code text-xs"
           onClick={async () => {
             setBusy(true);
             setErrorMsg(null);

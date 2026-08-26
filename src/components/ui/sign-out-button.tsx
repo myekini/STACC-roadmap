@@ -68,7 +68,7 @@ function SignOutMenuItem({ onSignOut, className }: { onSignOut: SignOutHandler; 
         event.preventDefault();
         void run();
       }}
-      className={cn('flex cursor-pointer items-center gap-2.5 rounded-none py-2 text-xs text-error focus:bg-error-container/20 focus:text-error', className)}
+      className={cn('flex cursor-pointer items-center gap-2.5 rounded-lg py-2 text-xs text-error focus:bg-error-container/20 focus:text-error', className)}
     >
       {pending ? <Spinner aria-hidden="true" /> : <LogOut className="size-4" aria-hidden="true" />}
       <span>{pending ? 'Signing out…' : 'Sign out'}</span>

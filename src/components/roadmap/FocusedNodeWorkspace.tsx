@@ -16,6 +16,7 @@ import {
   LockKeyhole,
   Menu,
   PanelLeftClose,
+  Target,
 } from 'lucide-react';
 import type { TaskRow } from '@/lib/database.types';
 import type { UserData } from '@/hooks/useUserData';
@@ -39,6 +40,41 @@ function stageFor(task: TaskRow, foundation: boolean) {
 function stepTitle(task: TaskRow) {
   if (task.lesson_title) return task.lesson_title;
   return task.description.replace(/^(Learn|Read|Watch|Practise|Practice|Build(?: milestone \d+)?|Checkpoint(?: challenge| quiz)?|Capstone):\s*/i, '');
+}
+
+function navigationTitle(task: TaskRow, foundation: boolean) {
+  const stage = stageFor(task, foundation);
+  const milestone = task.description.match(/^(Build milestone \d+|Capstone)/i)?.[1];
+  if (milestone) return milestone.replace(/^Build /i, '');
+  if (task.type === 'challenge') return 'Coding challenge';
+  if (task.type === 'quiz') return 'Knowledge checkpoint';
+  if (task.type === 'practice') return 'Skill rehearsal';
+  if (task.type === 'build') return 'Project milestone';
+  return stage;
+}
+
+function PracticeBrief({ description }: { description: string }) {
+  const clean = description.replace(/^(Practise|Practice):\s*/i, '').trim();
+  const steps = clean.split(/,\s+(?:then|and then)\s+/i).filter(Boolean);
+  return (
+    <div className="rounded-xl bg-surface-container-low p-5 sm:p-6">
+      <div className="flex items-start gap-3">
+        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-cyan/10 text-cyan"><Target className="size-4" /></span>
+        <div className="min-w-0">
+          <h3 className="font-semibold text-on-surface">Your practice</h3>
+          <p className="mt-1 text-sm leading-6 text-on-surface-variant">Complete this small rehearsal before moving into assessed work.</p>
+        </div>
+      </div>
+      <ol className="mt-5 space-y-3">
+        {steps.map((step, index) => (
+          <li key={`${index}-${step}`} className="flex gap-3 text-sm leading-6 text-on-surface">
+            <span className="grid size-6 shrink-0 place-items-center rounded-md border border-outline-variant bg-surface font-code text-[11px] text-cyan">{index + 1}</span>
+            <span>{step.charAt(0).toUpperCase() + step.slice(1)}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
 }
 
 function ProgressDial({ done, total }: { done: number; total: number }) {
@@ -280,7 +316,7 @@ export default function FocusedNodeWorkspace({ data, slug }: { data: UserData; s
                       </span>
                       <span className="min-w-0">
                         <span className="block font-code text-[11px] font-semibold uppercase tracking-[0.06em] text-cyan">{stageFor(task, foundation)}</span>
-                        <span className="mt-1 block line-clamp-2 text-xs leading-5">{stepTitle(task)}</span>
+                        <span className="mt-1 block text-xs leading-5 text-on-surface-variant">{navigationTitle(task, foundation)}</span>
                       </span>
                     </button>
                   </li>
@@ -332,7 +368,7 @@ export default function FocusedNodeWorkspace({ data, slug }: { data: UserData; s
               <div className="flex items-start justify-between gap-4 border-b border-outline-variant px-5 py-4 sm:px-6">
                 <div className="min-w-0">
                   <p className="font-code text-[11px] font-semibold uppercase tracking-[0.08em] text-cyan">{taskStage} · Step {Math.max(1, activeIndex + 1)} of {tasks.length}</p>
-                  <h2 className="mt-2 text-lg font-bold text-on-surface sm:text-xl">{activeTask ? stepTitle(activeTask) : 'No required work yet'}</h2>
+                  <h2 className="mt-2 text-lg font-bold text-on-surface sm:text-xl">{activeTask ? (taskStage === 'Learn' ? stepTitle(activeTask) : navigationTitle(activeTask, foundation)) : 'No required work yet'}</h2>
                   {activeTask?.duration_minutes ? <p className="mt-1 text-xs text-on-surface-variant">About {activeTask.duration_minutes} minutes</p> : null}
                 </div>
                 {activeDone && <span className="flex shrink-0 items-center gap-1.5 rounded-lg bg-secondary/10 px-2.5 py-1.5 text-xs font-semibold text-secondary"><Check className="size-3.5" /> Complete</span>}
@@ -374,8 +410,8 @@ export default function FocusedNodeWorkspace({ data, slug }: { data: UserData; s
                     <ProjectMilestone task={activeTask} data={data} pathId={node.path_id} pathTitle={path?.title ?? ''} nodeSlug={node.slug} disabled={!canWork} />
                   </div>
                 ) : activeTask ? (
-                  <div className="rounded-xl bg-surface-container-low p-5 sm:p-6">
-                    <p className="max-w-3xl text-sm leading-7 text-on-surface">{activeTask.description}</p>
+                  <div>
+                    <PracticeBrief description={activeTask.description} />
                     {!activeDone && <Button onClick={() => { void completeTask(activeTask); }} disabled={!canWork || Boolean(savingId)} className="mt-5 rounded-xl">{savingId ? <Spinner /> : <Check className="size-4" />} Complete this step</Button>}
                   </div>
                 ) : (

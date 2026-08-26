@@ -55,7 +55,7 @@ import { cn } from '@/lib/utils';
 
 /* ─── Shared field styles ────────────────────────────────── */
 
-const fieldCls = 'rounded-none border border-outline-variant bg-surface-card px-2.5 py-1.5 text-xs text-on-surface focus:outline-none focus:border-cyan disabled:opacity-50';
+const fieldCls = 'min-h-10 rounded-lg border border-outline-variant bg-surface px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/15 disabled:opacity-50';
 
 function toCsv(list: string[] | undefined) {
   return (list ?? []).join(', ');
@@ -119,7 +119,7 @@ function ResourceRow({
 
   if (editing) {
     return (
-      <div className="rounded-none border border-cyan/40 bg-cyan/[0.04] p-3 space-y-2 text-xs">
+      <div className="space-y-2 rounded-xl border border-cyan/40 bg-cyan/[0.04] p-4 text-xs">
         <div className="grid grid-cols-2 gap-2">
           <Input placeholder="Resource name" defaultValue={res.name} onChange={(e) => setPending((p) => ({ ...p, name: e.target.value }))} className="h-7 text-xs" />
           <Input placeholder="Platform (e.g. YouTube)" defaultValue={res.platform} onChange={(e) => setPending((p) => ({ ...p, platform: e.target.value }))} className="h-7 text-xs" />
@@ -147,13 +147,13 @@ function ResourceRow({
   }
 
   return (
-    <div className="flex items-center justify-between gap-2 rounded-none border border-outline-variant/60 bg-surface/50 px-3 py-2 text-xs group">
+    <div className="group flex items-center justify-between gap-2 rounded-xl border border-outline-variant bg-surface px-3 py-2.5 text-xs">
       <div className="flex items-center gap-2.5 min-w-0">
         {res.type === 'video' ? <Video className="h-3.5 w-3.5 text-cyan shrink-0" /> : <FileCode className="h-3.5 w-3.5 text-secondary shrink-0" />}
         <div className="min-w-0">
           <p className="font-semibold text-on-surface truncate">{res.name || <em className="text-outline">Unnamed</em>}</p>
           <p className="text-xs text-on-surface-variant truncate">{res.platform} · {res.url || '—'}</p>
-          <p className="mt-0.5 font-code text-xs text-outline">
+          <p className="mt-0.5 font-code text-xs text-on-surface-variant">
             {res.updated_at ? `reviewed ${new Date(res.updated_at).toLocaleDateString('en', { day: '2-digit', month: 'short', year: 'numeric' })}` : 'review date unavailable'}
           </p>
         </div>
@@ -165,10 +165,10 @@ function ResourceRow({
               <ExternalLink className="size-3.5" />
             </a>
           )}
-          <button type="button" onClick={() => setEditing(true)} className="flex size-9 items-center justify-center rounded-none border border-outline-variant text-on-surface-variant hover:border-cyan hover:text-cyan" title="Edit resource" aria-label={`Edit ${res.name}`}>
+          <button type="button" onClick={() => setEditing(true)} className="flex size-9 items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:border-cyan hover:bg-cyan/10 hover:text-cyan" title="Edit resource" aria-label={`Edit ${res.name}`}>
             <Edit3 className="h-3 w-3" />
           </button>
-          <button type="button" onClick={onDelete} className="flex size-9 items-center justify-center rounded-none border border-outline-variant text-on-surface-variant hover:border-error/60 hover:text-error" title="Remove resource" aria-label={`Remove ${res.name}`}>
+          <button type="button" onClick={onDelete} className="flex size-9 items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:border-error/60 hover:bg-error-container/20 hover:text-error" title="Remove resource" aria-label={`Remove ${res.name}`}>
             <Trash2 className="h-3 w-3" />
           </button>
         </div>
@@ -208,7 +208,7 @@ function TopicSection({
   onDeleteResource: (id: string, label: string) => void;
 }) {
   return (
-    <div className="rounded-none border border-outline-variant/60 bg-surface/40 p-3 space-y-2.5">
+    <div className="space-y-2.5 rounded-xl border border-outline-variant bg-surface p-4">
       <div className="flex items-center gap-2">
         <input
           key={topic.id}
@@ -242,7 +242,7 @@ function TopicSection({
           ))
         )}
         {!disabled && (
-          <Button size="sm" variant="outline" onClick={onAddResource} disabled={resources.length >= 2} className="h-7 gap-1.5 px-3 font-code text-xs rounded-none border-outline-variant hover:border-cyan">
+          <Button size="sm" variant="outline" onClick={onAddResource} disabled={resources.length >= 2} className="h-8 gap-1.5 rounded-lg border-outline-variant px-3 font-code text-xs hover:border-cyan">
             <Plus className="h-3 w-3" /> Add Resource
           </Button>
         )}
@@ -302,7 +302,7 @@ function TaskEditor({
   const updateQuiz = (patch: Partial<QuizPayload>) => setDraft((d) => ({ ...d, quiz: { ...(d.quiz ?? blankQuiz()), ...patch } }));
 
   return (
-    <div className="rounded-none border border-cyan/40 bg-cyan/[0.04] p-3 space-y-3 text-xs">
+    <div className="space-y-3 rounded-xl border border-cyan/40 bg-cyan/[0.04] p-4 text-xs">
       <div className="grid grid-cols-3 gap-2">
         <select
           value={type}
@@ -393,7 +393,7 @@ function TaskEditor({
       {type === 'quiz' && quiz && (
         <div className="space-y-2 border-t border-outline-variant/60 pt-2">
           {quiz.questions.map((q, qi) => (
-            <div key={qi} className="rounded-none border border-outline-variant/60 p-2 space-y-1.5">
+            <div key={qi} className="space-y-1.5 rounded-xl border border-outline-variant bg-surface p-3">
               <div className="flex items-center gap-1.5">
                 <Input
                   placeholder="Question"
@@ -701,21 +701,21 @@ export function CurriculumManager() {
      RENDER
   ═══════════════════════════════════════════════════════ */
   return (
-    <div className="flex flex-col gap-0 h-full">
+    <div className="flex h-full flex-col gap-0 bg-surface-container-low">
       {/* ── Top Bar ── */}
-      <div className="flex items-start justify-between gap-3 border-b border-outline-variant bg-surface px-4 py-3.5 sm:px-5">
+      <div className="flex items-start justify-between gap-3 border-b border-outline-variant bg-surface px-5 py-4 sm:px-6">
         <div className="min-w-0">
           <h2 className="font-display text-xl font-bold text-on-surface">Curriculum Control</h2>
           <p className="mt-1 max-w-2xl text-sm leading-5 text-on-surface-variant">
-            Every edit here writes straight to the live curriculum — changes are visible to members immediately.
+            Edit tracks, modules, lessons and evidence requirements. Published changes become visible to members immediately.
           </p>
         </div>
         {admin.isMutating ? (
-          <span className="flex items-center gap-1.5 rounded-none border border-cyan/40 bg-cyan/10 px-3 py-1.5 font-code text-xs font-bold text-cyan">
+          <span className="flex items-center gap-1.5 rounded-lg border border-cyan/40 bg-cyan/10 px-3 py-1.5 font-code text-xs font-bold text-cyan">
             <Spinner className="size-3" /> Saving…
           </span>
         ) : justSaved ? (
-          <span className="flex items-center gap-1.5 rounded-none border border-secondary/40 bg-secondary/10 px-3 py-1.5 font-code text-xs font-bold text-secondary">
+          <span className="flex items-center gap-1.5 rounded-lg border border-secondary/40 bg-secondary/10 px-3 py-1.5 font-code text-xs font-bold text-secondary">
             <Check className="size-3" /> Saved
           </span>
         ) : null}
@@ -754,11 +754,11 @@ export function CurriculumManager() {
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
 
         {/* ── PANEL 1: Track selector sidebar ── */}
-        <aside className={cn('min-h-0 w-full flex-1 flex-col border-r border-outline-variant bg-surface lg:flex lg:w-52 lg:flex-none', mobileView === 'tracks' ? 'flex' : 'hidden')}>
+        <aside className={cn('min-h-0 w-full flex-1 flex-col border-r border-outline-variant bg-surface lg:flex lg:w-60 lg:flex-none', mobileView === 'tracks' ? 'flex' : 'hidden')}>
           <div className="flex items-center justify-between px-4 pt-4 pb-2">
             <p className="font-code text-xs font-bold uppercase tracking-[0.08em] text-outline">Tracks</p>
             {!disabled && (
-              <button type="button" onClick={() => setEditingPath('new')} className="flex size-10 items-center justify-center text-cyan hover:bg-cyan/10" title="New track" aria-label="Create a new track">
+              <button type="button" onClick={() => setEditingPath('new')} className="flex size-10 items-center justify-center rounded-xl text-cyan hover:bg-cyan/10" title="New track" aria-label="Create a new track">
                 <Plus className="h-3.5 w-3.5" />
               </button>
             )}
@@ -770,20 +770,20 @@ export function CurriculumManager() {
                   type="button"
                   onClick={() => { setSelectedPathId(p.id); setSelectedNodeId(null); setNodeSearch(''); setMobileView('modules'); }}
                   className={cn(
-                    'flex min-h-11 w-full items-center justify-between gap-1 rounded-none px-3 py-2 pr-36 text-left text-sm font-semibold transition-colors',
-                    activePathId === p.id ? 'bg-cyan/15 text-cyan border border-cyan/40' : 'text-on-surface-variant hover:bg-surface-card hover:text-on-surface',
+                    'flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-sm font-semibold transition-colors lg:group-hover:pr-[8.75rem] lg:group-focus-within:pr-[8.75rem]',
+                    activePathId === p.id ? 'border-cyan/40 bg-cyan/10 text-cyan' : 'border-transparent text-on-surface-variant hover:border-outline-variant hover:bg-surface-container-low hover:text-on-surface',
                   )}
                 >
                   <span className="truncate">{p.title}</span>
                   {activePathId === p.id && <ChevronRight className="h-3 w-3 shrink-0" />}
                 </button>
                 {!disabled && (
-                  <span className="absolute right-1.5 top-1.5 flex gap-0.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100">
+                  <span className="absolute right-1.5 top-1.5 flex gap-0.5 rounded-lg bg-surface/95 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100">
                     <button
                       type="button"
                       onClick={() => movePath(idx, -1)}
                       disabled={idx === 0}
-                      className="flex size-8 items-center justify-center rounded-none text-on-surface-variant hover:text-cyan disabled:pointer-events-none disabled:opacity-30"
+                      className="flex size-8 items-center justify-center rounded-lg text-on-surface-variant hover:bg-cyan/10 hover:text-cyan disabled:pointer-events-none disabled:opacity-30"
                       title="Move track up"
                       aria-label={`Move ${p.title} up`}
                     >
@@ -793,19 +793,19 @@ export function CurriculumManager() {
                       type="button"
                       onClick={() => movePath(idx, 1)}
                       disabled={idx === orderedPaths.length - 1}
-                      className="flex size-8 items-center justify-center rounded-none text-on-surface-variant hover:text-cyan disabled:pointer-events-none disabled:opacity-30"
+                      className="flex size-8 items-center justify-center rounded-lg text-on-surface-variant hover:bg-cyan/10 hover:text-cyan disabled:pointer-events-none disabled:opacity-30"
                       title="Move track down"
                       aria-label={`Move ${p.title} down`}
                     >
                       <ChevronDown className="h-3 w-3" />
                     </button>
-                    <button type="button" onClick={() => setEditingPath(p)} className="flex size-8 items-center justify-center rounded-none text-on-surface-variant hover:text-cyan" title="Edit track" aria-label={`Edit ${p.title}`}>
+                    <button type="button" onClick={() => setEditingPath(p)} className="flex size-8 items-center justify-center rounded-lg text-on-surface-variant hover:bg-cyan/10 hover:text-cyan" title="Edit track" aria-label={`Edit ${p.title}`}>
                       <Edit3 className="h-3 w-3" />
                     </button>
                     <button
                       type="button"
                       onClick={() => setConfirmDelete({ type: 'path', id: p.id, label: p.title })}
-                      className="flex size-8 items-center justify-center rounded-none text-on-surface-variant hover:text-error"
+                      className="flex size-8 items-center justify-center rounded-lg text-on-surface-variant hover:bg-error-container/20 hover:text-error"
                       title="Delete track"
                       aria-label={`Delete ${p.title}`}
                     >
@@ -819,14 +819,14 @@ export function CurriculumManager() {
         </aside>
 
         {/* ── PANEL 2: Module list ── */}
-        <div className={cn('min-h-0 w-full flex-1 flex-col border-r border-outline-variant bg-surface lg:flex lg:w-64 lg:flex-none', mobileView === 'modules' ? 'flex' : 'hidden')}>
+        <div className={cn('min-h-0 w-full flex-1 flex-col border-r border-outline-variant bg-surface lg:flex lg:w-72 lg:flex-none', mobileView === 'modules' ? 'flex' : 'hidden')}>
           <div className="flex items-center justify-between border-b border-outline-variant px-4 py-3">
             <span className="font-code text-xs font-bold text-on-surface flex items-center gap-1.5">
               <Layers className="h-3.5 w-3.5 text-cyan" />
               {activePath?.title} <span className="text-outline">({orderedNodes.length})</span>
             </span>
             {!disabled && activePath && (
-              <button type="button" onClick={() => setAddingNode(true)} className="flex size-10 items-center justify-center text-cyan hover:bg-cyan/10" title="New module" aria-label={`Add a module to ${activePath.title}`}>
+              <button type="button" onClick={() => setAddingNode(true)} className="flex size-10 items-center justify-center rounded-xl text-cyan hover:bg-cyan/10" title="New module" aria-label={`Add a module to ${activePath.title}`}>
                 <Plus className="h-3.5 w-3.5" />
               </button>
             )}
@@ -882,7 +882,7 @@ export function CurriculumManager() {
                     onDragEnter={() => { dragOver.current = idx; }}
                     onDragEnd={handleDragEnd}
                     className={cn(
-                      'group flex min-h-12 items-start gap-2 rounded-none border p-3 cursor-pointer select-none transition-colors text-sm',
+                      'group flex min-h-14 cursor-pointer select-none items-start gap-2 rounded-xl border p-3 text-sm transition-colors',
                       isSelected ? 'border-cyan bg-cyan/10 text-on-surface' : 'border-outline-variant/40 bg-surface-card text-on-surface-variant hover:border-cyan/40 hover:text-on-surface',
                     )}
                     onClick={() => { setSelectedNodeId(node.id); setMobileView('editor'); }}
@@ -940,7 +940,7 @@ export function CurriculumManager() {
         </div>
 
         {/* ── PANEL 3: Module editor ── */}
-        <div className={cn('min-h-0 flex-1 overflow-y-auto bg-background lg:block', mobileView === 'editor' ? 'block' : 'hidden')}>
+        <div className={cn('min-h-0 flex-1 overflow-y-auto bg-surface-container-low lg:block', mobileView === 'editor' ? 'block' : 'hidden')}>
           {activeNode ? (
             <ModuleEditor
               node={activeNode}
@@ -1129,7 +1129,7 @@ function NewNodeForm({
   };
 
   return (
-    <li className="rounded-none border border-cyan/40 bg-cyan/[0.04] p-2.5 space-y-1.5 text-xs">
+    <li className="space-y-1.5 rounded-xl border border-cyan/40 bg-cyan/[0.04] p-3 text-xs">
       <Input
         placeholder="Module name"
         value={name}
@@ -1252,7 +1252,7 @@ function PathFormDialog({
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button onClick={save} disabled={saving || !finalId || !title.trim() || isDuplicate} className="font-code text-xs rounded-none">
+          <Button onClick={save} disabled={saving || !finalId || !title.trim() || isDuplicate} className="rounded-lg font-code text-xs">
             {saving ? <Spinner className="size-3.5" /> : null} Save track
           </Button>
         </AlertDialogFooter>
@@ -1321,7 +1321,7 @@ function ModuleEditor({
   const [prereqDraft, setPrereqDraft] = useState<string[]>(nodePrereqs);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 px-5 py-6">
+    <div className="mx-auto max-w-4xl space-y-7 px-5 py-6 sm:px-7 lg:px-8">
       {/* Module metadata header */}
       <div className="space-y-3 border-b border-outline-variant pb-5">
         <div className="flex flex-wrap items-center gap-2 font-code text-xs text-cyan">
@@ -1361,7 +1361,7 @@ function ModuleEditor({
             <input
               key={`${node.id}-hrs`}
               type="number" min="1" max="100" disabled={disabled}
-              className="w-14 rounded-none border border-outline-variant bg-surface-card px-2 py-1 font-code text-xs text-on-surface focus:outline-none focus:border-cyan disabled:opacity-60"
+              className="w-16 rounded-lg border border-outline-variant bg-surface px-2 py-1.5 font-code text-xs text-on-surface focus:border-cyan focus:outline-none focus:ring-2 focus:ring-cyan/15 disabled:opacity-60"
               defaultValue={node.est_hours}
               onBlur={(e) => { const v = parseInt(e.target.value, 10); if (!isNaN(v) && v !== node.est_hours) onSaveMeta({ est_hours: v }); }}
             />
@@ -1397,11 +1397,11 @@ function ModuleEditor({
         <div className="flex items-center justify-between">
           <h4 className="font-display text-sm font-bold text-on-surface">Prerequisites</h4>
           {!disabled && !editingPrereqs && (
-            <button type="button" onClick={onStartEditPrereqs} className="font-code text-[11px] text-cyan hover:underline">edit</button>
+            <button type="button" onClick={onStartEditPrereqs} className="rounded-lg px-2 py-1 font-code text-[11px] font-semibold text-cyan hover:bg-cyan/10">Edit</button>
           )}
         </div>
         {editingPrereqs ? (
-          <div className="space-y-2 rounded-none border border-cyan/40 bg-cyan/[0.04] p-3">
+          <div className="space-y-3 rounded-xl border border-cyan/40 bg-cyan/[0.04] p-4">
             <div className="max-h-48 overflow-y-auto space-y-1">
               {allNodes.filter((n) => n.id !== node.id).map((n) => (
                 <label key={n.id} className="flex items-center gap-2 text-xs">
@@ -1442,14 +1442,14 @@ function ModuleEditor({
             <span className="font-code text-xs text-outline font-normal">({topics.length})</span>
           </h4>
           {!disabled && (
-            <Button size="sm" variant="outline" onClick={onAddTopic} className="h-7 gap-1.5 px-3 font-code text-xs rounded-none border-outline-variant hover:border-cyan">
+            <Button size="sm" variant="outline" onClick={onAddTopic} className="h-8 gap-1.5 rounded-lg border-outline-variant px-3 font-code text-xs hover:border-cyan">
               <Plus className="h-3 w-3" /> Add Topic
             </Button>
           )}
         </div>
         <div className="space-y-3">
           {topics.length === 0 ? (
-            <div className="rounded-none border border-dashed border-outline-variant/60 py-6 text-center">
+            <div className="rounded-xl border border-dashed border-outline-variant py-8 text-center">
               <p className="text-xs text-on-surface-variant">No topics yet — this module&apos;s content page will be empty.</p>
             </div>
           ) : (
@@ -1482,7 +1482,7 @@ function ModuleEditor({
             <span className="font-code text-xs text-outline font-normal">({tasks.length})</span>
           </h4>
           {!disabled && !addingTask && (
-            <Button size="sm" variant="outline" onClick={onStartAddTask} className="h-7 gap-1.5 px-3 font-code text-xs rounded-none border-outline-variant hover:border-cyan">
+            <Button size="sm" variant="outline" onClick={onStartAddTask} className="h-8 gap-1.5 rounded-lg border-outline-variant px-3 font-code text-xs hover:border-cyan">
               <Plus className="h-3 w-3" /> Add Task
             </Button>
           )}
@@ -1490,7 +1490,7 @@ function ModuleEditor({
 
         <div className="space-y-2">
           {tasks.length === 0 && !addingTask && (
-            <div className="rounded-none border border-dashed border-outline-variant/60 py-6 text-center">
+            <div className="rounded-xl border border-dashed border-outline-variant py-8 text-center">
               <p className="text-xs text-on-surface-variant">No tasks yet.</p>
             </div>
           )}
@@ -1498,7 +1498,7 @@ function ModuleEditor({
             editingTaskId === task.id ? (
               <TaskEditor key={task.id} task={task} resources={resources} topics={topics} disabled={disabled} onCancel={onStopEditTask} onSave={(t) => onSaveTask(t).then(() => {})} />
             ) : (
-              <div key={task.id} className="flex items-center justify-between gap-2 rounded-none border border-outline-variant/60 bg-surface/50 px-3 py-2 text-xs group">
+              <div key={task.id} className="group flex items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface px-3 py-3 text-xs">
                 <div className="min-w-0">
                   <p className="font-semibold text-on-surface truncate">
                     <Badge variant="outline" className="mr-1.5">{task.type}</Badge>
@@ -1507,8 +1507,8 @@ function ModuleEditor({
                 </div>
                 {!disabled && (
                   <div className="flex shrink-0 items-center gap-1.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100">
-                    <button type="button" onClick={() => onStartEditTask(task.id)} className="flex size-9 items-center justify-center rounded-none border border-outline-variant text-on-surface-variant hover:border-cyan hover:text-cyan" aria-label={`Edit ${task.description}`}><Edit3 className="h-3 w-3" /></button>
-                    <button type="button" onClick={() => onDeleteTask(task.id, task.description)} className="flex size-9 items-center justify-center rounded-none border border-outline-variant text-on-surface-variant hover:border-error/60 hover:text-error" aria-label={`Delete ${task.description}`}><Trash2 className="h-3 w-3" /></button>
+                    <button type="button" onClick={() => onStartEditTask(task.id)} className="flex size-9 items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:border-cyan hover:bg-cyan/10 hover:text-cyan" aria-label={`Edit ${task.description}`}><Edit3 className="h-3 w-3" /></button>
+                    <button type="button" onClick={() => onDeleteTask(task.id, task.description)} className="flex size-9 items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:border-error/60 hover:bg-error-container/20 hover:text-error" aria-label={`Delete ${task.description}`}><Trash2 className="h-3 w-3" /></button>
                   </div>
                 )}
               </div>

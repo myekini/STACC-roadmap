@@ -41,7 +41,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main Container — left offset mirrors Sidebar's width (src/lib/layout.ts) */}
       <div
         className={cn(
-          'flex-1 flex flex-col min-h-screen transition-[padding-left] duration-200',
+          'flex-1 flex flex-col min-h-screen transition-[padding-left] duration-300 ease-out',
           sidebarCollapsed ? 'md:pl-[76px]' : 'md:pl-64',
         )}
       >

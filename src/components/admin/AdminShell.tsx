@@ -2,7 +2,7 @@
 
 /**
  * Admin app shell composed from the free shadcn Sidebar and Button primitives,
- * restyled to Stacc's Modern Technical Brutalism and wired to real sections.
+ * restyled to Stacc's layered technical workspace and wired to real sections.
  */
 import Link from 'next/link';
 import { BookOpen, LayoutDashboard, Route, ShieldCheck, Users } from 'lucide-react';
@@ -22,7 +22,6 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { SignOutButton } from '@/components/ui/sign-out-button';
 
@@ -48,8 +47,8 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
 
   return (
     <SidebarProvider className="min-h-screen bg-background text-on-background">
-      <Sidebar collapsible="offcanvas" className="border-r border-outline-variant">
-        <SidebarHeader className="h-14 justify-center border-b border-outline-variant px-4">
+      <Sidebar collapsible="offcanvas" className="border-r border-outline-variant bg-surface">
+        <SidebarHeader className="h-16 justify-center border-b border-outline-variant px-4">
           <button
             type="button"
             onClick={() => onSectionChange('overview')}
@@ -70,14 +69,12 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
                   <SidebarMenuButton
                     isActive={section === item.id}
                     onClick={() => onSectionChange(item.id)}
-                    className={cn(
-                      'rounded-none font-code text-xs uppercase tracking-[0.06em] data-[active=true]:border data-[active=true]:border-cyan/40 data-[active=true]:bg-cyan/10 data-[active=true]:text-cyan',
-                    )}
+                    className="min-h-11 rounded-xl border border-transparent px-3 text-sm font-medium text-on-surface-variant hover:border-outline-variant hover:bg-surface-container-low hover:text-on-surface data-[active=true]:border-cyan/35 data-[active=true]:bg-cyan/[0.09] data-[active=true]:text-cyan"
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.label}</span>
                     {item.id === 'members' && stuckCount > 0 && (
-                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center border border-error/40 bg-error/10 px-1 font-code text-[11px] font-bold text-error">
+                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-md border border-error/40 bg-error/10 px-1 font-code text-[11px] font-bold text-error">
                         {stuckCount}
                       </span>
                     )}
@@ -91,12 +88,12 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
         <SidebarFooter className="gap-0 border-t border-outline-variant p-0">
           <SidebarMenu className="p-2">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild className="rounded-none font-code text-xs uppercase tracking-[0.06em] text-on-surface-variant">
+              <SidebarMenuButton asChild className="rounded-xl text-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface">
                 <Link href="/roadmap"><BookOpen className="h-4 w-4" /><span>View all courses</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild className="rounded-none font-code text-xs uppercase tracking-[0.06em] text-on-surface-variant">
+              <SidebarMenuButton asChild className="rounded-xl text-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface">
                 <Link href="/dashboard"><Route className="h-4 w-4" /><span>Member dashboard</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -106,14 +103,14 @@ export function AdminShell({ section, onSectionChange, stuckCount, username, onS
               <p className="truncate font-code text-[11px] font-semibold text-on-surface">{username}</p>
               <p className="micro-label text-outline">admin</p>
             </div>
-            <SignOutButton onSignOut={onSignOut} compact className="size-9 min-h-9 border border-outline-variant text-on-surface-variant hover:border-error/40" />
+            <SignOutButton onSignOut={onSignOut} compact className="size-10 min-h-10 rounded-xl border border-outline-variant text-on-surface-variant hover:border-error/40" />
           </div>
         </SidebarFooter>
       </Sidebar>
 
       <SidebarInset className="bg-background">
         <header className="sticky top-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-top))] shrink-0 items-center gap-3 border-b border-outline-variant bg-background/95 px-4 pt-[env(safe-area-inset-top)] backdrop-blur md:h-14 md:px-6 md:pt-0">
-          <SidebarTrigger />
+          <SidebarTrigger className="rounded-xl" />
           <Separator orientation="vertical" className="h-4" />
           <div className="min-w-0 flex-1">
             <h1 className="text-sm font-semibold text-on-surface">{activeLabel}</h1>

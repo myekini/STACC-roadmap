@@ -50,7 +50,7 @@ function AdminLogin({ signIn }: { signIn: (email: string, password: string) => P
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <form onSubmit={submit} className="w-full max-w-sm border border-outline-variant bg-surface/80 p-7">
         <StaccMark className="h-9 w-9" />
-        <p className="micro-label mt-4 text-primary-label">{'// restricted'}</p>
+        <p className="micro-label mt-4 text-cyan">Restricted</p>
         <h1 className="mt-2 font-display text-2xl font-bold text-on-surface">Admin sign-in</h1>
         <p className="mt-2 text-sm leading-6 text-on-surface-variant">Use the email and password assigned to your admin account.</p>
         <label className="mt-6 block">
@@ -61,7 +61,7 @@ function AdminLogin({ signIn }: { signIn: (email: string, password: string) => P
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1.5 rounded-none border-outline-variant bg-surface-container-low font-code text-sm focus-visible:ring-0 focus-visible:border-cyan"
+            className="mt-1.5 rounded-lg border-outline-variant bg-surface-container-low font-code text-sm focus-visible:border-cyan focus-visible:ring-2 focus-visible:ring-cyan/15"
           />
         </label>
         <label className="mt-4 block">
@@ -72,7 +72,7 @@ function AdminLogin({ signIn }: { signIn: (email: string, password: string) => P
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1.5 rounded-none border-outline-variant bg-surface-container-low font-code text-sm focus-visible:ring-0 focus-visible:border-cyan"
+            className="mt-1.5 rounded-lg border-outline-variant bg-surface-container-low font-code text-sm focus-visible:border-cyan focus-visible:ring-2 focus-visible:ring-cyan/15"
           />
         </label>
         {error && <p className="mt-3 border-l-2 border-error pl-3 font-code text-[11px] text-error">{error}</p>}
@@ -99,7 +99,7 @@ function MemberDrilldown({ member, onClose }: { member: MemberRow | null; onClos
                 href={`https://github.com/${member.githubUsername}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex min-h-9 items-center gap-1.5 rounded-none border border-cyan/40 bg-cyan/10 px-2.5 py-1 font-code text-xs font-bold uppercase tracking-[0.08em] text-cyan hover:bg-cyan/20"
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-cyan/40 bg-cyan/10 px-3 py-1 font-code text-xs font-bold uppercase tracking-[0.08em] text-cyan hover:bg-cyan/20"
               >
                 <GithubLogo className="h-3 w-3" /> GitHub
               </a>
@@ -223,7 +223,7 @@ export default function AdminPage() {
       <button
         type="button"
         onClick={() => setCohort(null)}
-        className={cn('border px-3 py-2 font-code text-xs font-semibold uppercase', !cohort ? 'border-primary/50 bg-primary/10 text-primary-label' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}
+        className={cn('rounded-lg border px-3 py-2 font-code text-xs font-semibold uppercase', !cohort ? 'border-cyan/40 bg-cyan/10 text-cyan' : 'border-transparent text-on-surface-variant hover:border-outline-variant hover:text-on-surface')}
       >
         all
       </button>
@@ -232,7 +232,7 @@ export default function AdminPage() {
           key={c}
           type="button"
           onClick={() => setCohort(c)}
-          className={cn('border px-3 py-2 font-code text-xs font-semibold uppercase', cohort === c ? 'border-primary/50 bg-primary/10 text-primary-label' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}
+          className={cn('rounded-lg border px-3 py-2 font-code text-xs font-semibold uppercase', cohort === c ? 'border-cyan/40 bg-cyan/10 text-cyan' : 'border-transparent text-on-surface-variant hover:border-outline-variant hover:text-on-surface')}
         >
           {c}
         </button>
@@ -281,7 +281,7 @@ export default function AdminPage() {
               <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="flex items-center gap-1" aria-label="Member status filter">
-                    <button type="button" onClick={() => { setMemberFilter('all'); setMemberPage(0); }} className={cn('border px-3 py-2 font-code text-xs font-semibold uppercase', memberFilter === 'all' ? 'border-primary/50 bg-primary/10 text-primary-label' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}>all members</button>
+                    <button type="button" onClick={() => { setMemberFilter('all'); setMemberPage(0); }} className={cn('rounded-lg border px-3 py-2 font-code text-xs font-semibold uppercase', memberFilter === 'all' ? 'border-cyan/40 bg-cyan/10 text-cyan' : 'border-transparent text-on-surface-variant hover:border-outline-variant hover:text-on-surface')}>all members</button>
                     <button type="button" onClick={() => { setMemberFilter('attention'); setMemberPage(0); }} className={cn('border px-3 py-2 font-code text-xs font-semibold uppercase', memberFilter === 'attention' ? 'border-error/50 bg-error/10 text-error' : 'border-transparent text-on-surface-variant hover:border-outline-variant')}>needs attention</button>
                   </div>
                   {CohortFilter}
@@ -327,7 +327,7 @@ export default function AdminPage() {
 
           {section === 'curriculum' && (
             <div className="space-y-8">
-              <div className="h-[calc(100dvh-9rem)] min-h-[34rem] overflow-hidden rounded-none border border-outline-variant bg-surface lg:h-[70vh] lg:min-h-[520px]">
+              <div className="h-[calc(100dvh-8rem)] min-h-[38rem] overflow-hidden rounded-2xl border border-outline-variant bg-surface shadow-[0_18px_48px_rgba(2,8,23,.08)]">
                 <CurriculumManager />
               </div>
               <div className="pt-2 border-t border-outline-variant/60">

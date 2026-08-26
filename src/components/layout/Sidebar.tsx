@@ -8,7 +8,6 @@ import { StaccMark } from '@/components/brand/StaccMark';
 import { useUiStore } from '@/store/useUiStore';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { SIDEBAR_W, SIDEBAR_W_COLLAPSED } from '@/lib/layout';
 import { cn } from '@/lib/utils';
 import { SignOutButton } from '@/components/ui/sign-out-button';
@@ -16,7 +15,7 @@ import { SignOutButton } from '@/components/ui/sign-out-button';
 export default function Sidebar() {
   const pathname = usePathname();
   const userData = useUserData();
-  const { signOut, hasSelectedPath, isAdmin } = userData;
+  const { signOut, hasSelectedPath, isAdmin, user } = userData;
   const { sidebarCollapsed, toggleSidebar } = useUiStore();
 
   const navItems = [
@@ -28,27 +27,27 @@ export default function Sidebar() {
 
   const itemClass = (isActive: boolean) =>
     cn(
-      'flex items-center gap-3 py-2.5 transition-all border-l-2',
+      'relative flex min-h-11 items-center gap-3 rounded-xl border px-3 py-2.5 transition-[background-color,border-color,color,transform]',
       sidebarCollapsed ? 'justify-center px-0' : 'px-3.5',
       isActive
-        ? 'border-cyan bg-cyan/[0.1] text-cyan font-bold'
-        : 'border-transparent text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface',
+        ? 'border-cyan/35 bg-cyan/[0.09] text-cyan font-semibold'
+        : 'border-transparent text-on-surface-variant hover:border-outline-variant hover:bg-surface-container-low hover:text-on-surface',
     );
 
   return (
     <TooltipProvider delayDuration={150}>
       <aside
         style={{ width: sidebarCollapsed ? SIDEBAR_W_COLLAPSED : SIDEBAR_W }}
-        className="fixed left-0 top-0 z-40 hidden h-full flex-col border-r border-cyan/15 bg-navy py-4 text-on-surface transition-[width] duration-200 md:flex"
+        className="fixed left-0 top-0 z-40 hidden h-full flex-col border-r border-outline-variant bg-surface px-3 py-3 text-on-surface shadow-[8px_0_28px_rgba(2,8,23,.08)] transition-[width] duration-300 ease-out md:flex"
       >
         {/* Brand Header with Integrated Collapse Toggle */}
-        <div className={cn('mb-4 flex items-center justify-between px-4', sidebarCollapsed && 'flex-col gap-3 px-2')}>
+        <div className={cn('mb-3 flex min-h-14 items-center justify-between rounded-2xl bg-surface-container-low px-3', sidebarCollapsed && 'flex-col justify-center gap-2 px-1 py-2')}>
           <Link href="/roadmap" className="flex min-w-0 items-center gap-3 transition-opacity hover:opacity-80">
-            <StaccMark className="h-8 w-8 shrink-0" />
+            <StaccMark className="h-9 w-9 shrink-0" />
             {!sidebarCollapsed && (
               <div className="min-w-0">
-                <h2 className="font-display text-base font-bold uppercase tracking-wider text-on-surface">Stacc</h2>
-                <p className="truncate text-xs text-on-surface-variant font-medium">
+                <h2 className="font-display text-base font-bold tracking-tight text-on-surface">Stacc</h2>
+                <p className="truncate text-xs font-medium text-on-surface-variant">
                   {hasSelectedPath ? 'Roadmap Tracker' : 'Career Tracker'}
                 </p>
               </div>
@@ -63,7 +62,7 @@ export default function Sidebar() {
                 size="icon"
                 onClick={toggleSidebar}
                 aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                className="h-8 w-8 rounded-none border border-outline-variant/60 text-on-surface-variant hover:border-cyan/50 hover:bg-cyan/10 hover:text-cyan transition-colors"
+                className="h-9 w-9 rounded-xl border border-transparent text-on-surface-variant transition-colors hover:border-cyan/35 hover:bg-cyan/10 hover:text-cyan"
               >
                 {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
               </Button>
@@ -74,18 +73,16 @@ export default function Sidebar() {
           </Tooltip>
         </div>
 
-        <Separator className="bg-outline-variant/40 mb-3" />
-
         {/* Navigation */}
-        <nav className={cn('flex-1 space-y-1', sidebarCollapsed ? 'px-2' : 'px-3')}>
-          {!sidebarCollapsed && <p className="px-3 pb-1 micro-label text-outline">Workspace</p>}
+        <nav className={cn('flex-1 space-y-1.5 pt-2', sidebarCollapsed ? 'px-0' : 'px-1')}>
+          {!sidebarCollapsed && <p className="px-3 pb-2 font-code text-[11px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">Workspace</p>}
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             const link = (
               <Link href={item.href} className={itemClass(isActive)}>
-                <Icon className={cn('h-4 w-4 shrink-0', isActive ? 'text-cyan' : 'text-on-surface-variant')} aria-hidden="true" />
-                {!sidebarCollapsed && <span className="font-label-md text-xs">{item.name}</span>}
+                <Icon className={cn('h-[18px] w-[18px] shrink-0', isActive ? 'text-cyan' : 'text-on-surface-variant')} aria-hidden="true" />
+                {!sidebarCollapsed && <span className="text-sm">{item.name}</span>}
               </Link>
             );
             return sidebarCollapsed ? (
@@ -102,15 +99,20 @@ export default function Sidebar() {
         </nav>
 
         {/* Bottom Section: Sign Out */}
-        <div className={cn('mt-auto pt-3', sidebarCollapsed ? 'px-2' : 'px-3')}>
-          <Separator className="bg-outline-variant/40 mb-3" />
+        <div className={cn('mt-auto rounded-2xl border border-outline-variant bg-surface-container-low p-2', sidebarCollapsed && 'p-1.5')}>
+          {!sidebarCollapsed && (
+            <div className="mb-2 flex items-center gap-3 px-2 py-2">
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-cyan/10 text-sm font-bold text-cyan">{user.username.slice(0, 2).toUpperCase()}</span>
+              <div className="min-w-0"><p className="truncate text-sm font-semibold text-on-surface">{user.username}</p><p className="text-xs text-on-surface-variant">Member workspace</p></div>
+            </div>
+          )}
           {sidebarCollapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <SignOutButton
                   onSignOut={signOut}
                   compact
-                  className="w-full rounded-none text-error hover:bg-error-container/20 hover:text-error"
+                  className="w-full rounded-xl text-error hover:bg-error-container/20 hover:text-error"
                 />
               </TooltipTrigger>
               <TooltipContent side="right" className="bg-surface-container-high font-code text-[11px] text-on-surface">
@@ -120,7 +122,7 @@ export default function Sidebar() {
           ) : (
             <SignOutButton
               onSignOut={signOut}
-              className="w-full justify-start gap-3 rounded-none px-3 py-2 font-code text-xs uppercase tracking-[0.06em] text-error hover:bg-error-container/20 hover:text-error"
+              className="w-full justify-start gap-3 rounded-xl px-3 py-2 text-sm font-medium text-error hover:bg-error-container/20 hover:text-error"
             />
           )}
         </div>

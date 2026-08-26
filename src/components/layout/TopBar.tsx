@@ -39,7 +39,7 @@ export default function TopBar() {
   return (
     <header
       className={cn(
-        'fixed top-0 right-0 left-0 z-30 flex h-[calc(4rem+env(safe-area-inset-top))] items-center justify-between border-b border-cyan/15 bg-navy/90 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-xl transition-[left] duration-200 md:h-16 md:px-6 md:pt-0',
+        'fixed top-0 right-0 left-0 z-30 flex h-[calc(4rem+env(safe-area-inset-top))] items-center justify-between border-b border-outline-variant bg-surface/90 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-xl transition-[left] duration-300 ease-out md:h-16 md:px-6 md:pt-0',
         sidebarCollapsed ? 'md:left-[76px]' : 'md:left-64',
       )}
     >
@@ -117,14 +117,14 @@ export default function TopBar() {
             <DropdownMenuSeparator className="bg-outline-variant/40" />
 
             {/* Actions */}
-            <DropdownMenuItem asChild className="cursor-pointer rounded-none text-xs text-on-surface hover:bg-cyan/10 hover:text-cyan focus:bg-cyan/10 focus:text-cyan">
+            <DropdownMenuItem asChild className="cursor-pointer rounded-lg text-xs text-on-surface hover:bg-cyan/10 hover:text-cyan focus:bg-cyan/10 focus:text-cyan">
               <Link href={`/u/${encodeURIComponent(user.username)}`} className="flex items-center gap-2.5 py-2">
                 <UserRound className="h-4 w-4 text-cyan" />
                 <span>Public Portfolio</span>
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuItem asChild className="cursor-pointer rounded-none text-xs text-on-surface hover:bg-cyan/10 hover:text-cyan focus:bg-cyan/10 focus:text-cyan">
+            <DropdownMenuItem asChild className="cursor-pointer rounded-lg text-xs text-on-surface hover:bg-cyan/10 hover:text-cyan focus:bg-cyan/10 focus:text-cyan">
               <Link href="/settings" className="flex items-center gap-2.5 py-2">
                 <Settings className="h-4 w-4 text-on-surface-variant" />
                 <span>Member Settings</span>
@@ -132,7 +132,7 @@ export default function TopBar() {
             </DropdownMenuItem>
 
             {isAdmin && (
-              <DropdownMenuItem asChild className="cursor-pointer rounded-none text-xs text-on-surface hover:bg-cyan/10 hover:text-cyan focus:bg-cyan/10 focus:text-cyan">
+              <DropdownMenuItem asChild className="cursor-pointer rounded-lg text-xs text-on-surface hover:bg-cyan/10 hover:text-cyan focus:bg-cyan/10 focus:text-cyan">
                 <Link href="/admin" className="flex items-center gap-2.5 py-2">
                   <ShieldCheck className="h-4 w-4 text-warning" />
                   <span>Admin Console</span>
